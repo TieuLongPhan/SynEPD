@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SynEPD Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Static database architecture schema loading is used to maximize performance and stability -->
+    <style>
+        :root {
+            --bg-primary: #070a13;
+            --bg-secondary: #101524;
+            --bg-tertiary: #1a2238;
+            --accent-cyan: #00f2ff;
+            --accent-purple: #903df5;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-orange: #f59e0b;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --border: #232d45;
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+            --accent-1: #00f2ff;
+            --accent-2: #903df5;
+            --accent-3: #ff9f00;
+            --accent-4: #f43f5e;
+            --accent-5: #10b981;
+            --accent-6: #a855f7;
+        }
+
+        body.light-theme {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --border: #cbd5e1;
+            --card-shadow: 0 10px 30px rgba(15, 23, 42, 0.12), 0 1px 3px rgba(15, 23, 42, 0.05);
+
+            --accent-cyan: #026469;
+            --accent-purple: #7c3aed;
+            --accent-green: #059669;
+            --accent-red: #dc2626;
+            --accent-orange: #ea580c;
+
+            --accent-1: #026469;
+            --accent-2: #7c3aed;
+            --accent-3: #ea580c;
+            --accent-4: #be123c;
+            --accent-5: #059669;
+            --accent-6: #8b5cf6;
+        }
+
+        /* Specific overrides to make the lower bar highly visible and readable in light mode */
+        body.light-theme .graph-controls {
+            border-color: #94a3b8;
+            background-color: #ffffff;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+        }
+        body.light-theme .graph-controls,
+        body.light-theme .graph-controls label,
+        body.light-theme .graph-controls span {
+            color: #0f172a !important;
+        }
+        body.light-theme .control-btn {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+        body.light-theme .control-btn:hover {
+            border-color: var(--accent-cyan);
+            background-color: #f1f5f9;
+            color: var(--accent-cyan);
+        }
+        body.light-theme #layout-select {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a !important;
+        }
+        body.light-theme #layout-select option {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+        }
+
+        .theme-toggle-btn {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.35rem 0.85rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .theme-toggle-btn:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Header */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+        }
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        header .db-badge {
+            font-size: 0.75rem;
+            background-color: rgba(0, 242, 255, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Main Workspace Layout */
+        .workspace {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Left Side Panel (Search & Taxonomy) */
+        .left-panel {
+            width: 380px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .panel-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 0.85rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+        .tab-btn.active {
+            color: var(--accent-cyan);
+            border-bottom: 2px solid var(--accent-cyan);
+            background-color: rgba(128, 128, 128, 0.02);
+        }
+        .tab-content-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Search Tab */
+        .search-box {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus {
+            border-color: var(--accent-cyan);
+        }
+        .search-btn {
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: #fff;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .search-btn:hover {
+            opacity: 0.9;
+        }
+        .search-results {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .result-card {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .result-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+        .result-card h4 {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        .result-card p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Taxonomy Tree Tab */
+        .tree-node {
+            margin-left: 0.5rem;
+            user-select: none;
+        }
+        .tree-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .tree-header:hover {
+            background-color: var(--bg-tertiary);
+        }
+        .tree-toggle {
+            display: inline-block;
+            width: 1rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+        .tree-toggle.expanded {
+            transform: rotate(90deg);
+        }
+        .tree-children {
+            display: none;
+            border-left: 1px dashed var(--border);
+            margin-left: 0.5rem;
+            padding-left: 0.5rem;
+        }
+        .tree-children.show {
+            display: block;
+        }
+        .tree-reactions {
+            list-style: none;
+            margin-left: 1rem;
+        }
+        .tree-rxn-item {
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tree-rxn-item:hover {
+            color: var(--accent-cyan);
+            background-color: var(--bg-tertiary);
+        }
+
+        /* Center Panel (Force Directed Graph Visualizer) */
+        .center-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-primary);
+            position: relative;
+            overflow: hidden;
+        }
+        .graph-viewport {
+            flex: 1;
+            position: relative;
+            cursor: grab;
+        }
+        .graph-viewport:active {
+            cursor: grabbing;
+        }
+        .graph-controls {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(16, 21, 36, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            box-shadow: var(--card-shadow);
+            z-index: 10;
+        }
+        .control-btn {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .control-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            background-color: var(--bg-secondary);
+        }
+        .control-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .step-indicator {
+            font-size: 0.9rem;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* Right Panel (Mechanism & Details) */
+        .right-panel {
+            width: 400px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        .rxn-header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .rxn-header h2 {
+            font-size: 1.4rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        .rxn-header .taxonomy-path {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .smiles-box {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            margin-bottom: 1.5rem;
+            word-break: break-all;
+        }
+        .smiles-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--accent-cyan);
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: bold;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.25rem;
+        }
+
+        /* EPD Step List */
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .step-item {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid var(--border);
+        }
+        .step-item:hover {
+            border-color: var(--accent-cyan);
+        }
+        .step-item.active {
+            border-left-color: var(--accent-cyan);
+            background-color: rgba(0, 242, 255, 0.02);
+            box-shadow: inset 0 0 10px rgba(0, 242, 255, 0.05);
+        }
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .step-number {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+        }
+        .step-badge {
+            font-size: 0.7rem;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .step-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        /* Copy to Clipboard Buttons */
+        .copy-btn {
+            background: transparent;
+            border: none;
+            color: var(--accent-cyan);
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .copy-btn:hover {
+            background: rgba(0, 242, 255, 0.12);
+        }
+        body.light-theme .copy-btn:hover {
+            background: rgba(2, 100, 105, 0.1);
+        }
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Schema Image/Mermaid Container & Hover */
+        .schema-img-container {
+            margin-top: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 250px;
+        }
+        .schema-img-container:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 4px 20px rgba(0, 242, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        .schema-img-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        .schema-img-container:hover img {
+            transform: scale(1.02);
+        }
+
+        /* Modal Overlay Styles */
+        .modal-overlay {
+            display: flex;
+            visibility: hidden;
+            pointer-events: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(7, 10, 19, 0.95);
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+            opacity: 0;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+        .modal-content {
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            cursor: default;
+            transform: scale(0.95);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            color: var(--text-secondary);
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+            user-select: none;
+        }
+        .modal-close:hover {
+            color: var(--accent-cyan);
+        }
+
+        /* Welcome Dashboard Styles */
+        .welcome-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 3rem;
+            text-align: center;
+            background: radial-gradient(circle at center, rgba(30, 41, 59, 0.15) 0%, rgba(7, 10, 19, 0) 70%);
+        }
+        .welcome-container h2 {
+            font-size: 2.4rem;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+        .welcome-container p {
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+            max-width: 600px;
+        }
+        .dashboard-grid {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            width: 100%;
+            max-width: 650px;
+            margin-bottom: 3rem;
+        }
+        .dash-card {
+            flex: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .dash-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(128, 128, 128, 0.1);
+        }
+        .dash-card h3 {
+            font-size: 2.2rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .dash-card p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .quickstart-box {
+            text-align: left;
+            max-width: 550px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            font-size: 0.9rem;
+        }
+        .quickstart-box h4 {
+            color: var(--accent-cyan);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+        .quickstart-box ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .quickstart-box li::before {
+            content: "✦ ";
+            color: var(--accent-purple);
+        }
+
+        /* SVG styles for D3 graph */
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        .node circle {
+            stroke: var(--bg-secondary);
+            stroke-width: 1.5px;
+            transition: fill 0.3s, stroke 0.3s;
+        }
+        .node text {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            pointer-events: none;
+            fill: #fff;
+        }
+        .node .map-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            fill: var(--text-secondary);
+            font-weight: 400;
+        }
+        .link {
+            stroke-opacity: 0.6;
+            transition: stroke 0.3s, stroke-width 0.3s;
+        }
+        .link.breaking {
+            stroke: var(--accent-red);
+            stroke-dasharray: 4 4;
+            stroke-width: 3.5px;
+        }
+        .link.forming {
+            stroke: var(--accent-green);
+            stroke-dasharray: 4 4;
+            stroke-width: 3.5px;
+        }
+        .link.changing {
+            stroke: var(--accent-orange);
+            stroke-width: 3px;
+        }
+        .link.unchanged {
+            stroke: #4b5563;
+            stroke-width: 2px;
+        }
+
+        /* EPD Arrow representation */
+        .epd-arrow {
+            fill: none;
+            stroke: var(--accent-cyan);
+            stroke-width: 3.5px;
+            stroke-dasharray: 8 6;
+            animation: flow 1.5s linear infinite;
+            filter: drop-shadow(0 0 5px var(--accent-cyan));
+        }
+
+        @keyframes flow {
+            from {
+                stroke-dashoffset: 28;
+            }
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--accent-red);
+            color: #fff;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 style="cursor: pointer;" onclick="goHome()" title="Go to Main Page"><span>SynEPD</span> Explorer</h1>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">🌓 Theme</button>
+            <div class="db-badge" id="db-badge">Connecting...</div>
+        </div>
+    </header>
+
+    <div class="workspace">
+        <!-- Left Side Panel -->
+        <div class="left-panel">
+            <div class="panel-tabs">
+                <button class="tab-btn active" onclick="switchTab('search')">Search</button>
+                <button class="tab-btn" onclick="switchTab('taxonomy')">Taxonomy</button>
+            </div>
+            
+            <div class="tab-content-container">
+                <!-- Search Tab Pane -->
+                <div id="tab-search" class="tab-pane active">
+                    <div class="search-box">
+                        <input type="text" id="search-input" class="search-input" placeholder="Enter SMILES, Case ID, or Taxonomy" onkeydown="if(event.key==='Enter') triggerSearch()">
+                        <button class="search-btn" onclick="triggerSearch()">Search</button>
+                    </div>
+                    <div class="search-results" id="search-results">
+                        <p style="color: var(--text-secondary); text-align: center; margin-top: 2rem;">Search for reactions to inspect them</p>
+                    </div>
+                </div>
+
+                <!-- Taxonomy Tab Pane -->
+                <div id="tab-taxonomy" class="tab-pane">
+                    <div id="taxonomy-tree-container">
+                        <p style="color: var(--text-secondary); text-align: center;">Loading hierarchy...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Graph Panel -->
+        <div class="center-panel">
+            <div class="graph-viewport" id="graph-viewport">
+                <div class="welcome-container" id="welcome-panel">
+                    <h2>Welcome to SynEPD Explorer</h2>
+                    <p>A hierarchical mechanistic reaction database for chemical pathways, powered by Podman-hosted AlloyDB Omni and D3.js visual graph architectures.</p>
+                    
+                    <div class="dashboard-grid">
+                        <div class="dash-card">
+                            <h3 id="dash-mechanisms-val">711</h3>
+                            <p>Mechanisms</p>
+                        </div>
+                        <div class="dash-card">
+                            <h3 id="dash-molecules-val">948</h3>
+                            <p>Molecules</p>
+                        </div>
+                        <div class="dash-card">
+                            <h3 id="dash-taxons-val">1,105</h3>
+                            <p>Taxon Classes</p>
+                        </div>
+                    </div>
+                    
+                    <div class="quickstart-box" style="margin-bottom: 1.5rem;">
+                        <h4>Quick Start Guide</h4>
+                        <ul>
+                            <li>Select a reaction category from the <strong>Taxonomy Tree</strong> tab.</li>
+                            <li>Search via Case ID (e.g. <code>polar06_699</code>) or class names in the search bar.</li>
+                            <li>Enter custom SMILES reactions (e.g. <code>CC[O-].[NH4+]>>CCO</code>) to trace automated arrow projections.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Acknowledgement section -->
+                    <div class="acknowledgement-section" style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem; width: 100%; max-width: 650px; text-align: left;">
+                        <h4 style="margin-bottom: 0.75rem; color: var(--accent-cyan); font-size: 0.95rem; font-weight: 600;">Acknowledgement</h4>
+                        
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+                            <a href="https://tacsy.eu/" target="_blank" style="color: var(--accent-cyan); font-weight: 600; text-decoration: none;">TACsy</a> (Training Alliance for Computational Systems Chemistry) is the Training Alliance for Computational Systems Chemistry, a doctoral network focused on computational methods for large chemical reaction networks.
+                        </p>
+                        
+                        <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
+                            <a href="https://tacsy.eu/" target="_blank" style="flex: 1; min-width: 160px; display: flex; justify-content: center;">
+                                <img src="/static/tacsy-logo.jpg" alt="TACsy logo" style="max-width: 160px; height: auto; border-radius: 4px; display: block;" />
+                            </a>
+                            <a href="https://ec.europa.eu/regional_policy/information-sources/logo-download-center_en" target="_blank" style="flex: 1; min-width: 200px; display: flex; justify-content: center;">
+                                <img src="/static/eu-funded.jpg" alt="Funded by the European Union" style="max-width: 260px; height: auto; border-radius: 4px; display: block;" />
+                            </a>
+                        </div>
+                        
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
+                            This project has received funding from the European Union's Horizon Europe Doctoral Network programme under the Marie Skłodowska-Curie grant agreement No 101072930.
+                        </p>
+                        
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem;">
+                            <span style="font-size: 10px; background: var(--bg-tertiary); border: 1px solid var(--border); color: var(--text-primary); padding: 3px 8px; border-radius: 999px; font-weight: 500;">Horizon Europe</span>
+                            <span style="font-size: 10px; background: var(--bg-tertiary); border: 1px solid var(--border); color: var(--text-primary); padding: 3px 8px; border-radius: 999px; font-weight: 500;">MSCA Doctoral Network</span>
+                            <span style="font-size: 10px; background: var(--bg-tertiary); border: 1px solid var(--border); color: var(--text-primary); padding: 3px 8px; border-radius: 999px; font-weight: 500;">Grant No 101072930</span>
+                            <span style="font-size: 10px; background: var(--bg-tertiary); border: 1px solid var(--border); color: var(--text-primary); padding: 3px 8px; border-radius: 999px; font-weight: 500;">Computational systems chemistry</span>
+                        </div>
+                        
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0;">
+                            See the <a href="https://tacsy.eu/" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">TACsy website</a> for the broader training network.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Graph Navigation Controls -->
+            <div class="graph-controls" id="graph-controls-panel" style="display: none;">
+                <button class="control-btn" id="btn-prev" onclick="changeStep(-1)" title="Previous Step">◀</button>
+                <button class="control-btn" id="btn-play" onclick="togglePlay()" title="Play Mechanism">▶</button>
+                <div class="step-indicator" id="step-indicator">Step 1 / 1</div>
+                <button class="control-btn" id="btn-next" onclick="changeStep(1)" title="Next Step">▶</button>
+                
+                <div style="border-left: 1px solid var(--border); height: 20px; margin: 0 0.5rem;"></div>
+                
+                <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="show-all-checkbox" onchange="drawActiveEPDArrows()" style="cursor: pointer; accent-color: var(--accent-cyan);">
+                    <span>Show All Steps</span>
+                </label>
+                
+                <div style="border-left: 1px solid var(--border); height: 20px; margin: 0 0.5rem;"></div>
+                
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">
+                    <span>Layout:</span>
+                    <select id="layout-select" onchange="toggleLayout()" style="background-color: var(--bg-tertiary); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px; padding: 0.2rem 0.5rem; outline: none; font-family: inherit; font-size: 0.8rem; cursor: pointer;">
+                        <option value="force">Force-Directed</option>
+                        <option value="rdkit">Chemist 2D</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side Panel -->
+        <div class="right-panel">
+            <div id="detail-fallback" style="display: block; width: 100%;">
+                <div class="db-status-section" style="text-align: left; width: 100%;">
+                    <h4 style="margin-bottom: 0.75rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; font-weight: 600; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+                        <span>📁</span> Database Architecture & Version
+                    </h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.8rem; margin-bottom: 1rem; margin-top: 0.5rem;">
+                        <div>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.15rem; font-size: 0.75rem;">Database Version</p>
+                            <p id="db-version-val" style="font-weight: 600; color: var(--text-primary); margin-bottom: 0;">-</p>
+                        </div>
+                        <div>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.15rem; font-size: 0.75rem;">Release Date</p>
+                            <p id="db-release-date-val" style="font-weight: 600; color: var(--text-primary); margin-bottom: 0;">-</p>
+                        </div>
+                        <div>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.15rem; font-size: 0.75rem;">License</p>
+                            <p id="db-license-val" style="font-weight: 600; color: var(--text-primary); margin-bottom: 0;">-</p>
+                        </div>
+                        <div>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.15rem; font-size: 0.75rem;">Database Engine</p>
+                            <p id="db-engine-val" style="font-weight: 600; color: var(--text-primary); margin-bottom: 0;">-</p>
+                        </div>
+                    </div>
+                    
+                    <div style="border-top: 1px solid var(--border); padding-top: 0.75rem;">
+                        <p style="color: var(--text-primary); font-size: 0.8rem; margin-bottom: 0.5rem; font-weight: 600;">Relational Schema Architecture</p>
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 0.75rem;">
+                            <div style="display: grid; grid-template-columns: 95px 1fr; gap: 0.4rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--accent-purple); font-weight: 600;">reaction</span>
+                                <span>id (PK), case_id, canonical_rsmi, aam_key</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 95px 1fr; gap: 0.4rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--accent-purple); font-weight: 600;">molecule</span>
+                                <span>id (PK), canonical_smiles, inchikey</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 95px 1fr; gap: 0.4rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--accent-purple); font-weight: 600;">reaction_comp</span>
+                                <span>id (PK), reaction_id, molecule_id, side</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 95px 1fr; gap: 0.4rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--accent-purple); font-weight: 600;">taxon</span>
+                                <span>code (PK), parent_code, level, name</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 95px 1fr; gap: 0.4rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--accent-purple); font-weight: 600;">its</span>
+                                <span>reaction_id, rc_id, wlhash, graph_data</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 95px 1fr; gap: 0.4rem; padding: 0.25rem 0;">
+                                <span style="color: var(--accent-purple); font-weight: 600;">epd_arrow</span>
+                                <span>id, reaction_id, arrow_index, source_atoms</span>
+                            </div>
+                        </div>
+                        
+                        <div style="border-top: 1px solid var(--border); padding-top: 0.75rem;">
+                            <p style="color: var(--text-primary); font-size: 0.8rem; font-weight: 600; margin-bottom: 0.4rem;">Database Schema Diagram</p>
+                            <div class="schema-img-container" onclick="openSchemaModal()" title="Click to view full screen">
+                                <img src="/static/data_arch.png" alt="SynEPD Database Schema Diagram" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="detail-panel" style="display: none;">
+                <div class="rxn-header">
+                    <span class="taxonomy-path" id="detail-tax-path">Taxonomy Path</span>
+                    <h2 id="detail-name" style="margin: 0.25rem 0 0 0; font-size: 1.2rem; color: var(--text-primary); font-family: 'Outfit', sans-serif;">Reaction Name</h2>
+                    <div id="detail-case-id" style="display: none; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">POLAR_1</div>
+                </div>
+                
+                <div class="smiles-box" id="detail-balance-warning-box" style="display: none; background: rgba(245, 158, 11, 0.15); border-left: 4px solid var(--accent-orange); color: var(--accent-orange); margin-bottom: 1rem; font-weight: 500; font-size: 0.85rem; padding: 0.75rem 1rem; border-radius: 4px;">
+                    ⚠️ Imbalanced query: automatically balanced and matched to template.
+                </div>
+                
+                <div class="smiles-box">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                        <span class="smiles-label">Canonical SMILES</span>
+                        <button class="copy-btn" onclick="copyText('detail-smiles')" title="Copy to Clipboard">📋 Copy</button>
+                    </div>
+                    <div id="detail-smiles">CC[O-]>>CCO</div>
+                </div>
+
+                <div class="smiles-box">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                        <span class="smiles-label">Atom-Mapped key</span>
+                        <button class="copy-btn" onclick="copyText('detail-aam')" title="Copy to Clipboard">📋 Copy</button>
+                    </div>
+                    <div id="detail-aam">AAM Key</div>
+                </div>
+
+                <h3 class="section-title">EPD Arrow Steps</h3>
+                <div class="step-list" id="detail-step-list">
+                    <!-- Steps injected dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div class="toast" id="toast-err">
+        An error occurred.
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let activeReaction = null;
+        let activeStepIndex = 1; // 1-indexed EPD step
+        let playInterval = null;
+
+        const stepColors = [
+            "var(--accent-1)",
+            "var(--accent-2)",
+            "var(--accent-3)",
+            "var(--accent-4)",
+            "var(--accent-5)",
+            "var(--accent-6)"
+        ];
+
+        function searchFromSketcher() {
+            if (!jsmeApplet) {
+                showError("Sketcher not loaded yet.");
+                return;
+            }
+            let smiles = jsmeApplet.smiles();
+            if (!smiles) {
+                showError("Please draw a reaction first.");
+                return;
+            }
+            document.getElementById('search-input').value = smiles;
+            switchTab('search');
+            triggerSearch();
+        }
+
+        // D3 force simulation variables
+        let svg, simulation, linkGroup, nodeGroup, arrowGroup;
+
+        // Colors for chemical elements
+        const elementColors = {
+            "C": "#4b5563", // Dark grey
+            "O": "#ef4444", // Red
+            "N": "#3b82f6", // Blue
+            "H": "#06b6d4", // Cyan
+            "P": "#f59e0b", // Yellow/Orange
+            "S": "#d97706", // Brownish/Orange
+            "F": "#10b981", // Green
+            "Cl": "#059669", // Dark Green
+            "Br": "#047857", // Deep Green
+        };
+
+        // Initialize connection status
+        async function checkConnection() {
+            try {
+                const res = await fetch(`${API_BASE}/api/taxonomy`);
+                if (res.ok) {
+                    document.getElementById('db-badge').innerText = "Online";
+                    document.getElementById('db-badge').style.borderColor = "var(--accent-green)";
+                    document.getElementById('db-badge').style.color = "var(--accent-green)";
+                    document.getElementById('db-badge').style.backgroundColor = "rgba(16, 185, 129, 0.1)";
+                    loadTaxonomyTree();
+                } else {
+                    showError("Could not fetch taxonomy data.");
+                }
+            } catch (err) {
+                showError("Cannot connect to server. Run server.py first.");
+            }
+        }
+
+        function showError(msg) {
+            const toast = document.getElementById('toast-err');
+            toast.innerText = msg;
+            toast.style.display = "block";
+            setTimeout(() => { toast.style.display = "none"; }, 4000);
+        }
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const onclickStr = btn.getAttribute('onclick');
+                if (onclickStr && onclickStr.includes(`'${tabId}'`)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
+
+        // Search Reactions
+        async function triggerSearch() {
+            let val = document.getElementById('search-input').value.trim();
+            if (!val) return;
+            
+            // Standardize single reaction arrow to double arrows if needed
+            if (val.includes(">") && !val.includes(">>")) {
+                val = val.replace(">", ">>");
+                document.getElementById('search-input').value = val;
+            }
+            
+            const resultsContainer = document.getElementById('search-results');
+            resultsContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Searching...</p>';
+
+            try {
+                // If it is a query template or custom query SMILES
+                let res;
+                if (val.includes(">>")) {
+                    res = await fetch(`${API_BASE}/api/query-epd`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ rsmi: val })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        resultsContainer.innerHTML = '';
+                        const card = document.createElement('div');
+                        card.className = "result-card";
+                        card.onclick = () => loadQueryEPDResult(data);
+                        
+                        let balanceNotice = '';
+                        if (data.balanced_from_imbalanced) {
+                            balanceNotice = `<p style="color: var(--accent-orange); font-size: 11px; margin-top: 4px; font-weight: 500; margin-bottom: 0;">⚠️ Imbalanced query: automatically balanced</p>`;
+                            console.warn("SynEPD balanced query reaction:", data.original_imbalanced_query, "->", data.canonical_rsmi);
+                        }
+                        
+                        card.innerHTML = `
+                            <h4>Projected Template Match</h4>
+                            <p style="color: var(--accent-cyan); font-size: 12px; margin-bottom: 4px; margin-top: 2px;">Path: ${data.path === 1 ? 'Direct DB Match' : 'Template Balanced Projection'}</p>
+                            <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; word-break: break-all; margin-bottom: 0; color: var(--text-secondary);">${data.canonical_rsmi || ''}</p>
+                            ${balanceNotice}
+                        `;
+                        resultsContainer.appendChild(card);
+                    } else {
+                        resultsContainer.innerHTML = `<p style="color: var(--accent-red); text-align: center;">No match: ${data.error || 'Check balance'}</p>`;
+                    }
+                    return;
+                }
+                
+                // General text search
+                res = await fetch(`${API_BASE}/api/reactions/search?query=${encodeURIComponent(val)}`);
+                const data = await res.json();
+                
+                resultsContainer.innerHTML = '';
+                if (data.length === 0) {
+                    resultsContainer.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No matching reactions found</p>';
+                    return;
+                }
+                
+                data.forEach(rxn => {
+                    const card = document.createElement('div');
+                    card.className = "result-card";
+                    card.onclick = () => loadReaction(rxn.id);
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <h4 style="margin: 0; font-family: 'Outfit', sans-serif;">${rxn.name || rxn.case_id}</h4>
+                            ${rxn.taxonomy ? `<span style="font-size: 10px; background: rgba(0, 242, 255, 0.12); color: var(--accent-cyan); padding: 2px 6px; border-radius: 4px; font-weight: 500; font-family: 'Outfit', sans-serif;">${rxn.taxonomy}</span>` : ''}
+                        </div>
+                        ${rxn.name ? `<p style="font-size: 11px; margin: 0 0 4px 0; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace;">${rxn.case_id}</p>` : ''}
+                        <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; word-break: break-all; margin: 0; color: var(--text-secondary);">${rxn.canonical_rsmi}</p>
+                    `;
+                    resultsContainer.appendChild(card);
+                });
+            } catch (err) {
+                showError("Search failed.");
+            }
+        }
+
+        // Load Taxonomy Tree
+        async function loadTaxonomyTree() {
+            const container = document.getElementById('taxonomy-tree-container');
+            try {
+                const res = await fetch(`${API_BASE}/api/taxonomy`);
+                const data = await res.json();
+                container.innerHTML = '';
+                buildTreeNode(data.taxonomy, container);
+            } catch (err) {
+                container.innerHTML = '<p style="color: var(--accent-red);">Failed to load taxonomy.</p>';
+            }
+        }
+
+        function buildTreeNode(nodes, container) {
+            nodes.forEach(node => {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.className = "tree-node";
+                
+                const hasChildren = (node.children && node.children.length > 0) || (node.reactions && node.reactions.length > 0);
+                
+                const header = document.createElement('div');
+                header.className = "tree-header";
+                header.innerHTML = `
+                    <span class="tree-toggle ${hasChildren ? '' : 'leaf'}">${hasChildren ? '▶' : '•'}</span>
+                    <span style="font-weight: 500;">${node.code} — ${node.name}</span>
+                `;
+                
+                nodeDiv.appendChild(header);
+
+                if (hasChildren) {
+                    const childrenDiv = document.createElement('div');
+                    childrenDiv.className = "tree-children";
+                    
+                    // Recursive children
+                    if (node.children && node.children.length > 0) {
+                        buildTreeNode(node.children, childrenDiv);
+                    }
+                    
+                    // Leaf reactions
+                    if (node.reactions && node.reactions.length > 0) {
+                        const list = document.createElement('ul');
+                        list.className = "tree-reactions";
+                        node.reactions.forEach(rxn => {
+                            const li = document.createElement('li');
+                            li.className = "tree-rxn-item";
+                            li.innerText = `${rxn.name || rxn.case_id} | ${rxn.canonical_rsmi}`;
+                            li.onclick = (e) => {
+                                e.stopPropagation();
+                                loadReaction(rxn.id);
+                            };
+                            list.appendChild(li);
+                        });
+                        childrenDiv.appendChild(list);
+                    }
+                    
+                    nodeDiv.appendChild(childrenDiv);
+
+                    header.onclick = () => {
+                        const expanded = childrenDiv.classList.toggle('show');
+                        header.querySelector('.tree-toggle').classList.toggle('expanded', expanded);
+                    };
+                }
+                
+                container.appendChild(nodeDiv);
+            });
+        }
+
+        // Copy to clipboard helper
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.currentTarget;
+                const origText = btn.innerText;
+                btn.innerText = "✓ Copied";
+                btn.style.color = "var(--accent-green)";
+                setTimeout(() => { 
+                    btn.innerText = origText; 
+                    btn.style.color = "";
+                }, 2000);
+            }).catch(err => {
+                showError("Failed to copy text.");
+            });
+        }
+
+        // Load Query EPD results
+        function loadQueryEPDResult(data) {
+            activeReaction = {
+                case_id: data.case_id || "Projected Query",
+                name: data.name || (data.case_id ? data.case_id : "Projected Query"),
+                canonical_rsmi: data.canonical_rsmi || (data.mapped_rsmi ? data.mapped_rsmi.replace(/:\d+/g, '') : ''),
+                aam_key: data.mapped_rsmi,
+                taxonomy: data.taxonomy || { code: "DYNAMIC", name: "Custom EPD Projection", level: 4 },
+                arrows: data.arrows,
+                its_graph: data.its_graph,
+                balanced_from_imbalanced: data.balanced_from_imbalanced || false,
+                original_imbalanced_query: data.original_imbalanced_query || null
+            };
+            renderReactionDetails();
+        }
+
+        // Load specific reaction by ID
+        async function loadReaction(rxnId) {
+            try {
+                const res = await fetch(`${API_BASE}/api/reactions/${rxnId}`);
+                activeReaction = await res.json();
+                renderReactionDetails();
+            } catch (err) {
+                showError("Failed to fetch reaction details.");
+            }
+        }
+
+        function renderReactionDetails() {
+            if (!activeReaction) return;
+
+            document.getElementById('detail-fallback').style.display = "none";
+            document.getElementById('detail-panel').style.display = "block";
+            document.getElementById('graph-controls-panel').style.display = "flex";
+
+            const selectEl = document.getElementById('layout-select');
+            if (selectEl) {
+                selectEl.value = 'force';
+            }
+
+            // Update details texts
+            document.getElementById('detail-name').innerText = activeReaction.name || activeReaction.case_id;
+            document.getElementById('detail-case-id').innerText = activeReaction.case_id;
+            document.getElementById('detail-smiles').innerText = activeReaction.canonical_rsmi;
+            document.getElementById('detail-aam').innerText = activeReaction.aam_key;
+            
+            // Show/hide balance warning box
+            const warningBox = document.getElementById('detail-balance-warning-box');
+            if (activeReaction.balanced_from_imbalanced) {
+                warningBox.style.display = 'block';
+            } else {
+                warningBox.style.display = 'none';
+            }
+            
+            if (activeReaction.taxonomy) {
+                document.getElementById('detail-tax-path').innerText = activeReaction.taxonomy.code;
+            } else {
+                document.getElementById('detail-tax-path').innerText = "DYNAMIC";
+            }
+
+            // Update steps list
+            const stepsContainer = document.getElementById('detail-step-list');
+            stepsContainer.innerHTML = '';
+            
+            activeReaction.arrows.forEach(arr => {
+                const step = document.createElement('div');
+                step.className = `step-item ${arr.arrow_index === activeStepIndex ? 'active' : ''}`;
+                step.onclick = () => selectStep(arr.arrow_index);
+                
+                step.innerHTML = `
+                    <div class="step-header">
+                        <span class="step-number">Step ${arr.arrow_index}</span>
+                        <span class="step-badge">${arr.arrow_type_code}</span>
+                    </div>
+                    <div class="step-desc">
+                        Source atoms: [${arr.source_atoms.join(', ')}] &rarr; Target: [${arr.target_atoms.join(', ')}]
+                    </div>
+                `;
+                stepsContainer.appendChild(step);
+            });
+
+            activeStepIndex = 1;
+            updateStepNavigation();
+            drawGraph();
+        }
+
+        function selectStep(idx) {
+            activeStepIndex = idx;
+            document.querySelectorAll('.step-item').forEach((item, i) => {
+                item.classList.toggle('active', (i + 1) === idx);
+            });
+            updateStepNavigation();
+            drawActiveEPDArrows();
+        }
+
+        function changeStep(dir) {
+            const nextIdx = activeStepIndex + dir;
+            if (nextIdx >= 1 && nextIdx <= activeReaction.arrows.length) {
+                selectStep(nextIdx);
+            }
+        }
+
+        function updateStepNavigation() {
+            const total = activeReaction.arrows.length;
+            document.getElementById('step-indicator').innerText = `Step ${activeStepIndex} / ${total}`;
+            document.getElementById('btn-prev').disabled = activeStepIndex <= 1;
+            document.getElementById('btn-next').disabled = activeStepIndex >= total;
+        }
+
+        function togglePlay() {
+            const btn = document.getElementById('btn-play');
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+                btn.innerText = "▶";
+            } else {
+                btn.innerText = "⏸";
+                playInterval = setInterval(() => {
+                    if (activeStepIndex < activeReaction.arrows.length) {
+                        selectStep(activeStepIndex + 1);
+                    } else {
+                        selectStep(1); // loop
+                    }
+                }, 2000);
+            }
+        }
+
+        function goHome() {
+            activeReaction = null;
+            
+            // Remove existing SVG
+            const viewport = document.getElementById('graph-viewport');
+            const svgEl = viewport.querySelector('svg');
+            if (svgEl) svgEl.remove();
+            
+            // Restore visibility of welcome panel
+            document.getElementById('welcome-panel').style.display = "block";
+            document.getElementById('detail-panel').style.display = "none";
+            document.getElementById('detail-fallback').style.display = "block";
+            document.getElementById('graph-controls-panel').style.display = "none";
+        }
+
+        // Draw Interactive D3 Graph
+        function drawGraph() {
+            const viewport = document.getElementById('graph-viewport');
+            
+            // Remove existing SVG if any
+            const existingSvg = viewport.querySelector('svg');
+            if (existingSvg) existingSvg.remove();
+            
+            // Hide welcome panel
+            document.getElementById('welcome-panel').style.display = "none";
+            
+            const width = viewport.clientWidth;
+            const height = viewport.clientHeight;
+
+            const graphData = activeReaction.its_graph;
+            if (!graphData || !graphData.nodes || graphData.nodes.length === 0) {
+                viewport.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding-top: 10rem;">Structure graph unavailable.</div>';
+                return;
+            }
+
+            // Create SVG element
+            svg = d3.select("#graph-viewport")
+                .append("svg")
+                .attr("viewBox", [0, 0, width, height]);
+
+            // Add defs for marker markers (arrowheads)
+            const defs = svg.append("defs");
+            stepColors.forEach((color, idx) => {
+                defs.append("marker")
+                    .attr("id", `epd-arrowhead-${idx + 1}`)
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 8)
+                    .attr("refY", 0)
+                    .attr("markerWidth", 6)
+                    .attr("markerHeight", 6)
+                    .attr("orient", "auto")
+                    .append("path")
+                    .attr("d", "M0,-4L10,0L0,4")
+                    .attr("fill", color);
+            });
+
+            // Define 3D radial gradients for atom elements (make them look like 3D shaded spheres!)
+            const gradsConfig = {
+                "C": ["#9ca3af", "#374151", "#111827"],
+                "O": ["#fca5a5", "#ef4444", "#7f1d1d"],
+                "N": ["#93c5fd", "#3b82f6", "#1e3a8a"],
+                "H": ["#cffafe", "#06b6d4", "#083344"],
+                "P": ["#fde047", "#eab308", "#713f12"],
+                "S": ["#fed7aa", "#f97316", "#7c2d12"],
+                "F": ["#a7f3d0", "#10b981", "#064e3b"],
+                "Cl": ["#a7f3d0", "#059669", "#064e3b"],
+                "Br": ["#a7f3d0", "#047857", "#064e3b"]
+            };
+
+            Object.entries(gradsConfig).forEach(([el, colors]) => {
+                const grad = defs.append("radialGradient")
+                    .attr("id", `grad-${el}`)
+                    .attr("cx", "35%")
+                    .attr("cy", "35%")
+                    .attr("r", "65%");
+                grad.append("stop").attr("offset", "0%").attr("stop-color", colors[0]);
+                grad.append("stop").attr("offset", "70%").attr("stop-color", colors[1]);
+                grad.append("stop").attr("offset", "100%").attr("stop-color", colors[2]);
+            });
+
+            // Default gradient for other elements
+            const defaultGrad = defs.append("radialGradient")
+                .attr("id", "grad-default")
+                .attr("cx", "35%")
+                .attr("cy", "35%")
+                .attr("r", "65%");
+            defaultGrad.append("stop").attr("offset", "0%").attr("stop-color", "#fed7aa");
+            defaultGrad.append("stop").attr("offset", "70%").attr("stop-color", "#f97316");
+            defaultGrad.append("stop").attr("offset", "100%").attr("stop-color", "#7c2d12");
+
+            // Add zoom container
+            const container = svg.append("g");
+            svg.call(d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on("zoom", (event) => {
+                    container.attr("transform", event.transform);
+                }));
+
+            // Force simulation Setup
+            simulation = d3.forceSimulation(graphData.nodes)
+                .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(80))
+                .force("charge", d3.forceManyBody().strength(-200))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collision", d3.forceCollide().radius(25));
+
+            // Setup Groups
+            linkGroup = container.append("g").selectAll("line")
+                .data(graphData.links)
+                .join("line")
+                .attr("class", d => `link ${d.status}`);
+
+            arrowGroup = container.append("g"); // Group for drawing active EPD arrows dynamically
+
+            nodeGroup = container.append("g").selectAll(".node")
+                .data(graphData.nodes)
+                .join("g")
+                .attr("class", "node")
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+            // Render node circles
+            nodeGroup.append("circle")
+                .attr("r", 16)
+                .attr("fill", d => gradsConfig[d.element] ? `url(#grad-${d.element})` : "url(#grad-default)")
+                .on("mouseover", (event, d) => {
+                    highlightStepsForAtom(d.id);
+                })
+                .on("mouseout", () => {
+                    clearStepsHighlight();
+                });
+
+            // Element labels
+            nodeGroup.append("text")
+                .attr("dy", ".3em")
+                .attr("text-anchor", "middle")
+                .text(d => d.element);
+
+            // Atom Map number helper text
+            nodeGroup.append("text")
+                .attr("class", "map-label")
+                .attr("dx", 12)
+                .attr("dy", -12)
+                .text(d => `:${d.atom_map}`);
+
+            // Update loop on tick
+            simulation.on("tick", () => {
+                linkGroup
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                nodeGroup
+                    .attr("transform", d => `translate(${d.x},${d.y})`);
+
+                drawActiveEPDArrows(); // Dynamic curved arrow computation on tick
+            });
+        }
+
+        // Draw electron pushing curved arrows based on active step
+        function drawActiveEPDArrows() {
+            if (!arrowGroup || !activeReaction) return;
+            arrowGroup.selectAll("*").remove();
+
+            const showAll = document.getElementById('show-all-checkbox').checked;
+            const steps = showAll ? activeReaction.arrows : [activeReaction.arrows[activeStepIndex - 1]];
+
+            // Reset node stroke borders to default first
+            nodeGroup.select("circle")
+                .style("stroke", "var(--bg-secondary)")
+                .style("stroke-width", "1.5px");
+
+            const findNode = (mapId) => activeReaction.its_graph.nodes.find(n => n.id === mapId);
+
+            const getCoord = (atomsList) => {
+                if (!atomsList || atomsList.length === 0) return null;
+                if (atomsList.length === 1) {
+                    const node = findNode(atomsList[0]);
+                    return node ? { x: node.x, y: node.y } : null;
+                } else if (atomsList.length === 2) {
+                    const n1 = findNode(atomsList[0]);
+                    const n2 = findNode(atomsList[1]);
+                    if (n1 && n2) {
+                        return { x: (n1.x + n2.x) / 2, y: (n1.y + n2.y) / 2 };
+                    }
+                }
+                return null;
+            };
+
+            // Collect active highlights to apply them correctly at once
+            const highlightedSources = new Set();
+            const highlightedTargets = new Set();
+
+            steps.forEach(step => {
+                if (!step) return;
+
+                const src = getCoord(step.source_atoms);
+                const tgt = getCoord(step.target_atoms);
+
+                if (src && tgt) {
+                    const dx = tgt.x - src.x;
+                    const dy = tgt.y - src.y;
+
+                    // Vary the curvature based on step index to prevent multiple overlaying paths
+                    const bend = 0.2 + ((step.arrow_index - 1) * 0.08);
+                    const cx = (src.x + tgt.x) / 2 - dy * bend;
+                    const cy = (src.y + tgt.y) / 2 + dx * bend;
+
+                    const color = stepColors[(step.arrow_index - 1) % stepColors.length];
+                    const arrowId = `arrow-path-${step.arrow_index}`;
+                    const isActive = step.arrow_index === activeStepIndex;
+
+                    // Track highlights
+                    step.source_atoms.forEach(id => highlightedSources.add(id));
+                    step.target_atoms.forEach(id => highlightedTargets.add(id));
+
+                    // Render path with safe marker index wrapping (1-6)
+                    const markerId = ((step.arrow_index - 1) % stepColors.length) + 1;
+                    const path = arrowGroup.append("path")
+                        .attr("id", arrowId)
+                        .attr("d", `M${src.x},${src.y} Q${cx},${cy} ${tgt.x},${tgt.y}`)
+                        .attr("class", "epd-arrow")
+                        .style("stroke", color)
+                        .style("marker-end", `url(#epd-arrowhead-${markerId})`);
+
+                    if (showAll && !isActive) {
+                        path.style("opacity", "0.4")
+                            .style("stroke-dasharray", "6 6")
+                            .style("filter", "none");
+                    } else {
+                        path.style("opacity", "1.0")
+                            .style("stroke-dasharray", "8 6")
+                            .style("filter", `drop-shadow(0 0 5px ${color})`);
+                    }
+
+                    // Add floating step number badges to intermediate curves
+                    if (showAll) {
+                        const mx = 0.25 * src.x + 0.5 * cx + 0.25 * tgt.x;
+                        const my = 0.25 * src.y + 0.5 * cy + 0.25 * tgt.y;
+
+                        const badgeGroup = arrowGroup.append("g")
+                            .style("opacity", isActive ? "1.0" : "0.55");
+
+                        badgeGroup.append("circle")
+                            .attr("cx", mx)
+                            .attr("cy", my)
+                            .attr("r", 9)
+                            .attr("fill", "var(--bg-secondary)")
+                            .attr("stroke", color)
+                            .attr("stroke-width", isActive ? "2.5px" : "1.5px");
+
+                        badgeGroup.append("text")
+                            .attr("x", mx)
+                            .attr("y", my)
+                            .attr("dy", ".3em")
+                            .attr("text-anchor", "middle")
+                            .style("font-size", "9px")
+                            .style("font-weight", "bold")
+                            .style("fill", "var(--text-primary)")
+                            .text(step.arrow_index);
+                    }
+                }
+            });
+
+            // Highlight node circle borders at once
+            nodeGroup.select("circle")
+                .style("stroke", d => {
+                    if (highlightedSources.has(d.id)) return "var(--accent-cyan)";
+                    if (highlightedTargets.has(d.id)) return "var(--accent-purple)";
+                    return "var(--bg-secondary)";
+                })
+                .style("stroke-width", d => {
+                    if (highlightedSources.has(d.id) || highlightedTargets.has(d.id)) return "3px";
+                    return "1.5px";
+                });
+        }
+
+        // Drag handlers for D3 nodes
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+        }
+
+        function toggleLayout() {
+            if (!activeReaction) return;
+            const type = document.getElementById('layout-select').value;
+            const graphData = activeReaction.its_graph;
+            const coords = activeReaction.rdkit_coords;
+            
+            if (type === 'rdkit' && coords && Object.keys(coords).length > 0) {
+                const viewport = document.getElementById('graph-viewport');
+                const cx = viewport.clientWidth / 2;
+                const cy = viewport.clientHeight / 2;
+                
+                graphData.nodes.forEach(node => {
+                    const coord = coords[node.id];
+                    if (coord) {
+                        node.fx = coord.x + cx;
+                        node.fy = coord.y + cy;
+                    }
+                });
+            } else {
+                graphData.nodes.forEach(node => {
+                    node.fx = null;
+                    node.fy = null;
+                });
+            }
+            
+            if (simulation) {
+                simulation.alpha(0.3).restart();
+            }
+        }
+
+        function highlightStepsForAtom(atomId) {
+            if (!activeReaction) return;
+            activeReaction.arrows.forEach(arr => {
+                const involved = arr.source_atoms.includes(atomId) || arr.target_atoms.includes(atomId);
+                const cards = document.querySelectorAll('.step-item');
+                const card = cards[arr.arrow_index - 1];
+                if (card) {
+                    if (involved) {
+                        card.style.borderColor = "var(--accent-cyan)";
+                        card.style.transform = "translateX(4px)";
+                    } else {
+                        card.style.opacity = "0.3";
+                    }
+                }
+            });
+        }
+        
+        function clearStepsHighlight() {
+            document.querySelectorAll('.step-item').forEach(card => {
+                card.style.borderColor = "";
+                card.style.transform = "";
+                card.style.opacity = "";
+            });
+        }
+
+        async function fetchDbInfo() {
+            try {
+                const res = await fetch(`${API_BASE}/api/db-info`);
+                const data = await res.json();
+                document.getElementById('db-version-val').innerText = data.version;
+                document.getElementById('db-release-date-val').innerText = data.release_date;
+                document.getElementById('db-license-val').innerText = data.license;
+                document.getElementById('db-engine-val').innerText = data.backend;
+                
+                // Update mechanisms, molecules, taxons counts in dashboard
+                document.getElementById('dash-mechanisms-val').innerText = Number(data.counts.reactions).toLocaleString();
+                document.getElementById('dash-molecules-val').innerText = Number(data.counts.molecules).toLocaleString();
+                document.getElementById('dash-taxons-val').innerText = Number(data.counts.taxons).toLocaleString();
+            } catch (err) {
+                console.error("Failed to load db info:", err);
+            }
+        }
+
+        // Schema modal functions
+        function openSchemaModal() {
+            const modal = document.getElementById('schema-modal');
+            modal.classList.add('show');
+        }
+        function closeSchemaModal() {
+            const modal = document.getElementById('schema-modal');
+            modal.classList.remove('show');
+        }
+
+        // Init
+        checkConnection();
+        fetchDbInfo();
+    </script>
+
+    <!-- Schema Modal Overlay -->
+    <div id="schema-modal" class="modal-overlay" onclick="closeSchemaModal()">
+        <span class="modal-close" onclick="closeSchemaModal()">&times;</span>
+        <div class="modal-content" onclick="event.stopPropagation()" style="width: 90vw; max-width: 1400px; height: 85vh; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6);">
+            <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-cyan); border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; font-size: 1.3rem; font-weight: 600;">📁 Database Architecture Relational Schema</h3>
+            <div style="flex: 1; overflow: auto; display: flex; justify-content: center; align-items: center; padding: 1rem; background: var(--bg-primary); border-radius: 8px; border: 1px solid var(--border);">
+                <img src="/static/data_arch.png" alt="Database Architecture Schema Diagram" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+            </div>
+        </div>
+    </div>
+</body>
+</html>

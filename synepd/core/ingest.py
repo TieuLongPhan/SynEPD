@@ -1,0 +1,93 @@
+import json
+import re
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+from rdkit import Chem
+from synkit.IO import rsmi_to_graph
+from synkit.Graph.ITS.its_construction import ITSConstruction
+from synkit.Graph.ITS.rc_extractor import RCExtractor
+from synkit.Graph.Feature.wl_hash import WLHash
+
+
+def clean_taxon_name(name: str) -> str:
+    name_lower = name.lower()
+    if name_lower.endswith(" polar workup sequence"):
+        return name[:-22].strip()
+    elif name_lower.endswith(" polar workup"):
+        return name[:-13].strip()
+    return name.strip()
+
+
+def parse_hierarchy(path: Path) -> dict[str, str]:
+    hierarchy = {}
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith("## "):
+                parts = re.split(r" [—–-] ", line[3:], maxsplit=1)
+                if len(parts) == 2:
+                    hierarchy[parts[0].strip()] = clean_taxon_name(parts[1])
+            elif line.startswith("### "):
+                parts = re.split(r" [—–-] ", line[4:], maxsplit=1)
+                if len(parts) == 2:
+                    hierarchy[parts[0].strip()] = clean_taxon_name(parts[1])
+            elif line.startswith("- **"):
+                content = line[4:].split("**", 1)
+                if len(content) == 2:
+                    parts = re.split(r" [—–-] ", content[0], maxsplit=1)
+                    if len(parts) == 2:
+                        hierarchy[parts[0].strip()] = clean_taxon_name(parts[1])
+            elif "  - `" in line or line.strip().startswith("- `"):
+                cleaned = line.replace("  - `", "").replace("- `", "").replace("`", "")
+                parts = re.split(r" [—–-] ", cleaned, maxsplit=1)
+                if len(parts) == 2:
+                    code = parts[0].strip()
+                    name = parts[1].split(" (", 1)[0].strip()
+                    hierarchy[code] = clean_taxon_name(name)
+    return hierarchy
+
+
+def strip_atom_map(smiles: str) -> str:
+    mol = Chem.MolFromSmiles(smiles, sanitize=False)
+    if mol is None:
+        return smiles
+    for atom in mol.GetAtoms():
+        atom.SetAtomMapNum(0)
+    try:
+        Chem.SanitizeMol(mol)
+        mol = Chem.RemoveHs(mol)
+    except Exception:
+        pass
+    return Chem.MolToSmiles(mol, canonical=True)
+
+
+def extract_graphs(rsmi: str) -> Optional[Tuple[Any, Any, str]]:
+    try:
+        r_graph, p_graph = rsmi_to_graph(rsmi, drop_non_aam=True)
+        if r_graph is None or p_graph is None:
+            return None
+
+        its_graph = ITSConstruction().construct(r_graph, p_graph)
+        rc_graph = RCExtractor().extract(its_graph)
+        wlhash = WLHash(iterations=3).weisfeiler_lehman_graph_hash(rc_graph)
+        return its_graph, rc_graph, wlhash
+    except Exception:
+        return None
+
+
+def parse_epd(ground_truth: List[list]) -> List[Dict[str, Any]]:
+    arrows = []
+    for i, step in enumerate(ground_truth):
+        arrow_type = step[0]
+        source_atoms = step[1]
+        target_atoms = step[2]
+        arrows.append(
+            {
+                "arrow_index": i + 1,
+                "arrow_type_code": arrow_type,
+                "source_atoms": json.dumps(source_atoms),
+                "target_atoms": json.dumps(target_atoms),
+            }
+        )
+    return arrows
