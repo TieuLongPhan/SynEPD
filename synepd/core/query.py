@@ -38,6 +38,8 @@ def _get_connection(db_path_or_url: Union[str, Path]):
         else:
             db_path = Path(db_str)
         conn = sqlite3.connect(db_path)
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute("PRAGMA synchronous=NORMAL;")
         return conn, False
 
 
@@ -85,7 +87,7 @@ def find_reactions_by_template(
     Scenario 1: Input a template (either mapped reaction SMILES or reaction center graph),
     and find all reactions in the database that match this template.
     """
-    db_conn_str = db_path if db_path is not None else "release_v1.sqlite"
+    db_conn_str = db_path if db_path is not None else "data/epdb.sqlite"
     conn, is_pg = _get_connection(db_conn_str)
 
     # Determine rc_graph and WL hash from the template
@@ -171,7 +173,7 @@ def query_epd_by_reaction(
     Supports both mapped and unmapped reactions.
     Projects template arrows if the exact reaction is not in the database, but a matching reaction center template is.
     """
-    db_conn_str = db_path if db_path is not None else "release_v1.sqlite"
+    db_conn_str = db_path if db_path is not None else "data/epdb.sqlite"
     conn, is_pg = _get_connection(db_conn_str)
 
     # Standardize the query rsmi to check for direct matches

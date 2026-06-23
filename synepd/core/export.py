@@ -69,4 +69,4 @@ def write_export_to_file(db_path: Path, output_path: Path) -> None:
 
 
 if __name__ == "__main__":
-    write_export_to_file(Path("release_v1.sqlite"), Path("export_demo.json"))
+    write_export_to_file(Path("data/epdb.sqlite"), Path("export_demo.json"))

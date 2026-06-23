@@ -1,4 +1,5 @@
 import json
+import gzip
 from pathlib import Path
 import hashlib
 import networkx as nx
@@ -11,7 +12,7 @@ from synkit.Chem.Reaction.canon_rsmi import CanonRSMI
 
 from synepd.database.models import SynEPDDatabase
 from synepd.core.ingest import (
-    parse_hierarchy,
+    load_hierarchy_taxons,
     strip_atom_map,
     extract_graphs,
     parse_epd,
@@ -25,6 +26,12 @@ from synepd.precheck import (
 
 def generate_aam_key(rsmi: str) -> str:
     return hashlib.md5(rsmi.encode("utf-8")).hexdigest()
+
+
+def load_json(path: Path) -> dict:
+    opener = gzip.open if path.suffix == ".gz" else open
+    with opener(path, "rt", encoding="utf-8") as f:
+        return json.load(f)
 
 
 def extract_reaction_name(case_id: str) -> str:
@@ -82,10 +89,18 @@ def extract_reaction_name(case_id: str) -> str:
 def build_release_database(
     json_path: Path, hierarchy_path: Path, db_path: Path
 ) -> None:
-    hierarchy = parse_hierarchy(hierarchy_path)
+    hierarchy_taxons = load_hierarchy_taxons(hierarchy_path)
+    hierarchy = {taxon["code"]: taxon["name"] for taxon in hierarchy_taxons}
 
-    with open(json_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    data = load_json(json_path)
+    if isinstance(data, list):
+        raw_records = data
+    elif isinstance(data, dict):
+        raw_records = data.get("records") or data.get("cases")
+    else:
+        raw_records = None
+    if raw_records is None:
+        raise ValueError(f"{json_path} must contain records, cases, or a records list")
 
     db_path.parent.mkdir(parents=True, exist_ok=True)
     if db_path.exists():
@@ -101,19 +116,30 @@ def build_release_database(
 
         # Load taxonomy
         with db.connection:
-            for code, name in hierarchy.items():
-                level = len(code.split("."))
-                parent_code = ".".join(code.split(".")[:-1]) if level > 1 else None
+            for taxon in hierarchy_taxons:
+                code = taxon["code"]
+                level = taxon["level"]
+                parent_code = taxon["parent_code"]
+                name = taxon["name"]
                 db.connection.execute(
                     "INSERT OR IGNORE INTO taxon (code, parent_code, level, name) VALUES (?, ?, ?, ?)",
                     (code, parent_code, level, name),
                 )
 
-        for c in data["cases"]:
-            case_id = c["case_id"]
+        for c in raw_records:
+            if "case_id" in c:
+                case_id = c["case_id"]
+                tax_codes = [c["level4_code"]]
+                name = c.get("reaction_name") or extract_reaction_name(case_id)
+                ground_truth = c.get("ground_truth", [])
+            else:
+                family = c.get("family", "polar")
+                case_id = c.get("case_id") or f"{family}_{int(c['id']):06d}"
+                tax_codes = c.get("tax_codes") or [c["tax_code"]]
+                name = c.get("reaction_name") or case_id
+                ground_truth = c.get("epd", [])
+            tax_codes = [code for code in dict.fromkeys(tax_codes) if code]
             rsmi = c["rsmi"]
-            level4_code = c["level4_code"]
-            ground_truth = c.get("ground_truth", [])
 
             try:
                 canonical_rsmi = Standardize().fit(rsmi)
@@ -140,7 +166,6 @@ def build_release_database(
             # -----------------
 
             # 1. Ingest Reaction
-            name = extract_reaction_name(case_id)
             try:
                 with db.connection:
                     cursor = db.connection.execute(
@@ -153,10 +178,21 @@ def build_release_database(
 
             # 2. Ingest Taxonomy
             with db.connection:
-                db.connection.execute(
-                    "INSERT INTO reaction_taxonomy (reaction_id, taxon_code) VALUES (?, ?)",
-                    (reaction_id, level4_code),
-                )
+                for tax_code in tax_codes:
+                    if tax_code not in hierarchy:
+                        parent_code = (
+                            ".".join(tax_code.split(".")[:-1])
+                            if "." in tax_code
+                            else None
+                        )
+                        db.connection.execute(
+                            "INSERT OR IGNORE INTO taxon (code, parent_code, level, name) VALUES (?, ?, ?, ?)",
+                            (tax_code, parent_code, len(tax_code.split(".")), tax_code),
+                        )
+                    db.connection.execute(
+                        "INSERT OR IGNORE INTO reaction_taxonomy (reaction_id, taxon_code) VALUES (?, ?)",
+                        (reaction_id, tax_code),
+                    )
 
             # 3. Ingest ReactionComponents
             parts = rsmi.split(">>")
@@ -198,6 +234,7 @@ def build_release_database(
             graph_res = extract_graphs(aam_key)
             if graph_res is not None:
                 its_graph, rc_graph, wlhash = graph_res
+                db_wlhash = wlhash
 
                 # Check for isomorphism among cached graphs with the same wlhash
                 matched_rc_id = None
@@ -241,7 +278,7 @@ def build_release_database(
                         (
                             reaction_id,
                             matched_rc_id,
-                            db_wlhash if "db_wlhash" in locals() else wlhash,
+                            db_wlhash,
                             compressed_its,
                             "pickle.gz",
                         ),
@@ -294,7 +331,7 @@ def build_release_database(
 if __name__ == "__main__":
     build_release_database(
         json_path=Path("data/polar.json"),
-        hierarchy_path=Path("data/hierarchy.md"),
-        db_path=Path("release_v1.sqlite"),
+        hierarchy_path=Path("data/hierarchical.md"),
+        db_path=Path("data/epdb.sqlite"),
     )
     print("Release database v1.0.0 built successfully.")

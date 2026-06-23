@@ -162,10 +162,11 @@ class SynEPDDatabase:
                 );
 
                 CREATE TABLE IF NOT EXISTS reaction_taxonomy (
-                    reaction_id INTEGER PRIMARY KEY,
+                    reaction_id INTEGER NOT NULL,
                     taxon_code TEXT NOT NULL,
                     FOREIGN KEY (reaction_id) REFERENCES reaction(id) ON DELETE CASCADE,
-                    FOREIGN KEY (taxon_code) REFERENCES taxon(code)
+                    FOREIGN KEY (taxon_code) REFERENCES taxon(code),
+                    PRIMARY KEY (reaction_id, taxon_code)
                 );
 
                 CREATE TABLE IF NOT EXISTS reaction_center (
@@ -224,6 +225,41 @@ class SynEPDDatabase:
                 CREATE INDEX IF NOT EXISTS idx_epd_arrow_type ON epd_arrow(arrow_type_code);
                 CREATE INDEX IF NOT EXISTS idx_epd_arrow_index_type ON epd_arrow(arrow_index, arrow_type_code);
                 CREATE INDEX IF NOT EXISTS idx_epd_arrow_reaction ON epd_arrow(reaction_id);
+
+                CREATE VIRTUAL TABLE IF NOT EXISTS reaction_fts USING fts5(
+                    reaction_id UNINDEXED,
+                    name,
+                    case_id,
+                    content='reaction',
+                    content_rowid='id'
+                );
+
+                CREATE TRIGGER IF NOT EXISTS reaction_fts_insert
+                    AFTER INSERT ON reaction BEGIN
+                        INSERT INTO reaction_fts(rowid, reaction_id, name, case_id)
+                        VALUES (new.id, new.id, new.name, new.case_id);
+                    END;
+
+                CREATE TRIGGER IF NOT EXISTS reaction_fts_delete
+                    AFTER DELETE ON reaction BEGIN
+                        INSERT INTO reaction_fts(reaction_fts, rowid, reaction_id, name, case_id)
+                        VALUES ('delete', old.id, old.id, old.name, old.case_id);
+                    END;
+
+                CREATE TRIGGER IF NOT EXISTS reaction_fts_update
+                    AFTER UPDATE ON reaction BEGIN
+                        INSERT INTO reaction_fts(reaction_fts, rowid, reaction_id, name, case_id)
+                        VALUES ('delete', old.id, old.id, old.name, old.case_id);
+                        INSERT INTO reaction_fts(rowid, reaction_id, name, case_id)
+                        VALUES (new.id, new.id, new.name, new.case_id);
+                    END;
+            """)
+
+            # Populate FTS if empty and reaction table has rows
+            self.connection.execute("""
+                INSERT INTO reaction_fts(rowid, reaction_id, name, case_id)
+                SELECT id, id, name, case_id FROM reaction
+                WHERE NOT EXISTS (SELECT 1 FROM reaction_fts);
             """)
 
     def init_vocabulary(self) -> None:

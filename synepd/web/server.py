@@ -2,11 +2,15 @@ import os
 import json
 import zlib
 import pickle
+import time
+import sqlite3 as _sqlite3
+from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import networkx as nx
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, Query, Request, Response
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -36,8 +40,33 @@ app.add_middleware(
 
 
 def get_db_path_or_url() -> str:
-    # Use environment var or fallback to local release_v1.sqlite
-    return os.environ.get("SYNEPD_DATABASE_URL", "release_v1.sqlite")
+    return os.environ.get("SYNEPD_DATABASE_URL", "data/epdb.sqlite")
+
+
+def get_submissions_db_path() -> str:
+    return os.environ.get("SYNEPD_SUBMISSIONS_PATH", "submissions_cache.sqlite")
+
+
+def _get_submissions_conn():
+    """Open the writable local submissions cache, separate from release DB."""
+    conn = _sqlite3.connect(get_submissions_db_path())
+    conn.row_factory = _sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS submissions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            type TEXT NOT NULL CHECK(type IN ('reaction', 'issue')),
+            label TEXT,
+            rsmi TEXT,
+            epd_lw TEXT,
+            note TEXT,
+            submitted_at TEXT NOT NULL,
+            user_agent TEXT,
+            status TEXT NOT NULL DEFAULT 'pending'
+        );
+        """)
+    conn.commit()
+    return conn
 
 
 def serialize_graph(graph: nx.Graph) -> dict:
@@ -61,12 +90,22 @@ def serialize_graph(graph: nx.Graph) -> dict:
         if atom_map is None:
             atom_map = n
 
+        hybrid = data.get("hybridization")
+        if isinstance(hybrid, (list, tuple)):
+            hybrid = hybrid[0]
+
+        aromatic = data.get("aromatic")
+        if isinstance(aromatic, (list, tuple)):
+            aromatic = bool(aromatic[0])
+
         nodes_list.append(
             {
                 "id": int(n),
                 "element": str(element),
                 "charge": int(charge),
                 "atom_map": int(atom_map),
+                "hybridization": str(hybrid) if hybrid is not None else None,
+                "aromatic": bool(aromatic) if aromatic is not None else False,
             }
         )
 
@@ -101,40 +140,65 @@ def serialize_graph(graph: nx.Graph) -> dict:
     return {"nodes": nodes_list, "links": links_list}
 
 
+def _deserialize_graph(raw: bytes) -> nx.Graph:
+    decompressed = zlib.decompress(raw)
+    try:
+        data = json.loads(decompressed)
+        return nx.node_link_graph(data)
+    except (json.JSONDecodeError, UnicodeDecodeError, TypeError):
+        return pickle.loads(decompressed)  # legacy fallback
+
+
+def _primary_taxon_sql(reaction_alias: str = "r") -> str:
+    return (
+        f"(SELECT MIN(rt_primary.taxon_code) "
+        f"FROM reaction_taxonomy rt_primary "
+        f"WHERE rt_primary.reaction_id = {reaction_alias}.id)"
+    )
+
+
 def compute_rdkit_coords(aam_key: str) -> dict:
     if not aam_key:
         return {}
+    coords = {}
     try:
         from rdkit import Chem
         from rdkit.Chem import AllChem
 
-        parts = aam_key.split(">>")
-        reactants_smiles = parts[0]
-
         params = Chem.SmilesParserParams()
         params.removeHs = False
-        mol = Chem.MolFromSmiles(reactants_smiles, params)
-        if mol:
-            AllChem.Compute2DCoords(mol)
-            conf = mol.GetConformer()
-            coords = {}
-            for atom in mol.GetAtoms():
-                map_num = atom.GetAtomMapNum()
-                if map_num > 0:
-                    pos = conf.GetAtomPosition(atom.GetIdx())
-                    # Scale coordinates to fit nicely in the viewport
-                    coords[int(map_num)] = {
-                        "x": float(pos.x * 65),
-                        "y": float(-pos.y * 65),
-                    }
-            return coords
+
+        sides = aam_key.split(">>")
+        if len(sides) == 2:
+            # Anchor Chemist 2D on the product depiction; this keeps product
+            # geometry readable while reactant-only atoms still get coordinates.
+            sides = [sides[1], sides[0]]
+
+        for side_smiles in sides:
+            try:
+                mol = Chem.MolFromSmiles(side_smiles, params)
+                if mol:
+                    AllChem.Compute2DCoords(mol)
+                    conf = mol.GetConformer()
+                    for atom in mol.GetAtoms():
+                        map_num = atom.GetAtomMapNum()
+                        if map_num > 0 and map_num not in coords:
+                            pos = conf.GetAtomPosition(atom.GetIdx())
+                            coords[int(map_num)] = {
+                                "x": float(pos.x * 65),
+                                "y": float(-pos.y * 65),
+                            }
+            except Exception:
+                pass
     except Exception:
         pass
-    return {}
+    return coords
 
 
 @app.get("/api/db-info")
-def get_db_info():
+def get_db_info(response: Response = None):
+    if response is not None:
+        response.headers["Cache-Control"] = "public, max-age=300"
     db_path = get_db_path_or_url()
     try:
         conn, is_pg = _get_connection(db_path)
@@ -152,11 +216,29 @@ def get_db_info():
         cur.execute("SELECT COUNT(*) FROM molecule;")
         molecule_count = cur.fetchone()[0]
 
-        # Get count of taxons under POLAR
-        cur.execute(
-            "SELECT COUNT(*) FROM taxon WHERE code = 'POLAR' OR code LIKE 'POLAR.%';"
-        )
+        # Count populated class-level taxons only. In the v7 source these are
+        # level-3 classes; in the DB tree they are level=4 because POLAR is root.
+        cur.execute("""
+            SELECT COUNT(DISTINCT t.code)
+            FROM taxon t
+            JOIN reaction_taxonomy rt ON rt.taxon_code = t.code
+            WHERE t.level = 4
+              AND t.code != 'POLAR.99'
+              AND t.code NOT LIKE 'POLAR.99.%';
+            """)
         taxon_count = cur.fetchone()[0]
+
+        try:
+            cur.execute("SELECT COUNT(*) FROM reaction_center;")
+            rc_count = cur.fetchone()[0]
+        except Exception:
+            rc_count = 0
+
+        try:
+            cur.execute("SELECT COUNT(*) FROM epd_arrow;")
+            epd_arrow_count = cur.fetchone()[0]
+        except Exception:
+            epd_arrow_count = 0
 
         # Get version metadata
         cur.execute(
@@ -180,6 +262,8 @@ def get_db_info():
                 "reactions": reaction_count,
                 "molecules": molecule_count,
                 "taxons": taxon_count,
+                "reaction_centers": rc_count,
+                "epd_arrows": epd_arrow_count,
             },
             "backend": "PostgreSQL" if is_pg else "SQLite",
         }
@@ -189,49 +273,35 @@ def get_db_info():
         conn.close()
 
 
-@app.get("/api/taxonomy")
-def get_taxonomy():
-    db_path = get_db_path_or_url()
-    try:
-        conn, is_pg = _get_connection(db_path)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database connection failed: {e}")
+_CACHE_TTL = 300  # 5 minutes
 
+
+@lru_cache(maxsize=4)
+def _get_taxonomy_cached(db_path: str, _ttl_bucket: int) -> dict:
+    conn, is_pg = _get_connection(db_path)
     try:
         cur = conn.cursor()
         # Filter taxonomy to show POLAR only
         cur.execute("""
             SELECT code, parent_code, level, name 
             FROM taxon 
-            WHERE code = 'POLAR' OR code LIKE 'POLAR.%'
+            WHERE (code = 'POLAR' OR code LIKE 'POLAR.%')
+              AND code != 'POLAR.99'
+              AND code NOT LIKE 'POLAR.99.%'
             ORDER BY level, code;
         """)
         cols = [desc[0] for desc in cur.description]
         taxons = [dict(zip(cols, row)) for row in cur.fetchall()]
 
         cur.execute("""
-            SELECT rt.taxon_code, r.id, r.case_id, r.canonical_rsmi, r.name
+            SELECT rt.taxon_code, COUNT(DISTINCT rt.reaction_id) AS reaction_count
             FROM reaction_taxonomy rt
-            JOIN reaction r ON r.id = rt.reaction_id
-            WHERE rt.taxon_code = 'POLAR' OR rt.taxon_code LIKE 'POLAR.%'
+            WHERE (rt.taxon_code = 'POLAR' OR rt.taxon_code LIKE 'POLAR.%')
+              AND rt.taxon_code != 'POLAR.99'
+              AND rt.taxon_code NOT LIKE 'POLAR.99.%'
+            GROUP BY rt.taxon_code
         """)
-        cols_rxn = [desc[0] for desc in cur.description]
-        reactions = [dict(zip(cols_rxn, row)) for row in cur.fetchall()]
-
-        # Group reactions by taxon
-        rxn_by_taxon = {}
-        for rxn in reactions:
-            tcode = rxn["taxon_code"]
-            if tcode not in rxn_by_taxon:
-                rxn_by_taxon[tcode] = []
-            rxn_by_taxon[tcode].append(
-                {
-                    "id": rxn["id"],
-                    "case_id": rxn["case_id"],
-                    "canonical_rsmi": rxn["canonical_rsmi"],
-                    "name": rxn["name"],
-                }
-            )
+        rxn_counts = {row[0]: row[1] for row in cur.fetchall()}
 
         # Build nested tree
         nodes = {}
@@ -244,7 +314,7 @@ def get_taxonomy():
                 "name": t["name"],
                 "level": t["level"],
                 "children": [],
-                "reactions": rxn_by_taxon.get(code, []),
+                "reaction_count": rxn_counts.get(code, 0),
             }
             nodes[code] = node
 
@@ -260,12 +330,26 @@ def get_taxonomy():
         conn.close()
 
 
+@app.get("/api/taxonomy")
+def get_taxonomy(response: Response = None):
+    if response is not None:
+        response.headers["Cache-Control"] = "public, max-age=300"
+    bucket = int(time.time() / _CACHE_TTL)
+    return _get_taxonomy_cached(get_db_path_or_url(), bucket)
+
+
 @app.get("/api/reactions/search")
 def search_reactions(
-    query: str = Query(
-        ..., description="Query string to search for class name, Case ID, SMILES, etc."
-    )
+    query: str,
+    limit: int = 20,
+    offset: int = 0,
 ):
+    if limit < 1:
+        limit = 20
+    if limit > 100:
+        limit = 100
+    if offset < 0:
+        offset = 0
     db_path = get_db_path_or_url()
     try:
         conn, is_pg = _get_connection(db_path)
@@ -275,84 +359,137 @@ def search_reactions(
     try:
         cur = conn.cursor()
         query_cleaned = query.strip()
-
-        # Strip atom map numbers (e.g. :1, :2) to support searching unmapped/canonical SMILES
         import re
 
         query_stripped = re.sub(r":\d+", "", query_cleaned)
 
-        # Check if case_id format
-        rows = []
-        if query_cleaned.upper().startswith("POLAR"):
-            sql = "SELECT id, case_id, canonical_rsmi, aam_key, name FROM reaction WHERE UPPER(case_id) = ?"
-            cur = _execute_query(conn, is_pg, sql, (query_cleaned.upper(),))
-            rows = cur.fetchall()
-            if not rows:
-                sql_prefix = "SELECT id, case_id, canonical_rsmi, aam_key, name FROM reaction WHERE UPPER(case_id) LIKE ?"
-                cur = _execute_query(
-                    conn, is_pg, sql_prefix, (f"%{query_cleaned.upper()}%",)
+        # Check if reaction_fts virtual table exists and query is clean
+        has_fts = False
+        try:
+            cur.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='reaction_fts';"
+            )
+            if cur.fetchone():
+                # Test FTS matching query syntax
+                fts_query_str = query_cleaned.replace('"', '""')
+                cur.execute(
+                    "SELECT 1 FROM reaction_fts WHERE reaction_fts MATCH ? LIMIT 1",
+                    (f'"{fts_query_str}"*',),
                 )
-                rows = cur.fetchall()
+                cur.fetchone()
+                has_fts = True
+        except Exception:
+            has_fts = False
 
-        if not rows:
-            # Check if query matches taxonomy names (fuzzy search) or code
-            sql_tax = """
-                SELECT r.id, r.case_id, r.canonical_rsmi, r.aam_key, r.name
-                FROM reaction r
-                JOIN reaction_taxonomy rt ON rt.reaction_id = r.id
-                JOIN taxon t ON t.code = rt.taxon_code
-                WHERE t.name LIKE ? OR t.code LIKE ? OR r.case_id LIKE ?
-            """
-            cur = _execute_query(
-                conn,
-                is_pg,
-                sql_tax,
-                (f"%{query_cleaned}%", f"%{query_cleaned}%", f"%{query_cleaned}%"),
-            )
-            rows = cur.fetchall()
+        params = []
+        select_parts = []
 
-        # If no results, try matching raw reactions table by smiles or canonical rsmi
-        if not rows:
-            sql_rxn = "SELECT id, case_id, canonical_rsmi, aam_key, name FROM reaction WHERE canonical_rsmi LIKE ? OR aam_key LIKE ?"
-            cur = _execute_query(
-                conn, is_pg, sql_rxn, (f"%{query_stripped}%", f"%{query_stripped}%")
-            )
-            rows = cur.fetchall()
+        if has_fts:
+            fts_query_str = query_cleaned.replace('"', '""')
+            select_parts.append("""
+                SELECT r.id, 1 as priority
+                FROM reaction_fts fts
+                JOIN reaction r ON r.id = fts.rowid
+                WHERE reaction_fts MATCH ?
+            """)
+            params.append(f'"{fts_query_str}"*')
 
-        # If still no results, search via molecules side matches
-        if not rows:
-            sql_mol = """
-                SELECT DISTINCT r.id, r.case_id, r.canonical_rsmi, r.aam_key, r.name
-                FROM reaction r
-                JOIN reaction_component rc ON rc.reaction_id = r.id
-                JOIN molecule m ON m.id = rc.molecule_id
-                WHERE m.canonical_smiles LIKE ?
-            """
-            cur = _execute_query(conn, is_pg, sql_mol, (f"%{query_stripped}%",))
-            rows = cur.fetchall()
+        select_parts.append("""
+            SELECT id, 2 as priority
+            FROM reaction
+            WHERE UPPER(case_id) = ? OR UPPER(case_id) LIKE ?
+        """)
+        params.extend([query_cleaned.upper(), f"%{query_cleaned.upper()}%"])
+
+        select_parts.append("""
+            SELECT r.id, 3 as priority
+            FROM reaction r
+            JOIN reaction_taxonomy rt ON rt.reaction_id = r.id
+            JOIN taxon t ON t.code = rt.taxon_code
+            WHERE t.name LIKE ? OR t.code LIKE ? OR r.case_id LIKE ?
+        """)
+        params.extend(
+            [f"%{query_cleaned}%", f"%{query_cleaned}%", f"%{query_cleaned}%"]
+        )
+
+        select_parts.append("""
+            SELECT id, 4 as priority
+            FROM reaction
+            WHERE canonical_rsmi LIKE ? OR aam_key LIKE ?
+        """)
+        params.extend([f"%{query_stripped}%", f"%{query_stripped}%"])
+
+        select_parts.append("""
+            SELECT DISTINCT r.id, 5 as priority
+            FROM reaction r
+            JOIN reaction_component rc ON rc.reaction_id = r.id
+            JOIN molecule m ON m.id = rc.molecule_id
+            WHERE m.canonical_smiles LIKE ?
+        """)
+        params.append(f"%{query_stripped}%")
+
+        union_sql = " UNION ".join(select_parts)
+
+        # Combined query to group by id, take min priority
+        inner_sql = f"""
+            SELECT id, MIN(priority) as pri
+            FROM ({union_sql})
+            GROUP BY id
+        """
+
+        # Count total
+        count_sql = f"SELECT COUNT(*) FROM ({inner_sql}) AS sub"
+        cur = _execute_query(conn, is_pg, count_sql, tuple(params))
+        total = cur.fetchone()[0]
+
+        # Paginated results
+        primary_taxon = _primary_taxon_sql("r")
+        paginated_sql = f"""
+            SELECT r.id, r.case_id, r.canonical_rsmi, r.aam_key, r.name,
+                   sub.pri, {primary_taxon} AS taxon_code
+            FROM ({inner_sql}) AS sub
+            JOIN reaction r ON r.id = sub.id
+            ORDER BY sub.pri, r.case_id
+            LIMIT ? OFFSET ?
+        """
+        cur = _execute_query(
+            conn, is_pg, paginated_sql, tuple(params) + (limit, offset)
+        )
+        rows = cur.fetchall()
 
         results = []
         for r in rows:
-            rxn_id = r[0]
-            cur_tax = conn.cursor()
-            sql_tax_code = (
-                "SELECT taxon_code FROM reaction_taxonomy WHERE reaction_id = ?"
-            )
-            cur_tax = _execute_query(conn, is_pg, sql_tax_code, (rxn_id,))
-            tax_row = cur_tax.fetchone()
-            taxon_code = tax_row[0] if tax_row else None
-
             results.append(
                 {
-                    "id": rxn_id,
+                    "id": r[0],
                     "case_id": r[1],
                     "canonical_rsmi": r[2],
                     "aam_key": r[3],
                     "name": r[4],
-                    "taxonomy": taxon_code,
+                    "taxonomy": r[6],
                 }
             )
-        return results
+
+        return {"total": total, "offset": offset, "limit": limit, "results": results}
+    finally:
+        conn.close()
+
+
+@app.get("/api/reactions/random")
+def get_random_reaction():
+    """Return a random reaction ID for discovery."""
+    db_path = get_db_path_or_url()
+    conn, is_pg = _get_connection(db_path)
+    try:
+        cur = _execute_query(
+            conn,
+            is_pg,
+            "SELECT id FROM reaction ORDER BY RANDOM() LIMIT 1",
+        )
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="No reactions in database")
+        return {"reaction_id": row[0]}
     finally:
         conn.close()
 
@@ -388,14 +525,14 @@ def get_reaction_detail(reaction_id: int):
             FROM reaction_taxonomy rt
             JOIN taxon t ON t.code = rt.taxon_code
             WHERE rt.reaction_id = ?
+            ORDER BY t.code
         """
         cur = _execute_query(conn, is_pg, sql_tax, (reaction_id,))
-        tax_row = cur.fetchone()
-        rxn_data["taxonomy"] = (
-            {"code": tax_row[0], "name": tax_row[1], "level": tax_row[2]}
-            if tax_row
-            else None
-        )
+        taxonomies = [
+            {"code": row[0], "name": row[1], "level": row[2]} for row in cur.fetchall()
+        ]
+        rxn_data["taxonomies"] = taxonomies
+        rxn_data["taxonomy"] = taxonomies[0] if taxonomies else None
 
         # Fetch EPD arrows
         sql_arr = "SELECT arrow_index, arrow_type_code, source_atoms, target_atoms FROM epd_arrow WHERE reaction_id = ? ORDER BY arrow_index;"
@@ -421,7 +558,7 @@ def get_reaction_detail(reaction_id: int):
             graph_data, graph_format = its_row
             try:
                 raw_bytes = _read_bytes(graph_data)
-                its_graph = pickle.loads(zlib.decompress(raw_bytes))
+                its_graph = _deserialize_graph(raw_bytes)
                 its_json = serialize_graph(its_graph)
             except Exception as ex:
                 rxn_data["graph_error"] = str(ex)
@@ -432,6 +569,35 @@ def get_reaction_detail(reaction_id: int):
         return rxn_data
     finally:
         conn.close()
+
+
+@app.get("/api/reactions/{reaction_id}/export")
+def export_reaction_json(reaction_id: int):
+    detail = get_reaction_detail(reaction_id)
+    taxonomy_code = detail["taxonomy"]["code"] if detail.get("taxonomy") else None
+    export_data = {
+        "case_id": detail["case_id"],
+        "reaction_name": detail["name"],
+        "canonical_smiles": detail["canonical_rsmi"],
+        "atom_mapped_smiles": detail["aam_key"],
+        "taxonomy_code": taxonomy_code,
+        "epd_lw": [
+            [
+                arr["arrow_type_code"],
+                arr["source_atoms"],
+                arr["target_atoms"],
+            ]
+            for arr in detail["arrows"]
+        ],
+    }
+    from fastapi.responses import JSONResponse
+
+    return JSONResponse(
+        content=export_data,
+        headers={
+            "Content-Disposition": f"attachment; filename={detail['case_id']}_epd.json"
+        },
+    )
 
 
 class EPDQueryRequest(BaseModel):
@@ -474,7 +640,7 @@ def query_epd(req: EPDQueryRequest):
             its_row = cur.fetchone()
             if its_row:
                 raw_bytes = _read_bytes(its_row[0])
-                its_graph = pickle.loads(zlib.decompress(raw_bytes))
+                its_graph = _deserialize_graph(raw_bytes)
                 its_json = serialize_graph(its_graph)
 
             # Fetch taxonomy
@@ -483,15 +649,16 @@ def query_epd(req: EPDQueryRequest):
                 FROM reaction_taxonomy rt
                 JOIN taxon t ON t.code = rt.taxon_code
                 WHERE rt.reaction_id = ?
+                ORDER BY t.code
             """
             cur = _execute_query(conn, is_pg, sql_tax, (rxn_id,))
-            tax_row = cur.fetchone()
-            if tax_row:
-                res["taxonomy"] = {
-                    "code": tax_row[0],
-                    "name": tax_row[1],
-                    "level": tax_row[2],
-                }
+            taxonomies = [
+                {"code": row[0], "name": row[1], "level": row[2]}
+                for row in cur.fetchall()
+            ]
+            if taxonomies:
+                res["taxonomies"] = taxonomies
+                res["taxonomy"] = taxonomies[0]
             conn.close()
         except Exception:
             pass
@@ -510,6 +677,504 @@ def query_epd(req: EPDQueryRequest):
     res["its_graph"] = its_json
     res["rdkit_coords"] = compute_rdkit_coords(res.get("mapped_rsmi"))
     return res
+
+
+# Structured error response and custom handler
+class APIError(BaseModel):
+    code: str
+    message: str
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"code": "HTTP_ERROR", "message": exc.detail},
+    )
+
+
+@app.get("/api/health")
+def health_check():
+    """Lightweight liveness probe."""
+    db_path = get_db_path_or_url()
+    try:
+        conn, _ = _get_connection(db_path)
+        conn.execute("SELECT 1").fetchone()
+        conn.close()
+        return {"status": "ok", "db": db_path}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Database unavailable: {e}")
+
+
+@app.get("/api/reactions/{reaction_id}/neighbors")
+def get_reaction_neighbors(reaction_id: int, limit: int = 10):
+    """Return reactions that share the same reaction center (RC template) as reaction_id."""
+    if limit < 1:
+        limit = 10
+    if limit > 50:
+        limit = 50
+    db_path = get_db_path_or_url()
+    conn, is_pg = _get_connection(db_path)
+    try:
+        cur = conn.cursor()
+        cur = _execute_query(
+            conn, is_pg, "SELECT rc_id FROM its WHERE reaction_id = ?", (reaction_id,)
+        )
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(
+                status_code=404, detail="No ITS found for this reaction"
+            )
+        rc_id = row[0]
+
+        primary_taxon = _primary_taxon_sql("r")
+        cur = _execute_query(
+            conn,
+            is_pg,
+            f"""SELECT r.id, r.case_id, r.canonical_rsmi, r.name,
+                      {primary_taxon} AS taxon_code
+               FROM its i
+               JOIN reaction r ON r.id = i.reaction_id
+               WHERE i.rc_id = ? AND i.reaction_id != ?
+               ORDER BY r.case_id
+               LIMIT ?""",
+            (rc_id, reaction_id, limit),
+        )
+        neighbors = [
+            {
+                "id": r[0],
+                "case_id": r[1],
+                "canonical_rsmi": r[2],
+                "name": r[3],
+                "taxonomy": r[4],
+            }
+            for r in cur.fetchall()
+        ]
+        return {"reaction_id": reaction_id, "rc_id": rc_id, "neighbors": neighbors}
+    finally:
+        conn.close()
+
+
+@app.get("/api/reaction-centers")
+def list_reaction_centers(limit: int = 50, offset: int = 0):
+    """Return all unique reaction center templates with reaction counts."""
+    db_path = get_db_path_or_url()
+    conn, is_pg = _get_connection(db_path)
+    try:
+        cur = conn.cursor()
+        cur = _execute_query(
+            conn,
+            is_pg,
+            """SELECT rc.id, rc.wlhash,
+                      COUNT(i.reaction_id) AS reaction_count
+               FROM reaction_center rc
+               LEFT JOIN its i ON i.rc_id = rc.id
+               GROUP BY rc.id, rc.wlhash
+               ORDER BY reaction_count DESC
+               LIMIT ? OFFSET ?""",
+            (limit, offset),
+        )
+        results = [
+            {"id": r[0], "wlhash": r[1], "reaction_count": r[2]} for r in cur.fetchall()
+        ]
+        total = _execute_query(
+            conn, is_pg, "SELECT COUNT(*) FROM reaction_center"
+        ).fetchone()[0]
+        return {"total": total, "results": results}
+    finally:
+        conn.close()
+
+
+@app.get("/api/reaction-centers/{rc_id}/reactions")
+def get_rc_reactions(rc_id: int, limit: int = 20, offset: int = 0):
+    """Return paginated reactions for a given reaction center ID."""
+    db_path = get_db_path_or_url()
+    conn, is_pg = _get_connection(db_path)
+    try:
+        cur = conn.cursor()
+        primary_taxon = _primary_taxon_sql("r")
+        cur = _execute_query(
+            conn,
+            is_pg,
+            f"""SELECT r.id, r.case_id, r.canonical_rsmi, r.name, {primary_taxon} AS taxon_code
+               FROM its i
+               JOIN reaction r ON r.id = i.reaction_id
+               WHERE i.rc_id = ?
+               ORDER BY r.case_id
+               LIMIT ? OFFSET ?""",
+            (rc_id, limit, offset),
+        )
+        results = [
+            {
+                "id": r[0],
+                "case_id": r[1],
+                "canonical_rsmi": r[2],
+                "name": r[3],
+                "taxonomy": r[4],
+            }
+            for r in cur.fetchall()
+        ]
+        total = _execute_query(
+            conn, is_pg, "SELECT COUNT(*) FROM its WHERE rc_id = ?", (rc_id,)
+        ).fetchone()[0]
+        return {"total": total, "results": results}
+    finally:
+        conn.close()
+
+
+@app.get("/api/arrow-types")
+def get_arrow_types():
+    """Return the EPD arrow type vocabulary."""
+    db_path = get_db_path_or_url()
+    conn, is_pg = _get_connection(db_path)
+    try:
+        cur = conn.cursor()
+        cur = _execute_query(
+            conn,
+            is_pg,
+            "SELECT code, source_type, target_type, electron_count, arrow_style "
+            "FROM epd_arrow_type ORDER BY code",
+        )
+        return [
+            {
+                "code": r[0],
+                "source_type": r[1],
+                "target_type": r[2],
+                "electron_count": r[3],
+                "arrow_style": r[4],
+            }
+            for r in cur.fetchall()
+        ]
+    finally:
+        conn.close()
+
+
+@app.get("/api/stats")
+def get_stats():
+    """Return extended database statistics."""
+    db_path = get_db_path_or_url()
+    conn, is_pg = _get_connection(db_path)
+    try:
+
+        def q(sql):
+            return _execute_query(conn, is_pg, sql).fetchall()
+
+        arrow_dist = {
+            r[0]: r[1]
+            for r in q(
+                "SELECT arrow_type_code, COUNT(*) FROM epd_arrow GROUP BY arrow_type_code ORDER BY COUNT(*) DESC"
+            )
+        }
+        arrow_count_dist = {
+            r[0]: r[1]
+            for r in q(
+                "SELECT number_arrows, COUNT(*) FROM epd GROUP BY number_arrows ORDER BY number_arrows"
+            )
+        }
+        taxonomy_level_dist = {r[0]: r[1] for r in q("""
+            SELECT t.level, COUNT(DISTINCT t.code)
+            FROM taxon t
+            WHERE (t.code = 'POLAR' OR t.code LIKE 'POLAR.%')
+              AND t.code != 'POLAR.99'
+              AND t.code NOT LIKE 'POLAR.99.%'
+              AND EXISTS (
+                  SELECT 1
+                  FROM reaction_taxonomy rt
+                  WHERE rt.taxon_code = t.code OR rt.taxon_code LIKE t.code || '.%'
+              )
+            GROUP BY t.level
+            ORDER BY t.level
+            """)}
+        rc_reuse_dist = {r[0]: r[1] for r in q("""SELECT reaction_count, COUNT(*) FROM (
+                   SELECT rc.id, COUNT(i.reaction_id) AS reaction_count
+                   FROM reaction_center rc
+                   LEFT JOIN its i ON i.rc_id = rc.id
+                   GROUP BY rc.id
+               )
+               GROUP BY reaction_count
+               ORDER BY reaction_count""")}
+        totals = q("""
+            SELECT
+                (SELECT COUNT(*) FROM reaction) AS reactions,
+                (SELECT COUNT(*) FROM reaction_center) AS reaction_centers,
+                (SELECT COUNT(DISTINCT t.code)
+                 FROM taxon t
+                 JOIN reaction_taxonomy rt ON rt.taxon_code = t.code
+                 WHERE t.level = 4
+                   AND t.code != 'POLAR.99'
+                   AND t.code NOT LIKE 'POLAR.99.%') AS taxons,
+                (SELECT COUNT(*) FROM molecule) AS molecules,
+                (SELECT COUNT(*) FROM epd_arrow) AS epd_arrows,
+                (SELECT COUNT(DISTINCT reaction_id) FROM reaction_taxonomy) AS classified_reactions
+        """)[0]
+        rc_count = q("SELECT COUNT(*) FROM reaction_center")[0][0]
+        top_taxa = [
+            {"code": r[0], "name": r[1], "count": r[2]}
+            for r in q("""SELECT t.code, t.name, COUNT(DISTINCT rt.reaction_id) as cnt
+               FROM taxon t JOIN reaction_taxonomy rt ON rt.taxon_code = t.code
+               WHERE t.level = 4
+                 AND t.code != 'POLAR.99'
+                 AND t.code NOT LIKE 'POLAR.99.%'
+               GROUP BY t.code, t.name ORDER BY cnt DESC LIMIT 10""")
+        ]
+
+        return {
+            "totals": {
+                "reactions": totals[0],
+                "reaction_centers": totals[1],
+                "taxons": totals[2],
+                "molecules": totals[3],
+                "epd_arrows": totals[4],
+                "classified_reactions": totals[5],
+            },
+            "arrow_type_distribution": arrow_dist,
+            "arrows_per_reaction_distribution": arrow_count_dist,
+            "taxonomy_level_distribution": taxonomy_level_dist,
+            "rc_reuse_distribution": rc_reuse_dist,
+            "reaction_center_count": rc_count,
+            "top_taxonomy_nodes": top_taxa,
+        }
+    finally:
+        conn.close()
+
+
+@app.get("/api/molecules/{inchikey}")
+def get_molecule(inchikey: str):
+    """Return molecule details and all reactions that contain it."""
+    db_path = get_db_path_or_url()
+    conn, is_pg = _get_connection(db_path)
+    try:
+        cur = _execute_query(
+            conn,
+            is_pg,
+            "SELECT id, canonical_smiles, inchikey FROM molecule WHERE inchikey = ?",
+            (inchikey,),
+        )
+        mol = cur.fetchone()
+        if not mol:
+            raise HTTPException(status_code=404, detail="Molecule not found")
+
+        cur = _execute_query(
+            conn,
+            is_pg,
+            """SELECT r.id, r.case_id, r.canonical_rsmi, r.name, rc.side
+               FROM reaction_component rc
+               JOIN reaction r ON r.id = rc.reaction_id
+               WHERE rc.molecule_id = ?
+               ORDER BY r.case_id""",
+            (mol[0],),
+        )
+        reactions = [
+            {
+                "id": r[0],
+                "case_id": r[1],
+                "canonical_rsmi": r[2],
+                "name": r[3],
+                "side": r[4],
+            }
+            for r in cur.fetchall()
+        ]
+
+        return {
+            "id": mol[0],
+            "canonical_smiles": mol[1],
+            "inchikey": mol[2],
+            "reactions": reactions,
+        }
+    finally:
+        conn.close()
+
+
+@app.get("/api/reactions/{reaction_id}/balance")
+def check_balance(reaction_id: int):
+    detail = get_reaction_detail(reaction_id)
+    rsmi = detail.get("canonical_rsmi", "")
+    try:
+        from synepd.precheck.check_balance import check_reaction_balance
+
+        bal = check_reaction_balance(rsmi)
+        return {
+            "balanced": bal.balanced,
+            "atom_count_balanced": bal.atom_count_balanced,
+            "charge_balanced": bal.charge_balanced,
+            "reactant_atom_count": bal.reactant_atom_count,
+            "product_atom_count": bal.product_atom_count,
+            "reactant_formal_charge": bal.reactant_formal_charge,
+            "product_formal_charge": bal.product_formal_charge,
+            "errors": bal.errors(),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class BalanceCheckRequest(BaseModel):
+    rsmi: str
+
+
+class SubmissionRequest(BaseModel):
+    type: str
+    label: str = ""
+    rsmi: str = ""
+    epd_lw: str = ""
+    note: str = ""
+
+
+@app.post("/api/check-balance")
+def check_balance_smiles(req: BalanceCheckRequest):
+    try:
+        from synepd.precheck.check_balance import check_reaction_balance
+
+        bal = check_reaction_balance(req.rsmi)
+        return {
+            "balanced": bal.balanced,
+            "errors": bal.errors(),
+            "reactant_atom_count": bal.reactant_atom_count,
+            "product_atom_count": bal.product_atom_count,
+            "reactant_formal_charge": bal.reactant_formal_charge,
+            "product_formal_charge": bal.product_formal_charge,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/taxonomy/{code}/reactions")
+def get_taxon_reactions(
+    code: str,
+    limit: int = 20,
+    offset: int = 0,
+    include_descendants: bool = False,
+):
+    """Return paginated reactions for a given taxonomy code."""
+    if limit < 1:
+        limit = 20
+    if limit > 100:
+        limit = 100
+    if offset < 0:
+        offset = 0
+    db_path = get_db_path_or_url()
+    conn, is_pg = _get_connection(db_path)
+    try:
+        if include_descendants:
+            taxon_filter = "rt.taxon_code = ? OR rt.taxon_code LIKE ?"
+            data_params = (code, f"{code}.%", limit, offset)
+            count_params = (code, f"{code}.%")
+        else:
+            taxon_filter = "rt.taxon_code = ?"
+            data_params = (code, limit, offset)
+            count_params = (code,)
+
+        sql = f"""
+            SELECT r.id, r.case_id, r.canonical_rsmi, r.name, MIN(rt.taxon_code) AS taxon_code
+            FROM reaction r
+            JOIN reaction_taxonomy rt ON rt.reaction_id = r.id
+            WHERE {taxon_filter}
+            GROUP BY r.id, r.case_id, r.canonical_rsmi, r.name
+            ORDER BY r.case_id
+            LIMIT ? OFFSET ?
+        """
+        cur = _execute_query(conn, is_pg, sql, data_params)
+        rows = [
+            {
+                "id": r[0],
+                "case_id": r[1],
+                "canonical_rsmi": r[2],
+                "name": r[3],
+                "taxonomy": r[4],
+                "taxon_code": r[4],
+            }
+            for r in cur.fetchall()
+        ]
+
+        count_sql = f"SELECT COUNT(DISTINCT r.id) FROM reaction r JOIN reaction_taxonomy rt ON rt.reaction_id = r.id WHERE {taxon_filter}"
+        total = _execute_query(conn, is_pg, count_sql, count_params).fetchone()[0]
+        return {"code": code, "total": total, "results": rows}
+    finally:
+        conn.close()
+
+
+@app.post("/api/submissions")
+def create_submission(req: SubmissionRequest, request: Request):
+    """Save a user-submitted reaction or issue report to a local cache DB."""
+    if req.type not in ("reaction", "issue"):
+        raise HTTPException(
+            status_code=400, detail="type must be 'reaction' or 'issue'"
+        )
+
+    label = req.label.strip()
+    rsmi = req.rsmi.strip()
+    epd_lw = req.epd_lw.strip()
+    note = req.note.strip()
+
+    if not label:
+        raise HTTPException(status_code=400, detail="label is required")
+    if req.type == "reaction" and not rsmi:
+        raise HTTPException(
+            status_code=400, detail="rsmi is required for reaction submissions"
+        )
+
+    now = datetime.now(timezone.utc).isoformat()
+    user_agent = request.headers.get("user-agent", "")[:200]
+
+    try:
+        conn = _get_submissions_conn()
+        try:
+            cur = conn.execute(
+                """
+                INSERT INTO submissions
+                    (type, label, rsmi, epd_lw, note, submitted_at, user_agent)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    req.type,
+                    label[:200],
+                    rsmi[:2000],
+                    epd_lw[:5000],
+                    note[:1000],
+                    now,
+                    user_agent,
+                ),
+            )
+            conn.commit()
+            submission_id = cur.lastrowid
+        finally:
+            conn.close()
+        return {"success": True, "submission_id": submission_id, "submitted_at": now}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save submission: {e}")
+
+
+@app.get("/api/submissions")
+def list_submissions(limit: int = 50, offset: int = 0, status: str = "pending"):
+    """Return cached submissions for local review."""
+    if limit < 1:
+        limit = 50
+    if limit > 200:
+        limit = 200
+    if offset < 0:
+        offset = 0
+
+    try:
+        conn = _get_submissions_conn()
+        try:
+            rows = conn.execute(
+                """
+                SELECT *
+                FROM submissions
+                WHERE status = ?
+                ORDER BY submitted_at DESC
+                LIMIT ? OFFSET ?
+                """,
+                (status, limit, offset),
+            ).fetchall()
+            total = conn.execute(
+                "SELECT COUNT(*) FROM submissions WHERE status = ?",
+                (status,),
+            ).fetchone()[0]
+        finally:
+            conn.close()
+        return {"total": total, "results": [dict(row) for row in rows]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # Fallback/Default redirect to index.html

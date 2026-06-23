@@ -1,2460 +1,2228 @@
-# SynMes integrated hierarchy
-
-- Main SynMes cases: **10380**
-- Level-4 groups: **2076**
-
-## POLAR — Polar / ionic / two-electron chemistry
-
-### POLAR.01 — Proton / ion / Lewis acid–base transfer
-
-- **POLAR.01.01 — Heteroatom proton transfer** (8 Level-4 groups)
-  - `POLAR.01.01.001` — Alcohol protonation / deprotonation (5 cases)
-  - `POLAR.01.01.002` — Phenol protonation / deprotonation (5 cases)
-  - `POLAR.01.01.003` — Carboxylic acid deprotonation (5 cases)
-  - `POLAR.01.01.004` — Carboxylate protonation (5 cases)
-  - `POLAR.01.01.005` — Amine protonation (5 cases)
-  - `POLAR.01.01.006` — Imine protonation (5 cases)
-  - `POLAR.01.01.007` — Thiol / thiolate proton transfer (5 cases)
-  - `POLAR.01.01.008` — Oxonium / ammonium neutralization (5 cases)
-
-- **POLAR.01.02 — Carbon acid/base proton transfer** (8 Level-4 groups)
-  - `POLAR.01.02.001` — Enolate generation (5 cases)
-  - `POLAR.01.02.002` — β-Dicarbonyl deprotonation (5 cases)
-  - `POLAR.01.02.003` — Malonate deprotonation (5 cases)
-  - `POLAR.01.02.004` — Acetoacetate deprotonation (5 cases)
-  - `POLAR.01.02.005` — Nitroalkane deprotonation (5 cases)
-  - `POLAR.01.02.006` — Terminal alkyne deprotonation (5 cases)
-  - `POLAR.01.02.007` — Benzylic carbanion formation (5 cases)
-  - `POLAR.01.02.008` — Cyanomethyl carbanion formation (5 cases)
-
-- **POLAR.01.03 — Tautomerizing proton transfer** (8 Level-4 groups)
-  - `POLAR.01.03.001` — Keto–enol tautomerization (5 cases)
-  - `POLAR.01.03.002` — Imine–enamine tautomerization (5 cases)
-  - `POLAR.01.03.003` — Lactam–lactim tautomerization (5 cases)
-  - `POLAR.01.03.004` — Nitro–aci-nitro tautomerization (5 cases)
-  - `POLAR.01.03.005` — Oxime–nitroso tautomerization (5 cases)
-  - `POLAR.01.03.006` — Amide–imidic acid tautomerization (5 cases)
-  - `POLAR.01.03.007` — Pyridone–hydroxypyridine tautomerization (5 cases)
-  - `POLAR.01.03.008` — Phenol–cyclohexadienone tautomerization (5 cases)
-
-- **POLAR.01.04 — Intramolecular proton transfer** (8 Level-4 groups)
-  - `POLAR.01.04.001` — Internal proton shuttle (5 cases)
-  - `POLAR.01.04.002` — Neighboring-group-assisted proton transfer (5 cases)
-  - `POLAR.01.04.003` — Zwitterion neutralization (5 cases)
-  - `POLAR.01.04.004` — Hemiacetal proton relay (5 cases)
-  - `POLAR.01.04.005` — Hemiaminal proton relay (5 cases)
-  - `POLAR.01.04.006` — Proton transfer in tetrahedral intermediate (5 cases)
-  - `POLAR.01.04.007` — Proton transfer in betaine intermediate (5 cases)
-  - `POLAR.01.04.008` — Proton transfer in organocatalytic ion pair (5 cases)
-
-- **POLAR.01.05 — Ion-pair / salt formation** (8 Level-4 groups)
-  - `POLAR.01.05.001` — Ammonium carboxylate salt formation (5 cases)
-  - `POLAR.01.05.002` — Pyridinium salt formation (5 cases)
-  - `POLAR.01.05.003` — Imidazolium salt formation (5 cases)
-  - `POLAR.01.05.004` — Diazonium salt formation (5 cases)
-  - `POLAR.01.05.005` — Quaternary ammonium salt formation (5 cases)
-  - `POLAR.01.05.006` — Sulfonium salt formation (5 cases)
-  - `POLAR.01.05.007` — Phosphonium salt formation (5 cases)
-  - `POLAR.01.05.008` — Phase-transfer ion-pair formation (5 cases)
-
-- **POLAR.01.06 — Lewis acid–base association / dissociation** (9 Level-4 groups)
-  - `POLAR.01.06.001` — Carbonyl Lewis-acid activation (5 cases)
-  - `POLAR.01.06.002` — Imine Lewis-acid activation (5 cases)
-  - `POLAR.01.06.003` — Iminium Lewis-acid activation (5 cases)
-  - `POLAR.01.06.004` — BF3–etherate adduct formation (5 cases)
-  - `POLAR.01.06.005` — AlCl3 arene-complex formation (5 cases)
-  - `POLAR.01.06.006` — TiCl4 carbonyl activation (5 cases)
-  - `POLAR.01.06.007` — SnCl4 oxocarbenium activation (5 cases)
-  - `POLAR.01.06.008` — Borane–amine adduct formation (5 cases)
-  - `POLAR.01.06.009` — Frustrated-Lewis-pair adduct formation (5 cases)
-
-- **POLAR.01.07 — Charge relocation / zwitterion / ylide formation** (8 Level-4 groups)
-  - `POLAR.01.07.001` — Wittig ylide generation (5 cases)
-  - `POLAR.01.07.002` — Corey–Chaykovsky ylide generation (5 cases)
-  - `POLAR.01.07.003` — Pyridinium ylide generation (5 cases)
-  - `POLAR.01.07.004` — Sulfonium ylide generation (5 cases)
-  - `POLAR.01.07.005` — Phosphonium betaine formation (5 cases)
-  - `POLAR.01.07.006` — Ammonium enolate formation (5 cases)
-  - `POLAR.01.07.007` — Betaine zwitterion formation (5 cases)
-  - `POLAR.01.07.008` — N-heterocyclic carbene generation (5 cases)
-
-- **POLAR.01.08 — Ionization / heterolysis** (9 Level-4 groups)
-  - `POLAR.01.08.001` — Carbocation formation (5 cases)
-  - `POLAR.01.08.002` — Oxocarbenium ion formation (5 cases)
-  - `POLAR.01.08.003` — Iminium ion formation (5 cases)
-  - `POLAR.01.08.004` — Acylium ion formation (5 cases)
-  - `POLAR.01.08.005` — Nitrilium ion formation (5 cases)
-  - `POLAR.01.08.006` — Diazonium ion formation (5 cases)
-  - `POLAR.01.08.007` — Sulfonium ion formation (5 cases)
-  - `POLAR.01.08.008` — Aziridinium ion formation (5 cases)
-  - `POLAR.01.08.009` — Episulfonium ion formation (5 cases)
-
-- **POLAR.01.09 — Counterion exchange / ion metathesis** (9 Level-4 groups)
-  - `POLAR.01.09.001` — Halide counterion exchange (5 cases)
-  - `POLAR.01.09.002` — Tetrafluoroborate salt exchange (5 cases)
-  - `POLAR.01.09.003` — Hexafluorophosphate salt exchange (5 cases)
-  - `POLAR.01.09.004` — Ion-exchange resin neutralization (5 cases)
-  - `POLAR.01.09.005` — Amine salt liberation (5 cases)
-  - `POLAR.01.09.006` — Carboxylate salt exchange (5 cases)
-  - `POLAR.01.09.007` — Alkoxide salt formation (5 cases)
-  - `POLAR.01.09.008` — Enolate metal exchange (5 cases)
-  - `POLAR.01.09.009` — Phase-transfer counterion swap (5 cases)
-
-### POLAR.02 — Substitution
-
-- **POLAR.02.01 — Bimolecular nucleophilic substitution at saturated carbon** (12 Level-4 groups)
-  - `POLAR.02.01.001` — SN2 reaction (5 cases)
-  - `POLAR.02.01.002` — Williamson ether synthesis (5 cases)
-  - `POLAR.02.01.003` — Finkelstein reaction (5 cases)
-  - `POLAR.02.01.004` — Gabriel synthesis (5 cases)
-  - `POLAR.02.01.005` — Kolbe nitrile synthesis (5 cases)
-  - `POLAR.02.01.006` — Azide displacement (5 cases)
-  - `POLAR.02.01.007` — Thiolate alkylation (5 cases)
-  - `POLAR.02.01.008` — Halide-to-amine displacement (5 cases)
-  - `POLAR.02.01.009` — Alkoxide alkylation (5 cases)
-  - `POLAR.02.01.010` — Cyanide alkylation (5 cases)
-  - `POLAR.02.01.011` — Malonate alkylation (5 cases)
-  - `POLAR.02.01.012` — Acetoacetate alkylation (5 cases)
-
-- **POLAR.02.02 — Dissociative / solvolytic substitution** (12 Level-4 groups)
-  - `POLAR.02.02.001` — SN1 reaction (5 cases)
-  - `POLAR.02.02.002` — Tertiary alkyl halide solvolysis (5 cases)
-  - `POLAR.02.02.003` — Benzylic solvolysis (5 cases)
-  - `POLAR.02.02.004` — Allylic solvolysis (5 cases)
-  - `POLAR.02.02.005` — Lucas reaction (5 cases)
-  - `POLAR.02.02.006` — Carbocation capture by alcohol (5 cases)
-  - `POLAR.02.02.007` — Carbocation capture by water (5 cases)
-  - `POLAR.02.02.008` — tert-Butyl ether formation (5 cases)
-  - `POLAR.02.02.009` — Acetal-derived oxocarbenium substitution (5 cases)
-  - `POLAR.02.02.010` — Iminium capture by nucleophile (5 cases)
-  - `POLAR.02.02.011` — Ritter-type carbocation capture (5 cases)
-  - `POLAR.02.02.012` — Tertiary alcohol substitution by hydrogen halide (5 cases)
-
-- **POLAR.02.03 — Internal-return / neighboring-group-assisted substitution** (11 Level-4 groups)
-  - `POLAR.02.03.001` — SNi alcohol-to-chloride conversion (5 cases)
-  - `POLAR.02.03.002` — Thionyl chloride internal-return substitution (5 cases)
-  - `POLAR.02.03.003` — Anchimeric-assistance substitution (5 cases)
-  - `POLAR.02.03.004` — Episulfonium-assisted substitution (5 cases)
-  - `POLAR.02.03.005` — Epoxonium-assisted substitution (5 cases)
-  - `POLAR.02.03.006` — Phenonium-assisted substitution (5 cases)
-  - `POLAR.02.03.007` — Acyloxonium-assisted substitution (5 cases)
-  - `POLAR.02.03.008` — Aziridinium-assisted substitution (5 cases)
-  - `POLAR.02.03.009` — Neighboring thioether participation (5 cases)
-  - `POLAR.02.03.010` — Neighboring ester participation (5 cases)
-  - `POLAR.02.03.011` — Neighboring amide participation (5 cases)
-
-- **POLAR.02.04 — Electrophilic substitution at aliphatic or activated carbon** (12 Level-4 groups)
-  - `POLAR.02.04.001` — Enolate alkylation (5 cases)
-  - `POLAR.02.04.002` — Enolate halogenation (5 cases)
-  - `POLAR.02.04.003` — α-Halogenation of aldehydes (5 cases)
-  - `POLAR.02.04.004` — α-Halogenation of ketones (5 cases)
-  - `POLAR.02.04.005` — α-Alkylation of β-dicarbonyls (5 cases)
-  - `POLAR.02.04.006` — Electrophilic fluorination of enolates (5 cases)
-  - `POLAR.02.04.007` — Electrophilic cyanation of enolates (5 cases)
-  - `POLAR.02.04.008` — Electrophilic sulfenylation of enolates (5 cases)
-  - `POLAR.02.04.009` — Electrophilic selenylation of enolates (5 cases)
-  - `POLAR.02.04.010` — C-Acylation of enolates (5 cases)
-  - `POLAR.02.04.011` — C-Nitrosation of enolates (5 cases)
-  - `POLAR.02.04.012` — C-Azo coupling of enolates (5 cases)
-
-- **POLAR.02.05 — Electrophilic aromatic / heteroaromatic substitution** (18 Level-4 groups)
-  - `POLAR.02.05.001` — Aromatic nitration (5 cases)
-  - `POLAR.02.05.002` — Aromatic sulfonation (5 cases)
-  - `POLAR.02.05.003` — Aromatic bromination (5 cases)
-  - `POLAR.02.05.004` — Aromatic chlorination (5 cases)
-  - `POLAR.02.05.005` — Aromatic iodination (5 cases)
-  - `POLAR.02.05.006` — Friedel–Crafts alkylation (5 cases)
-  - `POLAR.02.05.007` — Friedel–Crafts acylation (5 cases)
-  - `POLAR.02.05.008` — Vilsmeier–Haack formylation (5 cases)
-  - `POLAR.02.05.009` — Gattermann–Koch formylation (5 cases)
-  - `POLAR.02.05.010` — Reimer–Tiemann reaction (5 cases)
-  - `POLAR.02.05.011` — Duff formylation (5 cases)
-  - `POLAR.02.05.012` — Kolbe–Schmitt carboxylation (5 cases)
-  - `POLAR.02.05.013` — Houben–Hoesch acylation (5 cases)
-  - `POLAR.02.05.014` — Blanc chloromethylation (5 cases)
-  - `POLAR.02.05.015` — Pechmann-type aromatic substitution (5 cases)
-  - `POLAR.02.05.016` — Azo coupling (5 cases)
-  - `POLAR.02.05.017` — Scholl-type electrophilic arylation (5 cases)
-  - `POLAR.02.05.018` — Nencki reaction (5 cases)
-
-- **POLAR.02.06 — Diazonium and related aryl leaving-group substitution** (13 Level-4 groups)
-  - `POLAR.02.06.001` — Sandmeyer reaction (5 cases)
-  - `POLAR.02.06.002` — Balz–Schiemann reaction (5 cases)
-  - `POLAR.02.06.003` — Gattermann aryl halide synthesis (5 cases)
-  - `POLAR.02.06.004` — Schiemann fluorination (5 cases)
-  - `POLAR.02.06.005` — Diazonium hydrolysis to phenol (5 cases)
-  - `POLAR.02.06.006` — Diazonium iodide substitution (5 cases)
-  - `POLAR.02.06.007` — Diazonium cyanation (5 cases)
-  - `POLAR.02.06.008` — Gomberg–Bachmann arylation (5 cases)
-  - `POLAR.02.06.009` — Meerwein arylation (5 cases)
-  - `POLAR.02.06.010` — Aryl diazonium thiolation (5 cases)
-  - `POLAR.02.06.011` — Aryl diazonium azidation (5 cases)
-  - `POLAR.02.06.012` — Triazene substitution by electrophile (5 cases)
-  - `POLAR.02.06.013` — Triazene-to-aryl halide conversion (5 cases)
-
-- **POLAR.02.07 — Allylic / benzylic substitution** (12 Level-4 groups)
-  - `POLAR.02.07.001` — Allylic SN1 substitution (5 cases)
-  - `POLAR.02.07.002` — Allylic SN2′ substitution (5 cases)
-  - `POLAR.02.07.003` — Benzylic nucleophilic substitution (5 cases)
-  - `POLAR.02.07.004` — Tsuji–Trost allylic substitution (5 cases)
-  - `POLAR.02.07.005` — Mitsunobu substitution (5 cases)
-  - `POLAR.02.07.006` — Allylic halide displacement (5 cases)
-  - `POLAR.02.07.007` — Allylic acetate displacement (5 cases)
-  - `POLAR.02.07.008` — Benzylic alcohol substitution (5 cases)
-  - `POLAR.02.07.009` — Benzylic halide solvolysis (5 cases)
-  - `POLAR.02.07.010` — Allylic rearrangement substitution (5 cases)
-  - `POLAR.02.07.011` — Propargylic substitution (5 cases)
-  - `POLAR.02.07.012` — Cinnamyl substitution (5 cases)
-
-- **POLAR.02.08 — Heteroatom-center substitution** (13 Level-4 groups)
-  - `POLAR.02.08.001` — Silylation of alcohols (5 cases)
-  - `POLAR.02.08.002` — Silylation of amines (5 cases)
-  - `POLAR.02.08.003` — Desilylation of silyl ethers (5 cases)
-  - `POLAR.02.08.004` — Substitution at silicon by fluoride (5 cases)
-  - `POLAR.02.08.005` — Sulfonyl chloride substitution (5 cases)
-  - `POLAR.02.08.006` — Silyl chloride alcohol substitution (5 cases)
-  - `POLAR.02.08.007` — Silyl chloride amine substitution (5 cases)
-  - `POLAR.02.08.008` — Phosphoryl chloride substitution (5 cases)
-  - `POLAR.02.08.009` — Phosphoramidate substitution (5 cases)
-  - `POLAR.02.08.010` — Phosphate ester substitution (5 cases)
-  - `POLAR.02.08.011` — Boronate ester exchange (5 cases)
-  - `POLAR.02.08.012` — Stannane substitution (5 cases)
-  - `POLAR.02.08.013` — Sulfurane ligand exchange (5 cases)
-
-- **POLAR.02.09 — Ring-opening substitution** (11 Level-4 groups)
-  - `POLAR.02.09.001` — Epoxide opening by alcohol (5 cases)
-  - `POLAR.02.09.002` — Epoxide opening by amine (5 cases)
-  - `POLAR.02.09.003` — Epoxide opening by thiol (5 cases)
-  - `POLAR.02.09.004` — Aziridine opening (5 cases)
-  - `POLAR.02.09.005` — Oxetane opening (5 cases)
-  - `POLAR.02.09.006` — Cyclic sulfate opening (5 cases)
-  - `POLAR.02.09.007` — Cyclic sulfite opening (5 cases)
-  - `POLAR.02.09.008` — Halonium-ion opening (5 cases)
-  - `POLAR.02.09.009` — Bromonium-ion opening (5 cases)
-  - `POLAR.02.09.010` — Iodonium-ion opening (5 cases)
-  - `POLAR.02.09.011` — Cyclic carbonate opening (5 cases)
-
-- **POLAR.02.10 — Acetal / oxocarbenium / anomeric substitution** (12 Level-4 groups)
-  - `POLAR.02.10.001` — Glycosylation (5 cases)
-  - `POLAR.02.10.002` — Koenigs–Knorr glycosylation (5 cases)
-  - `POLAR.02.10.003` — Fischer glycosylation (5 cases)
-  - `POLAR.02.10.004` — Ferrier glycosylation (5 cases)
-  - `POLAR.02.10.005` — Anomeric substitution (5 cases)
-  - `POLAR.02.10.006` — Acetal exchange (5 cases)
-  - `POLAR.02.10.007` — Ketal exchange (5 cases)
-  - `POLAR.02.10.008` — Thioacetal exchange (5 cases)
-  - `POLAR.02.10.009` — Glycosyl halide substitution (5 cases)
-  - `POLAR.02.10.010` — Glycosyl trichloroacetimidate substitution (5 cases)
-  - `POLAR.02.10.011` — Oxocarbenium alcohol capture (5 cases)
-  - `POLAR.02.10.012` — Oxocarbenium carbon capture (5 cases)
-
-- **POLAR.02.11 — Vinylic / alkynyl polar substitution** (7 Level-4 groups)
-  - `POLAR.02.11.001` — Vinylic nucleophilic substitution (5 cases)
-  - `POLAR.02.11.002` — Activated vinyl halide displacement (5 cases)
-  - `POLAR.02.11.003` — β-Haloenone substitution (5 cases)
-  - `POLAR.02.11.004` — Vinyl sulfone substitution (5 cases)
-  - `POLAR.02.11.005` — Alkynyl halide substitution (5 cases)
-  - `POLAR.02.11.006` — Alkynyl sulfone substitution (5 cases)
-  - `POLAR.02.11.007` — Ketene acetal substitution (5 cases)
-
-- **POLAR.02.12 — Phase-transfer / onium-mediated alkylation** (7 Level-4 groups)
-  - `POLAR.02.12.001` — Phase-transfer alkylation (5 cases)
-  - `POLAR.02.12.002` — Crown-ether-assisted substitution (5 cases)
-  - `POLAR.02.12.003` — Quaternary ammonium alkylation (5 cases)
-  - `POLAR.02.12.004` — Phosphonium alkylation (5 cases)
-  - `POLAR.02.12.005` — Sulfonium alkylation (5 cases)
-  - `POLAR.02.12.006` — Pyridinium alkylation (5 cases)
-  - `POLAR.02.12.007` — Imidazolium alkylation (5 cases)
-
-### POLAR.03 — Addition
-
-- **POLAR.03.01 — Nucleophilic addition to carbonyl C=O bonds** (16 Level-4 groups)
-  - `POLAR.03.01.001` — Grignard addition to aldehydes (5 cases)
-  - `POLAR.03.01.002` — Grignard addition to ketones (5 cases)
-  - `POLAR.03.01.003` — Organolithium addition to carbonyls (5 cases)
-  - `POLAR.03.01.004` — Organozinc addition to carbonyls (5 cases)
-  - `POLAR.03.01.005` — Barbier reaction (5 cases)
-  - `POLAR.03.01.006` — Reformatsky reaction (5 cases)
-  - `POLAR.03.01.007` — Nozaki–Hiyama–Kishi addition (5 cases)
-  - `POLAR.03.01.008` — Cyanohydrin formation (5 cases)
-  - `POLAR.03.01.009` — Bisulfite addition to carbonyls (5 cases)
-  - `POLAR.03.01.010` — Hydrate formation from aldehydes (5 cases)
-  - `POLAR.03.01.011` — Hemiacetal formation (5 cases)
-  - `POLAR.03.01.012` — Hemiketal formation (5 cases)
-  - `POLAR.03.01.013` — Allylboration of aldehydes (5 cases)
-  - `POLAR.03.01.014` — Brown allylation (5 cases)
-  - `POLAR.03.01.015` — Keck allylation (5 cases)
-  - `POLAR.03.01.016` — Marshall allylation (5 cases)
-
-- **POLAR.03.02 — Nucleophilic addition to imines / iminium ions** (12 Level-4 groups)
-  - `POLAR.03.02.001` — Iminium cyanide addition (5 cases)
-  - `POLAR.03.02.002` — Organoboron imine addition (5 cases)
-  - `POLAR.03.02.003` — Aza-Henry reaction (5 cases)
-  - `POLAR.03.02.004` — Addition to chiral sulfinimines (5 cases)
-  - `POLAR.03.02.005` — Mannich-type imine addition (5 cases)
-  - `POLAR.03.02.006` — Iminium cyanation (5 cases)
-  - `POLAR.03.02.007` — Iminium allylation (5 cases)
-  - `POLAR.03.02.008` — Iminium arylation (5 cases)
-  - `POLAR.03.02.009` — Hemiaminal formation (5 cases)
-  - `POLAR.03.02.010` — Aminal formation (5 cases)
-  - `POLAR.03.02.011` — Indole addition to iminium ions (5 cases)
-  - `POLAR.03.02.012` — Reductive-amination iminium capture step (5 cases)
-
-- **POLAR.03.03 — Aldol-type carbon–carbon bond-forming addition** (12 Level-4 groups)
-  - `POLAR.03.03.001` — Aldol addition (5 cases)
-  - `POLAR.03.03.002` — Mukaiyama aldol addition (5 cases)
-  - `POLAR.03.03.003` — Evans aldol addition (5 cases)
-  - `POLAR.03.03.004` — Boron aldol addition (5 cases)
-  - `POLAR.03.03.005` — Zimmerman–Traxler aldol addition (5 cases)
-  - `POLAR.03.03.006` — Mukaiyama–Mannich addition (5 cases)
-  - `POLAR.03.03.007` — Vinylogous aldol addition (5 cases)
-  - `POLAR.03.03.008` — Direct organocatalytic aldol addition (5 cases)
-  - `POLAR.03.03.009` — Asymmetric proline aldol addition (5 cases)
-  - `POLAR.03.03.010` — Nitroaldol addition (5 cases)
-  - `POLAR.03.03.011` — Henry addition (5 cases)
-  - `POLAR.03.03.012` — Crossed aldol addition (5 cases)
-
-- **POLAR.03.04 — Conjugate addition** (14 Level-4 groups)
-  - `POLAR.03.04.001` — Michael addition (5 cases)
-  - `POLAR.03.04.002` — Aza-Michael addition (5 cases)
-  - `POLAR.03.04.003` — Thia-Michael addition (5 cases)
-  - `POLAR.03.04.004` — Oxa-Michael addition (5 cases)
-  - `POLAR.03.04.005` — Organocuprate 1,4-addition (5 cases)
-  - `POLAR.03.04.006` — Mukaiyama–Michael addition (5 cases)
-  - `POLAR.03.04.007` — Conjugate cyanation (5 cases)
-  - `POLAR.03.04.008` — Conjugate nitroalkane addition (5 cases)
-  - `POLAR.03.04.009` — Conjugate enolate addition (5 cases)
-  - `POLAR.03.04.010` — Conjugate hydrophosphination (5 cases)
-  - `POLAR.03.04.011` — Stetter reaction (5 cases)
-  - `POLAR.03.04.012` — Nazarov reagent conjugate addition (5 cases)
-  - `POLAR.03.04.013` — Phospha-Michael addition (5 cases)
-  - `POLAR.03.04.014` — Vinylogous Michael addition (5 cases)
-
-- **POLAR.03.05 — Electrophilic addition to alkenes / alkynes** (16 Level-4 groups)
-  - `POLAR.03.05.001` — Hydrohalogenation of alkenes (5 cases)
-  - `POLAR.03.05.002` — Acid-catalyzed alkene hydration (5 cases)
-  - `POLAR.03.05.003` — Alkene bromination (5 cases)
-  - `POLAR.03.05.004` — Alkene chlorination (5 cases)
-  - `POLAR.03.05.005` — Halohydrin formation (5 cases)
-  - `POLAR.03.05.006` — Oxymercuration (5 cases)
-  - `POLAR.03.05.007` — Alkoxymercuration (5 cases)
-  - `POLAR.03.05.008` — Iodolactonization (5 cases)
-  - `POLAR.03.05.009` — Bromolactonization (5 cases)
-  - `POLAR.03.05.010` — Iodoetherification (5 cases)
-  - `POLAR.03.05.011` — Bromoetherification (5 cases)
-  - `POLAR.03.05.012` — Hydroboration–protonolysis addition step (5 cases)
-  - `POLAR.03.05.013` — Oxocarbenium alkene addition (5 cases)
-  - `POLAR.03.05.014` — Alkyne hydrohalogenation (5 cases)
-  - `POLAR.03.05.015` — Alkyne hydration (5 cases)
-  - `POLAR.03.05.016` — Vinyl cation capture (5 cases)
-
-- **POLAR.03.06 — Cationic addition / cationic cyclization** (10 Level-4 groups)
-  - `POLAR.03.06.001` — Prins cyclization (5 cases)
-  - `POLAR.03.06.002` — Aza-Prins cyclization (5 cases)
-  - `POLAR.03.06.003` — Pictet–Spengler cyclization (5 cases)
-  - `POLAR.03.06.004` — Cationic polyene cyclization (5 cases)
-  - `POLAR.03.06.005` — Oxocarbenium cyclization (5 cases)
-  - `POLAR.03.06.006` — Iminium cyclization (5 cases)
-  - `POLAR.03.06.007` — N-Acyliminium cyclization (5 cases)
-  - `POLAR.03.06.008` — Nazarov-type cationic cyclization (5 cases)
-  - `POLAR.03.06.009` — Sakurai–Prins cyclization (5 cases)
-  - `POLAR.03.06.010` — Biomimetic terpene cyclization (5 cases)
-
-- **POLAR.03.07 — Addition to nitriles and heterocumulenes** (12 Level-4 groups)
-  - `POLAR.03.07.001` — Grignard addition to nitriles (5 cases)
-  - `POLAR.03.07.002` — Organolithium addition to nitriles (5 cases)
-  - `POLAR.03.07.003` — Nitrile alcohol addition step (5 cases)
-  - `POLAR.03.07.004` — Addition to isocyanates (5 cases)
-  - `POLAR.03.07.005` — Addition to isothiocyanates (5 cases)
-  - `POLAR.03.07.006` — Addition to carbodiimides (5 cases)
-  - `POLAR.03.07.007` — Addition to ketenes (5 cases)
-  - `POLAR.03.07.008` — Addition to carbon dioxide (5 cases)
-  - `POLAR.03.07.009` — Addition to carbon disulfide (5 cases)
-  - `POLAR.03.07.010` — Addition to sulfonyl isocyanates (5 cases)
-  - `POLAR.03.07.011` — Addition to nitrile imines (5 cases)
-  - `POLAR.03.07.012` — Addition to nitrones (5 cases)
-
-- **POLAR.03.08 — Lewis-acid-activated addition** (10 Level-4 groups)
-  - `POLAR.03.08.001` — Mukaiyama-type carbonyl addition (5 cases)
-  - `POLAR.03.08.002` — Silyl enol ether addition (5 cases)
-  - `POLAR.03.08.003` — Sakurai allylation (5 cases)
-  - `POLAR.03.08.004` — Hosomi–Sakurai reaction (5 cases)
-  - `POLAR.03.08.005` — Sakurai crotylation (5 cases)
-  - `POLAR.03.08.006` — Silyl ketene acetal addition (5 cases)
-  - `POLAR.03.08.007` — TiCl4-mediated aldol addition (5 cases)
-  - `POLAR.03.08.008` — BF3-mediated acetal addition (5 cases)
-  - `POLAR.03.08.009` — SnCl4-mediated iminium addition (5 cases)
-  - `POLAR.03.08.010` — Chiral Lewis-acid carbonyl addition (5 cases)
-
-- **POLAR.03.09 — Ring-forming intramolecular addition** (10 Level-4 groups)
-  - `POLAR.03.09.001` — Intramolecular aldol addition (5 cases)
-  - `POLAR.03.09.002` — Intramolecular Mannich addition (5 cases)
-  - `POLAR.03.09.003` — Intramolecular Michael addition (5 cases)
-  - `POLAR.03.09.004` — Intramolecular hemiacetal formation (5 cases)
-  - `POLAR.03.09.005` — Intramolecular hemiaminal formation (5 cases)
-  - `POLAR.03.09.006` — Transannular carbonyl addition (5 cases)
-  - `POLAR.03.09.007` — Cyclization onto iminium ion (5 cases)
-  - `POLAR.03.09.008` — Cyclization onto nitrile (5 cases)
-  - `POLAR.03.09.009` — Lactol formation by carbonyl addition (5 cases)
-  - `POLAR.03.09.010` — Spiroketal-forming addition (5 cases)
-
-- **POLAR.03.10 — Organoboron / organosilicon polar addition** (9 Level-4 groups)
-  - `POLAR.03.10.001` — Allylboration (5 cases)
-  - `POLAR.03.10.002` — Crotylboration (5 cases)
-  - `POLAR.03.10.003` — Propargylboration (5 cases)
-  - `POLAR.03.10.004` — Allenylboration (5 cases)
-  - `POLAR.03.10.005` — Arylboronate 1,2-addition (5 cases)
-  - `POLAR.03.10.006` — Silyl nucleophile carbonyl addition (5 cases)
-  - `POLAR.03.10.007` — Cyanosilylation (5 cases)
-  - `POLAR.03.10.008` — Trifluoromethyltrimethylsilane addition (5 cases)
-  - `POLAR.03.10.009` — Difluoromethylsilane addition (5 cases)
-
-- **POLAR.03.11 — Heteroatom nucleophile addition to C=X** (10 Level-4 groups)
-  - `POLAR.03.11.001` — Alcohol addition to aldehydes (5 cases)
-  - `POLAR.03.11.002` — Alcohol addition to ketones (5 cases)
-  - `POLAR.03.11.003` — Amine addition to aldehydes (5 cases)
-  - `POLAR.03.11.004` — Amine addition to ketones (5 cases)
-  - `POLAR.03.11.005` — Thiol addition to carbonyls (5 cases)
-  - `POLAR.03.11.006` — Hydroxylamine addition to carbonyls (5 cases)
-  - `POLAR.03.11.007` — Hydrazine addition to carbonyls (5 cases)
-  - `POLAR.03.11.008` — Water addition to imines (5 cases)
-  - `POLAR.03.11.009` — Alcohol addition to imines (5 cases)
-  - `POLAR.03.11.010` — Thiol addition to iminium ions (5 cases)
-
-- **POLAR.03.12 — Addition to activated small molecules / cumulenes** (9 Level-4 groups)
-  - `POLAR.03.12.001` — Carboxylation of organolithium reagents (5 cases)
-  - `POLAR.03.12.002` — Carboxylation of Grignard reagents (5 cases)
-  - `POLAR.03.12.003` — Carbonylation by carbon monoxide addition (5 cases)
-  - `POLAR.03.12.004` — Isocyanide addition to iminium ions (5 cases)
-  - `POLAR.03.12.005` — Ketene silyl acetal addition (5 cases)
-  - `POLAR.03.12.006` — Sulfur dioxide insertion-like addition (5 cases)
-  - `POLAR.03.12.007` — Formaldehyde hydroxymethylation (5 cases)
-  - `POLAR.03.12.008` — Paraformaldehyde addition (5 cases)
-  - `POLAR.03.12.009` — Chloral addition (5 cases)
-
-### POLAR.04 — Addition–elimination
-
-- **POLAR.04.01 — Acyl addition–elimination** (14 Level-4 groups)
-  - `POLAR.04.01.001` — Fischer esterification (5 cases)
-  - `POLAR.04.01.002` — Acid chloride alcoholysis (5 cases)
-  - `POLAR.04.01.003` — Acid chloride aminolysis (5 cases)
-  - `POLAR.04.01.004` — Anhydride alcoholysis (5 cases)
-  - `POLAR.04.01.005` — Anhydride aminolysis (5 cases)
-  - `POLAR.04.01.006` — Ester aminolysis (5 cases)
-  - `POLAR.04.01.007` — Ester alcoholysis (5 cases)
-  - `POLAR.04.01.008` — Transesterification (5 cases)
-  - `POLAR.04.01.009` — Lactonization (5 cases)
-  - `POLAR.04.01.010` — Lactamization (5 cases)
-  - `POLAR.04.01.011` — Schotten–Baumann acylation (5 cases)
-  - `POLAR.04.01.012` — N-Acylation of amines (5 cases)
-  - `POLAR.04.01.013` — O-Acylation of alcohols (5 cases)
-  - `POLAR.04.01.014` — Thioester formation (5 cases)
-
-- **POLAR.04.02 — Activated acyl transfer / coupling** (14 Level-4 groups)
-  - `POLAR.04.02.001` — Steglich esterification (5 cases)
-  - `POLAR.04.02.002` — Yamaguchi esterification (5 cases)
-  - `POLAR.04.02.003` — Mukaiyama esterification (5 cases)
-  - `POLAR.04.02.004` — Shiina esterification (5 cases)
-  - `POLAR.04.02.005` — Mixed anhydride coupling (5 cases)
-  - `POLAR.04.02.006` — Peptide coupling (5 cases)
-  - `POLAR.04.02.007` — Carbodiimide-mediated coupling (5 cases)
-  - `POLAR.04.02.008` — HATU coupling (5 cases)
-  - `POLAR.04.02.009` — HBTU coupling (5 cases)
-  - `POLAR.04.02.010` — PyBOP coupling (5 cases)
-  - `POLAR.04.02.011` — CDI-mediated acylation (5 cases)
-  - `POLAR.04.02.012` — Ghosez reagent acylation (5 cases)
-  - `POLAR.04.02.013` — Weinreb amide formation (5 cases)
-  - `POLAR.04.02.014` — Weinreb ketone synthesis (5 cases)
-
-- **POLAR.04.03 — Carbonyl condensation with heteroatom nucleophiles** (15 Level-4 groups)
-  - `POLAR.04.03.001` — Imine formation (5 cases)
-  - `POLAR.04.03.002` — Schiff base formation (5 cases)
-  - `POLAR.04.03.003` — Oxime formation (5 cases)
-  - `POLAR.04.03.004` — Hydrazone formation (5 cases)
-  - `POLAR.04.03.005` — Semicarbazone formation (5 cases)
-  - `POLAR.04.03.006` — Tosylhydrazone formation (5 cases)
-  - `POLAR.04.03.007` — Acetal formation (5 cases)
-  - `POLAR.04.03.008` — Ketal formation (5 cases)
-  - `POLAR.04.03.009` — Thioacetal formation (5 cases)
-  - `POLAR.04.03.010` — Dithioacetal formation (5 cases)
-  - `POLAR.04.03.011` — Enamine formation (5 cases)
-  - `POLAR.04.03.012` — Imidazolidine formation (5 cases)
-  - `POLAR.04.03.013` — Oxazolidine formation (5 cases)
-  - `POLAR.04.03.014` — Thiazolidine formation (5 cases)
-  - `POLAR.04.03.015` — N,O-acetal formation (5 cases)
-
-- **POLAR.04.04 — Carbonyl C–C condensation followed by elimination** (12 Level-4 groups)
-  - `POLAR.04.04.001` — Aldol condensation (5 cases)
-  - `POLAR.04.04.002` — Claisen–Schmidt condensation (5 cases)
-  - `POLAR.04.04.003` — Knoevenagel condensation (5 cases)
-  - `POLAR.04.04.004` — Doebner modification (5 cases)
-  - `POLAR.04.04.005` — Perkin reaction (5 cases)
-  - `POLAR.04.04.006` — Henry condensation (5 cases)
-  - `POLAR.04.04.007` — Nitroalkene-forming condensation (5 cases)
-  - `POLAR.04.04.008` — Benzoin condensation dehydration variant (5 cases)
-  - `POLAR.04.04.009` — Crotonic condensation (5 cases)
-  - `POLAR.04.04.010` — Meldrum acid alkylidene formation (5 cases)
-  - `POLAR.04.04.011` — Barbituric acid alkylidene formation (5 cases)
-  - `POLAR.04.04.012` — Acylmethylene formation (5 cases)
-
-- **POLAR.04.05 — Acyl enolate / ester condensation** (12 Level-4 groups)
-  - `POLAR.04.05.001` — Claisen condensation (5 cases)
-  - `POLAR.04.05.002` — Crossed Claisen condensation (5 cases)
-  - `POLAR.04.05.003` — Dieckmann condensation (5 cases)
-  - `POLAR.04.05.004` — Acetoacetic ester synthesis (5 cases)
-  - `POLAR.04.05.005` — Malonic ester synthesis (5 cases)
-  - `POLAR.04.05.006` — Blaise reaction (5 cases)
-  - `POLAR.04.05.007` — Thorpe–Ziegler reaction (5 cases)
-  - `POLAR.04.05.008` — Intramolecular acyl-enolate condensation (5 cases)
-  - `POLAR.04.05.009` — Darzens condensation (5 cases)
-  - `POLAR.04.05.010` — Stobbe condensation (5 cases)
-  - `POLAR.04.05.011` — Acyloin-type polar condensation (5 cases)
-  - `POLAR.04.05.012` — Lactone-forming Claisen condensation (5 cases)
-
-- **POLAR.04.06 — Nucleophilic aromatic addition–elimination** (9 Level-4 groups)
-  - `POLAR.04.06.001` — SNAr addition–elimination (5 cases)
-  - `POLAR.04.06.002` — Meisenheimer-complex substitution (5 cases)
-  - `POLAR.04.06.003` — Chichibabin amination (5 cases)
-  - `POLAR.04.06.004` — Nitro-activated aryl fluoride displacement (5 cases)
-  - `POLAR.04.06.005` — Heteroaryl chloride displacement (5 cases)
-  - `POLAR.04.06.006` — Pyridine SNAr substitution (5 cases)
-  - `POLAR.04.06.007` — Quinoline SNAr substitution (5 cases)
-  - `POLAR.04.06.008` — Sanger reagent substitution (5 cases)
-  - `POLAR.04.06.009` — Activated aryl sulfone displacement (5 cases)
-
-- **POLAR.04.07 — Phosphoryl / sulfonyl / sulfinyl addition–elimination** (12 Level-4 groups)
-  - `POLAR.04.07.001` — Phosphorylation (5 cases)
-  - `POLAR.04.07.002` — Phosphate ester formation (5 cases)
-  - `POLAR.04.07.003` — Phosphoramidate formation (5 cases)
-  - `POLAR.04.07.004` — Phosphonate ester formation (5 cases)
-  - `POLAR.04.07.005` — Sulfonylation (5 cases)
-  - `POLAR.04.07.006` — Sulfonamide formation (5 cases)
-  - `POLAR.04.07.007` — Sulfonate ester formation (5 cases)
-  - `POLAR.04.07.008` — Sulfinate ester formation (5 cases)
-  - `POLAR.04.07.009` — Sulfinamide formation (5 cases)
-  - `POLAR.04.07.010` — Tosylation (5 cases)
-  - `POLAR.04.07.011` — Mesylation (5 cases)
-  - `POLAR.04.07.012` — Nosylation (5 cases)
-
-- **POLAR.04.08 — Addition–elimination at activated alkenes / conjugated systems** (10 Level-4 groups)
-  - `POLAR.04.08.001` — Morita–Baylis–Hillman reaction (5 cases)
-  - `POLAR.04.08.002` — Rauhut–Currier reaction (5 cases)
-  - `POLAR.04.08.003` — Vinylic substitution by addition–elimination (5 cases)
-  - `POLAR.04.08.004` — β-Elimination after conjugate addition (5 cases)
-  - `POLAR.04.08.005` — Addition–elimination on vinyl sulfones (5 cases)
-  - `POLAR.04.08.006` — Addition–elimination on nitroalkenes (5 cases)
-  - `POLAR.04.08.007` — Addition–elimination on enones (5 cases)
-  - `POLAR.04.08.008` — Addition–elimination on acrylates (5 cases)
-  - `POLAR.04.08.009` — Conjugated iminium substitution (5 cases)
-  - `POLAR.04.08.010` — Activated alkene amination (5 cases)
-
-- **POLAR.04.09 — Intramolecular addition–elimination / cyclodehydration** (12 Level-4 groups)
-  - `POLAR.04.09.001` — Intramolecular esterification (5 cases)
-  - `POLAR.04.09.002` — Intramolecular amidation (5 cases)
-  - `POLAR.04.09.003` — Isoquinolinium-forming cyclodehydration (5 cases)
-  - `POLAR.04.09.004` — Paal–Knorr pyrrole formation (5 cases)
-  - `POLAR.04.09.005` — Paal–Knorr furan formation (5 cases)
-  - `POLAR.04.09.006` — Paal–Knorr thiophene formation (5 cases)
-  - `POLAR.04.09.007` — Cyclodehydration to oxazole (5 cases)
-  - `POLAR.04.09.008` — Cyclodehydration to thiazole (5 cases)
-  - `POLAR.04.09.009` — Cyclodehydration to imidazole (5 cases)
-  - `POLAR.04.09.010` — Lactone-forming cyclodehydration (5 cases)
-  - `POLAR.04.09.011` — Lactam-forming cyclodehydration (5 cases)
-  - `POLAR.04.09.012` — Isoquinoline-forming cyclodehydration (5 cases)
-
-- **POLAR.04.10 — Hydrolysis / solvolysis through tetrahedral intermediate** (12 Level-4 groups)
-  - `POLAR.04.10.001` — Ester hydrolysis (5 cases)
-  - `POLAR.04.10.002` — Amide hydrolysis (5 cases)
-  - `POLAR.04.10.003` — Thioester hydrolysis (5 cases)
-  - `POLAR.04.10.004` — Lactone hydrolysis (5 cases)
-  - `POLAR.04.10.005` — Lactam hydrolysis (5 cases)
-  - `POLAR.04.10.006` — Anhydride hydrolysis (5 cases)
-  - `POLAR.04.10.007` — Acid chloride hydrolysis (5 cases)
-  - `POLAR.04.10.008` — Carbamate hydrolysis (5 cases)
-  - `POLAR.04.10.009` — Urea hydrolysis (5 cases)
-  - `POLAR.04.10.010` — Imide hydrolysis (5 cases)
-  - `POLAR.04.10.011` — Carbonate hydrolysis (5 cases)
-  - `POLAR.04.10.012` — Orthoester hydrolysis (5 cases)
-
-- **POLAR.04.11 — Urea / carbamate / carbonate / thiocarbonyl transfer** (10 Level-4 groups)
-  - `POLAR.04.11.001` — Carbamate formation (5 cases)
-  - `POLAR.04.11.002` — Boc anhydride carbamate formation (5 cases)
-  - `POLAR.04.11.003` — Cbz chloroformate carbamate formation (5 cases)
-  - `POLAR.04.11.004` — Urea formation (5 cases)
-  - `POLAR.04.11.005` — Thiourea formation (5 cases)
-  - `POLAR.04.11.006` — Carbonate formation (5 cases)
-  - `POLAR.04.11.007` — Isocyanate trapping by alcohol (5 cases)
-  - `POLAR.04.11.008` — Isocyanate trapping by amine (5 cases)
-  - `POLAR.04.11.009` — Isothiocyanate trapping by amine (5 cases)
-  - `POLAR.04.11.010` — Chloroformate substitution (5 cases)
-
-- **POLAR.04.12 — Isocyanide / nitrilium addition–elimination** (8 Level-4 groups)
-  - `POLAR.04.12.001` — Ugi imidoyl transfer step (5 cases)
-  - `POLAR.04.12.002` — Passerini acyl transfer step (5 cases)
-  - `POLAR.04.12.003` — Nitrilium hydrolysis (5 cases)
-  - `POLAR.04.12.004` — Isonitrile acylation (5 cases)
-  - `POLAR.04.12.005` — Isonitrile hydration (5 cases)
-  - `POLAR.04.12.006` — Tetrazole-forming isocyanide addition–elimination (5 cases)
-  - `POLAR.04.12.007` — Imidoyl chloride substitution (5 cases)
-  - `POLAR.04.12.008` — Amidine formation (5 cases)
-
-- **POLAR.04.13 — Imine / oxime / hydrazone exchange** (10 Level-4 groups)
-  - `POLAR.04.13.001` — Transimination (5 cases)
-  - `POLAR.04.13.002` — Imine exchange (5 cases)
-  - `POLAR.04.13.003` — Oxime ligation (5 cases)
-  - `POLAR.04.13.004` — Hydrazone ligation (5 cases)
-  - `POLAR.04.13.005` — Dynamic hydrazone exchange (5 cases)
-  - `POLAR.04.13.006` — Semicarbazone exchange (5 cases)
-  - `POLAR.04.13.007` — Acylhydrazone formation (5 cases)
-  - `POLAR.04.13.008` — Acylhydrazone exchange (5 cases)
-  - `POLAR.04.13.009` — Iminium hydrolysis (5 cases)
-  - `POLAR.04.13.010` — Enamine hydrolysis (5 cases)
-
-### POLAR.05 — Elimination
-
-- **POLAR.05.01 — Concerted β-elimination** (12 Level-4 groups)
-  - `POLAR.05.01.001` — E2 elimination (5 cases)
-  - `POLAR.05.01.002` — Dehydrohalogenation (5 cases)
-  - `POLAR.05.01.003` — Tosylate elimination (5 cases)
-  - `POLAR.05.01.004` — Mesylate elimination (5 cases)
-  - `POLAR.05.01.005` — Triflate elimination (5 cases)
-  - `POLAR.05.01.006` — Hofmann elimination (5 cases)
-  - `POLAR.05.01.007` — Zaitsev-selective elimination (5 cases)
-  - `POLAR.05.01.008` — Saytzeff elimination (5 cases)
-  - `POLAR.05.01.009` — Anti-periplanar β-elimination (5 cases)
-  - `POLAR.05.01.010` — Base-induced alcohol derivative elimination (5 cases)
-  - `POLAR.05.01.011` — Dehydrosulfonylation (5 cases)
-  - `POLAR.05.01.012` — Dehydroacetoxylation (5 cases)
-
-- **POLAR.05.02 — Stepwise cationic elimination** (8 Level-4 groups)
-  - `POLAR.05.02.001` — E1 elimination (5 cases)
-  - `POLAR.05.02.002` — Acid-catalyzed alcohol dehydration (5 cases)
-  - `POLAR.05.02.003` — Solvolytic elimination (5 cases)
-  - `POLAR.05.02.004` — Carbocationic alkene formation (5 cases)
-  - `POLAR.05.02.005` — Tertiary alcohol dehydration (5 cases)
-  - `POLAR.05.02.006` — Benzylic alcohol dehydration (5 cases)
-  - `POLAR.05.02.007` — Allylic alcohol dehydration (5 cases)
-  - `POLAR.05.02.008` — Oxocarbenium-to-alkene elimination (5 cases)
-
-- **POLAR.05.03 — Conjugate-base elimination** (12 Level-4 groups)
-  - `POLAR.05.03.001` — E1cb elimination (5 cases)
-  - `POLAR.05.03.002` — Aldol dehydration (5 cases)
-  - `POLAR.05.03.003` — β-Hydroxy carbonyl dehydration (5 cases)
-  - `POLAR.05.03.004` — Benzylidene malonate dehydration (5 cases)
-  - `POLAR.05.03.005` — Nitroalkene formation from nitroalcohols (5 cases)
-  - `POLAR.05.03.006` — Sulfone-stabilized elimination (5 cases)
-  - `POLAR.05.03.007` — β-Halo carbonyl elimination (5 cases)
-  - `POLAR.05.03.008` — β-Amino carbonyl elimination (5 cases)
-  - `POLAR.05.03.009` — β-Alkoxy carbonyl elimination (5 cases)
-  - `POLAR.05.03.010` — β-Acyloxy carbonyl elimination (5 cases)
-  - `POLAR.05.03.011` — Elimination from Michael adducts (5 cases)
-  - `POLAR.05.03.012` — Vinylogous E1cb elimination (5 cases)
-
-- **POLAR.05.04 — α-Elimination / carbene generation** (8 Level-4 groups)
-  - `POLAR.05.04.001` — Dichlorocarbene formation from chloroform (5 cases)
-  - `POLAR.05.04.002` — α-Elimination from haloforms (5 cases)
-  - `POLAR.05.04.003` — Reimer–Tiemann carbene generation (5 cases)
-  - `POLAR.05.04.004` — Carbene generation from trihalomethyl anions (5 cases)
-  - `POLAR.05.04.005` — Simmons–Smith carbenoid formation step (5 cases)
-  - `POLAR.05.04.006` — Isocyanide carbene-like α-elimination (5 cases)
-  - `POLAR.05.04.007` — α-Elimination from diazo precursors under base (5 cases)
-  - `POLAR.05.04.008` — Haloalkene carbene generation (5 cases)
-
-- **POLAR.05.05 — Syn elimination** (10 Level-4 groups)
-  - `POLAR.05.05.001` — Cope elimination (5 cases)
-  - `POLAR.05.05.002` — Chugaev elimination (5 cases)
-  - `POLAR.05.05.003` — Ester pyrolysis (5 cases)
-  - `POLAR.05.05.004` — Amine oxide elimination (5 cases)
-  - `POLAR.05.05.005` — Xanthate pyrolysis (5 cases)
-  - `POLAR.05.05.006` — Selenoxide elimination (5 cases)
-  - `POLAR.05.05.007` — Sulfoxide elimination (5 cases)
-  - `POLAR.05.05.008` — Burgess dehydration (5 cases)
-  - `POLAR.05.05.009` — Martin sulfurane dehydration (5 cases)
-  - `POLAR.05.05.010` — Grieco elimination (5 cases)
-
-- **POLAR.05.06 — Fragmentation / retro-addition** (10 Level-4 groups)
-  - `POLAR.05.06.001` — Retro-aldol reaction (5 cases)
-  - `POLAR.05.06.002` — Retro-Michael reaction (5 cases)
-  - `POLAR.05.06.003` — Grob fragmentation (5 cases)
-  - `POLAR.05.06.004` — Eschenmoser fragmentation (5 cases)
-  - `POLAR.05.06.005` — Wharton fragmentation (5 cases)
-  - `POLAR.05.06.006` — β-Fragmentation of alkoxides (5 cases)
-  - `POLAR.05.06.007` — Oxy-Cope fragmentation polar variant (5 cases)
-  - `POLAR.05.06.008` — Cyclopropylcarbinyl fragmentation (5 cases)
-  - `POLAR.05.06.009` — Fragmentation of tetrahedral intermediates (5 cases)
-  - `POLAR.05.06.010` — Retro-Prins fragmentation (5 cases)
-
-- **POLAR.05.07 — Decarboxylative / decarbonylative elimination** (10 Level-4 groups)
-  - `POLAR.05.07.001` — β-Keto acid decarboxylation (5 cases)
-  - `POLAR.05.07.002` — Malonic acid decarboxylation (5 cases)
-  - `POLAR.05.07.003` — Krapcho decarboxylation (5 cases)
-  - `POLAR.05.07.004` — Decarboxylative alkene formation (5 cases)
-  - `POLAR.05.07.005` — Hunsdiecker decarboxylation polar step (5 cases)
-  - `POLAR.05.07.006` — Barton decarboxylation polar step (5 cases)
-  - `POLAR.05.07.007` — Decarbonylation of aldehydes under ionic conditions (5 cases)
-  - `POLAR.05.07.008` — Decarboxylative dehydration (5 cases)
-  - `POLAR.05.07.009` — Oxalate decarboxylation (5 cases)
-  - `POLAR.05.07.010` — Amino acid decarboxylation (5 cases)
-
-- **POLAR.05.08 — Elimination-driven deprotection / activation** (8 Level-4 groups)
-  - `POLAR.05.08.001` — Fmoc deprotection (5 cases)
-  - `POLAR.05.08.002` — β-Silyl elimination (5 cases)
-  - `POLAR.05.08.003` — β-Hydroxysilane elimination (5 cases)
-  - `POLAR.05.08.004` — Sulfone elimination (5 cases)
-  - `POLAR.05.08.005` — Sulfoxide elimination deprotection (5 cases)
-  - `POLAR.05.08.006` — Nosyl deprotection by elimination (5 cases)
-  - `POLAR.05.08.007` — Sulfonylethyl deprotection (5 cases)
-  - `POLAR.05.08.008` — Cyanoethyl deprotection (5 cases)
-
-- **POLAR.05.09 — Elimination to heteroatom multiple bonds** (7 Level-4 groups)
-  - `POLAR.05.09.001` — Oxime dehydration to nitrile (5 cases)
-  - `POLAR.05.09.002` — Amide dehydration to nitrile (5 cases)
-  - `POLAR.05.09.003` — Aldoxime dehydration (5 cases)
-  - `POLAR.05.09.004` — Primary amide dehydration (5 cases)
-  - `POLAR.05.09.005` — Nitrile oxide formation (5 cases)
-  - `POLAR.05.09.006` — Isocyanide formation (5 cases)
-  - `POLAR.05.09.007` — Carbodiimide formation (5 cases)
-
-- **POLAR.05.10 — Elimination–addition precursor formation** (5 Level-4 groups)
-  - `POLAR.05.10.001` — Benzyne generation from aryl halides (5 cases)
-  - `POLAR.05.10.002` — Aryne generation from silyl aryl triflates (5 cases)
-  - `POLAR.05.10.003` — Dehydrobenzene formation (5 cases)
-  - `POLAR.05.10.004` — Hetaryne generation (5 cases)
-  - `POLAR.05.10.005` — Alkyne formation by double dehydrohalogenation (5 cases)
-
-### POLAR.06 — Polar two-electron redox / hydride and ionic atom transfer
-
-- **POLAR.06.01 — Hydride transfer to substrate** (15 Level-4 groups)
-  - `POLAR.06.01.001` — Sodium borohydride reduction (5 cases)
-  - `POLAR.06.01.002` — Lithium aluminium hydride reduction (5 cases)
-  - `POLAR.06.01.003` — DIBAL-H reduction (5 cases)
-  - `POLAR.06.01.004` — Luche reduction (5 cases)
-  - `POLAR.06.01.005` — Meerwein–Ponndorf–Verley reduction (5 cases)
-  - `POLAR.06.01.006` — CBS reduction (5 cases)
-  - `POLAR.06.01.007` — K-selectride reduction (5 cases)
-  - `POLAR.06.01.008` — L-selectride reduction (5 cases)
-  - `POLAR.06.01.009` — Superhydride reduction (5 cases)
-  - `POLAR.06.01.010` — Red-Al reduction (5 cases)
-  - `POLAR.06.01.011` — Borane reduction (5 cases)
-  - `POLAR.06.01.012` — Diisobutylaluminium hydride aldehyde synthesis (5 cases)
-  - `POLAR.06.01.013` — Ionic transfer hydrogenation / hydride delivery (5 cases)
-  - `POLAR.06.01.014` — Hantzsch ester hydride transfer (5 cases)
-  - `POLAR.06.01.015` — Reductive amination hydride step (5 cases)
-
-- **POLAR.06.02 — Hydride abstraction / oxidation** (14 Level-4 groups)
-  - `POLAR.06.02.001` — Oppenauer oxidation (5 cases)
-  - `POLAR.06.02.002` — Swern oxidation (5 cases)
-  - `POLAR.06.02.003` — Dess–Martin oxidation (5 cases)
-  - `POLAR.06.02.004` — PCC oxidation (5 cases)
-  - `POLAR.06.02.005` — PDC oxidation (5 cases)
-  - `POLAR.06.02.006` — Jones oxidation (5 cases)
-  - `POLAR.06.02.007` — Collins oxidation (5 cases)
-  - `POLAR.06.02.008` — Corey–Kim oxidation (5 cases)
-  - `POLAR.06.02.009` — Moffatt oxidation (5 cases)
-  - `POLAR.06.02.010` — Parikh–Doering oxidation (5 cases)
-  - `POLAR.06.02.011` — Ley–Griffith TPAP oxidation (5 cases)
-  - `POLAR.06.02.012` — Pfitzner–Moffatt oxidation (5 cases)
-  - `POLAR.06.02.013` — Albright–Goldman oxidation (5 cases)
-  - `POLAR.06.02.014` — Sommelet oxidation (5 cases)
-
-- **POLAR.06.03 — Oxygen-atom transfer redox** (12 Level-4 groups)
-  - `POLAR.06.03.001` — Prilezhaev epoxidation (5 cases)
-  - `POLAR.06.03.002` — Baeyer–Villiger oxidation (5 cases)
-  - `POLAR.06.03.003` — Rubottom oxidation (5 cases)
-  - `POLAR.06.03.004` — Sulfide-to-sulfoxide oxidation (5 cases)
-  - `POLAR.06.03.005` — Sulfoxide-to-sulfone oxidation (5 cases)
-  - `POLAR.06.03.006` — Alkene dihydroxylation by osmium tetroxide (5 cases)
-  - `POLAR.06.03.007` — Sharpless asymmetric dihydroxylation (5 cases)
-  - `POLAR.06.03.008` — Jacobsen epoxidation (5 cases)
-  - `POLAR.06.03.009` — Shi epoxidation (5 cases)
-  - `POLAR.06.03.010` — Dakin oxidation (5 cases)
-  - `POLAR.06.03.011` — Elbs persulfate oxidation (5 cases)
-  - `POLAR.06.03.012` — Riley oxidation (5 cases)
-
-- **POLAR.06.04 — Reductive functional-group conversion** (13 Level-4 groups)
-  - `POLAR.06.04.001` — Carbonyl-to-alcohol reduction (5 cases)
-  - `POLAR.06.04.002` — Imine-to-amine reduction (5 cases)
-  - `POLAR.06.04.003` — Nitrile-to-amine reduction (5 cases)
-  - `POLAR.06.04.004` — Ester-to-alcohol reduction (5 cases)
-  - `POLAR.06.04.005` — Amide-to-amine reduction (5 cases)
-  - `POLAR.06.04.006` — Carboxylic-acid-to-alcohol reduction (5 cases)
-  - `POLAR.06.04.007` — Nitro-to-amine reduction (5 cases)
-  - `POLAR.06.04.008` — Azo-to-amine reduction (5 cases)
-  - `POLAR.06.04.009` — Azide-to-amine reduction (5 cases)
-  - `POLAR.06.04.010` — Oxime-to-amine reduction (5 cases)
-  - `POLAR.06.04.011` — Wolff–Kishner reduction (5 cases)
-  - `POLAR.06.04.012` — Clemmensen reduction (5 cases)
-  - `POLAR.06.04.013` — Mozingo reduction (5 cases)
-
-- **POLAR.06.05 — Oxidative functional-group conversion** (13 Level-4 groups)
-  - `POLAR.06.05.001` — Alcohol-to-aldehyde oxidation (5 cases)
-  - `POLAR.06.05.002` — Alcohol-to-ketone oxidation (5 cases)
-  - `POLAR.06.05.003` — Aldehyde-to-carboxylic-acid oxidation (5 cases)
-  - `POLAR.06.05.004` — Alkene-to-diol oxidation (5 cases)
-  - `POLAR.06.05.005` — Amine-to-imine oxidation (5 cases)
-  - `POLAR.06.05.006` — Amine N-oxidation (5 cases)
-  - `POLAR.06.05.007` — Sulfide oxidation (5 cases)
-  - `POLAR.06.05.008` — Thiol-to-disulfide oxidation (5 cases)
-  - `POLAR.06.05.009` — Phenol oxidative dearomatization (5 cases)
-  - `POLAR.06.05.010` — Benzylic oxidation (5 cases)
-  - `POLAR.06.05.011` — Allylic oxidation (5 cases)
-  - `POLAR.06.05.012` — Pinnick oxidation (5 cases)
-  - `POLAR.06.05.013` — Tamao–Fleming oxidation (5 cases)
-
-- **POLAR.06.06 — Disproportionation / internal redox** (8 Level-4 groups)
-  - `POLAR.06.06.001` — Cannizzaro reaction (5 cases)
-  - `POLAR.06.06.002` — Crossed Cannizzaro reaction (5 cases)
-  - `POLAR.06.06.003` — Tishchenko reaction (5 cases)
-  - `POLAR.06.06.004` — Meerwein–Ponndorf–Verley / Oppenauer redox pair (5 cases)
-  - `POLAR.06.06.005` — Internal redox of α-hydroxy aldehydes (5 cases)
-  - `POLAR.06.06.006` — Redox-neutral hydride shift (5 cases)
-  - `POLAR.06.06.007` — Formose-type disproportionation (5 cases)
-  - `POLAR.06.06.008` — Benzil–benzilic acid redox balance (5 cases)
-
-- **POLAR.06.07 — Halogen / pseudohalogen transfer redox** (10 Level-4 groups)
-  - `POLAR.06.07.001` — Electrophilic fluorination (5 cases)
-  - `POLAR.06.07.002` — Electrophilic chlorination (5 cases)
-  - `POLAR.06.07.003` — Electrophilic bromination (5 cases)
-  - `POLAR.06.07.004` — Electrophilic iodination (5 cases)
-  - `POLAR.06.07.005` — NBS allylic bromination polar step (5 cases)
-  - `POLAR.06.07.006` — Phosphine-mediated alcohol halogenation (5 cases)
-  - `POLAR.06.07.007` — Corey–Fuchs dibromination step (5 cases)
-  - `POLAR.06.07.008` — Iodine-mediated oxidation (5 cases)
-  - `POLAR.06.07.009` — NCS chlorination (5 cases)
-  - `POLAR.06.07.010` — Selectfluor fluorination (5 cases)
-
-- **POLAR.06.08 — Oxidative cleavage** (10 Level-4 groups)
-  - `POLAR.06.08.001` — Ozonolysis (5 cases)
-  - `POLAR.06.08.002` — Lemieux–Johnson oxidation (5 cases)
-  - `POLAR.06.08.003` — Malaprade periodate cleavage (5 cases)
-  - `POLAR.06.08.004` — Glycol cleavage (5 cases)
-  - `POLAR.06.08.005` — Oxidative cleavage of alkenes (5 cases)
-  - `POLAR.06.08.006` — Oxidative cleavage of vicinal diols (5 cases)
-  - `POLAR.06.08.007` — Osmate-periodate cleavage (5 cases)
-  - `POLAR.06.08.008` — Lead tetraacetate glycol cleavage (5 cases)
-  - `POLAR.06.08.009` — Baeyer–Villiger cleavage variant (5 cases)
-  - `POLAR.06.08.010` — Oxidative C–C bond cleavage (5 cases)
-
-- **POLAR.06.09 — Reductive cleavage / deprotection** (10 Level-4 groups)
-  - `POLAR.06.09.001` — Polar reductive cleavage of benzyl ethers (5 cases)
-  - `POLAR.06.09.002` — Polar reductive cleavage of benzyl esters (5 cases)
-  - `POLAR.06.09.003` — Polar reductive debenzylation surrogate (5 cases)
-  - `POLAR.06.09.004` — Reductive dehalogenation (5 cases)
-  - `POLAR.06.09.005` — Reductive desulfonylation (5 cases)
-  - `POLAR.06.09.006` — Reductive N–O bond cleavage (5 cases)
-  - `POLAR.06.09.007` — Reductive S–S bond cleavage (5 cases)
-  - `POLAR.06.09.008` — Birch reduction ionic protonation step (5 cases)
-  - `POLAR.06.09.009` — Dissolving-metal carbonyl reduction polar workup (5 cases)
-  - `POLAR.06.09.010` — Cleavage of azo compounds (5 cases)
-
-- **POLAR.06.10 — Deoxygenation / desulfurization** (10 Level-4 groups)
-  - `POLAR.06.10.001` — Barton–McCombie deoxygenation polar step (5 cases)
-  - `POLAR.06.10.002` — Markó–Lam deoxygenation (5 cases)
-  - `POLAR.06.10.003` — Ionic deoxyfluorination (5 cases)
-  - `POLAR.06.10.004` — Deoxyhalogenation of alcohols (5 cases)
-  - `POLAR.06.10.005` — Thioacetal desulfurization (5 cases)
-  - `POLAR.06.10.006` — Raney nickel desulfurization (5 cases)
-  - `POLAR.06.10.007` — Carbonyl deoxygenation via hydrazone (5 cases)
-  - `POLAR.06.10.008` — Sulfone reduction (5 cases)
-  - `POLAR.06.10.009` — Sulfoxide reduction (5 cases)
-  - `POLAR.06.10.010` — Phosphine-mediated deoxygenation (5 cases)
-
-- **POLAR.06.11 — Hypervalent iodine / organosulfur redox** (10 Level-4 groups)
-  - `POLAR.06.11.001` — IBX oxidation (5 cases)
-  - `POLAR.06.11.002` — Dess–Martin periodinane oxidation (5 cases)
-  - `POLAR.06.11.003` — PIDA-mediated oxidation (5 cases)
-  - `POLAR.06.11.004` — PIFA-mediated oxidation (5 cases)
-  - `POLAR.06.11.005` — Koser reagent oxidation (5 cases)
-  - `POLAR.06.11.006` — Hypervalent iodine dearomatization (5 cases)
-  - `POLAR.06.11.007` — Sulfurane oxidation (5 cases)
-  - `POLAR.06.11.008` — Martin sulfurane dehydration redox step (5 cases)
-  - `POLAR.06.11.009` — Alkoxybenziodoxole oxidation (5 cases)
-  - `POLAR.06.11.010` — Iodoxybenzene oxidation (5 cases)
-
-- **POLAR.06.12 — Organocatalytic hydride / electron-pair transfer** (10 Level-4 groups)
-  - `POLAR.06.12.001` — Hantzsch ester transfer reduction (5 cases)
-  - `POLAR.06.12.002` — NADH-model reduction (5 cases)
-  - `POLAR.06.12.003` — Iminium-ion transfer hydrogenation (5 cases)
-  - `POLAR.06.12.004` — Enamine-mediated redox-neutral aldehyde reaction (5 cases)
-  - `POLAR.06.12.005` — NHC redox esterification (5 cases)
-  - `POLAR.06.12.006` — NHC redox amidation (5 cases)
-  - `POLAR.06.12.007` — Breslow-intermediate oxidation (5 cases)
-  - `POLAR.06.12.008` — NHC internal redox reaction (5 cases)
-  - `POLAR.06.12.009` — Hydride shift in oxocarbenium chemistry (5 cases)
-  - `POLAR.06.12.010` — Ionic hydride relay reaction (5 cases)
-
-### POLAR.07 — Rearrangement / migration
-
-- **POLAR.07.01 — Carbocationic rearrangement** (13 Level-4 groups)
-  - `POLAR.07.01.001` — Wagner–Meerwein rearrangement (5 cases)
-  - `POLAR.07.01.002` — Pinacol rearrangement (5 cases)
-  - `POLAR.07.01.003` — Semipinacol rearrangement (5 cases)
-  - `POLAR.07.01.004` — Dienone–phenol rearrangement (5 cases)
-  - `POLAR.07.01.005` — Nametkin rearrangement (5 cases)
-  - `POLAR.07.01.006` — Meyer–Schuster rearrangement (5 cases)
-  - `POLAR.07.01.007` — Rupe rearrangement (5 cases)
-  - `POLAR.07.01.008` — Tiffeneau rearrangement (5 cases)
-  - `POLAR.07.01.009` — Cyclopropylcarbinyl rearrangement (5 cases)
-  - `POLAR.07.01.010` — Terpinyl cation rearrangement (5 cases)
-  - `POLAR.07.01.011` — Camphene rearrangement (5 cases)
-  - `POLAR.07.01.012` — Meinwald rearrangement (5 cases)
-  - `POLAR.07.01.013` — Acid-catalyzed epoxide rearrangement (5 cases)
-
-- **POLAR.07.02 — Hydride / alkyl migration** (8 Level-4 groups)
-  - `POLAR.07.02.001` — 1,2-Hydride shift (5 cases)
-  - `POLAR.07.02.002` — 1,2-Methyl shift (5 cases)
-  - `POLAR.07.02.003` — 1,2-Alkyl shift (5 cases)
-  - `POLAR.07.02.004` — 1,2-Aryl shift (5 cases)
-  - `POLAR.07.02.005` — Ring-expansion migration (5 cases)
-  - `POLAR.07.02.006` — Neopentyl rearrangement (5 cases)
-  - `POLAR.07.02.007` — Hydride migration in oxocarbenium ions (5 cases)
-  - `POLAR.07.02.008` — Alkyl migration in iminium ions (5 cases)
-
-- **POLAR.07.03 — Acyl / aryl / silyl migration** (12 Level-4 groups)
-  - `POLAR.07.03.001` — Fries rearrangement (5 cases)
-  - `POLAR.07.03.002` — Photo-Fries polar product rearrangement (5 cases)
-  - `POLAR.07.03.003` — Baker–Venkataraman rearrangement primary placement (5 cases)
-  - `POLAR.07.03.004` — Benzilic acid rearrangement acyl-migration view (5 cases)
-  - `POLAR.07.03.005` — Brook rearrangement (5 cases)
-  - `POLAR.07.03.006` — Anionic oxy-Cope acyl-migration tag (5 cases)
-  - `POLAR.07.03.007` — Smiles rearrangement (5 cases)
-  - `POLAR.07.03.008` — Truce–Smiles rearrangement (5 cases)
-  - `POLAR.07.03.009` — Chapman rearrangement (5 cases)
-  - `POLAR.07.03.010` — Mumm rearrangement (5 cases)
-  - `POLAR.07.03.011` — Acyl transfer O-to-N migration (5 cases)
-  - `POLAR.07.03.012` — Silyl O-to-C migration (5 cases)
-
-- **POLAR.07.04 — Nitrogen-centered / heteroatom migration** (13 Level-4 groups)
-  - `POLAR.07.04.001` — Beckmann rearrangement (5 cases)
-  - `POLAR.07.04.002` — Hofmann rearrangement (5 cases)
-  - `POLAR.07.04.003` — Curtius rearrangement (5 cases)
-  - `POLAR.07.04.004` — Lossen rearrangement (5 cases)
-  - `POLAR.07.04.005` — Schmidt rearrangement (5 cases)
-  - `POLAR.07.04.006` — Baeyer–Villiger rearrangement migration step (5 cases)
-  - `POLAR.07.04.007` — Neber rearrangement (5 cases)
-  - `POLAR.07.04.008` — Stieglitz rearrangement (5 cases)
-  - `POLAR.07.04.009` — Wolff rearrangement polar precursor step (5 cases)
-  - `POLAR.07.04.010` — Aza-Baeyer–Villiger rearrangement (5 cases)
-  - `POLAR.07.04.011` — Boulton–Katritzky rearrangement (5 cases)
-  - `POLAR.07.04.012` — Dimroth rearrangement (5 cases)
-  - `POLAR.07.04.013` — Heteroatom-to-carbon migration (5 cases)
-
-- **POLAR.07.05 — Anionic rearrangement** (12 Level-4 groups)
-  - `POLAR.07.05.001` — Favorskii rearrangement (5 cases)
-  - `POLAR.07.05.002` — Payne rearrangement (5 cases)
-  - `POLAR.07.05.003` — Anionic epoxide rearrangement (5 cases)
-  - `POLAR.07.05.004` — Anionic ammonium ylide shift (5 cases)
-  - `POLAR.07.05.005` — Wittig rearrangement (5 cases)
-  - `POLAR.07.05.006` — [1,2]-Wittig rearrangement (5 cases)
-  - `POLAR.07.05.007` — [2,3]-Wittig rearrangement (5 cases)
-  - `POLAR.07.05.008` — Anionic silyl migration (5 cases)
-  - `POLAR.07.05.009` — α-Halosulfone ring-contraction rearrangement (5 cases)
-  - `POLAR.07.05.010` — Anionic Fries rearrangement (5 cases)
-  - `POLAR.07.05.011` — Anionic oxy-Cope rearrangement (5 cases)
-  - `POLAR.07.05.012` — Base-promoted acyl migration (5 cases)
-
-- **POLAR.07.06 — Ring expansion / contraction** (10 Level-4 groups)
-  - `POLAR.07.06.001` — Demjanov rearrangement (5 cases)
-  - `POLAR.07.06.002` — Tiffeneau–Demjanov rearrangement (5 cases)
-  - `POLAR.07.06.003` — Beckmann ring expansion (5 cases)
-  - `POLAR.07.06.004` — Favorskii ring contraction (5 cases)
-  - `POLAR.07.06.005` — Semipinacol ring expansion (5 cases)
-  - `POLAR.07.06.006` — Baeyer–Villiger ring expansion (5 cases)
-  - `POLAR.07.06.007` — Dowd–Beckwith polar analogue (5 cases)
-  - `POLAR.07.06.008` — Cyclobutanone ring contraction (5 cases)
-  - `POLAR.07.06.009` — Azetidine ring expansion (5 cases)
-  - `POLAR.07.06.010` — Epoxide ring expansion (5 cases)
-
-- **POLAR.07.07 — Fragmentation rearrangement** (10 Level-4 groups)
-  - `POLAR.07.07.001` — Grob fragmentation rearrangement (5 cases)
-  - `POLAR.07.07.002` — Eschenmoser fragmentation rearrangement (5 cases)
-  - `POLAR.07.07.003` — Wharton rearrangement (5 cases)
-  - `POLAR.07.07.004` — Ramberg–Bäcklund fragmentation (5 cases)
-  - `POLAR.07.07.005` — Haller–Bauer cleavage (5 cases)
-  - `POLAR.07.07.006` — Cieplak-type fragmentation (5 cases)
-  - `POLAR.07.07.007` — α-Hydroxy ketone fragmentation (5 cases)
-  - `POLAR.07.07.008` — β-Amino alcohol fragmentation (5 cases)
-  - `POLAR.07.07.009` — Oxyanion-accelerated fragmentation (5 cases)
-  - `POLAR.07.07.010` — Aza-Grob fragmentation (5 cases)
-
-- **POLAR.07.08 — Neighboring-group-participation rearrangement** (8 Level-4 groups)
-  - `POLAR.07.08.001` — Anchimeric-assistance rearrangement (5 cases)
-  - `POLAR.07.08.002` — Phenonium-ion rearrangement (5 cases)
-  - `POLAR.07.08.003` — Acyloxonium rearrangement (5 cases)
-  - `POLAR.07.08.004` — Episulfonium rearrangement (5 cases)
-  - `POLAR.07.08.005` — Epoxonium rearrangement (5 cases)
-  - `POLAR.07.08.006` — Iodonium-promoted rearrangement (5 cases)
-  - `POLAR.07.08.007` — Thionium-promoted rearrangement (5 cases)
-  - `POLAR.07.08.008` — Neighboring acetal rearrangement (5 cases)
-
-- **POLAR.07.09 — Oxonium / iminium / acetal rearrangement** (10 Level-4 groups)
-  - `POLAR.07.09.001` — Ferrier rearrangement (5 cases)
-  - `POLAR.07.09.002` — Overman-like imidate rearrangement polar variant (5 cases)
-  - `POLAR.07.09.003` — Amadori rearrangement (5 cases)
-  - `POLAR.07.09.004` — Heyns rearrangement (5 cases)
-  - `POLAR.07.09.005` — Lobry de Bruyn–Alberda van Ekenstein rearrangement (5 cases)
-  - `POLAR.07.09.006` — Anomerization through oxocarbenium ion (5 cases)
-  - `POLAR.07.09.007` — Glycal rearrangement (5 cases)
-  - `POLAR.07.09.008` — Iminium-enamine rearrangement (5 cases)
-  - `POLAR.07.09.009` — Aza-Cope–Mannich polar sequence (5 cases)
-  - `POLAR.07.09.010` — N-Acyliminium rearrangement (5 cases)
-
-- **POLAR.07.10 — Sulfur / selenium / phosphorus rearrangement** (9 Level-4 groups)
-  - `POLAR.07.10.001` — Pummerer rearrangement (5 cases)
-  - `POLAR.07.10.002` — Mislow–Evans rearrangement (5 cases)
-  - `POLAR.07.10.003` — [2,3]-Sigmatropic sulfoxide rearrangement polar tag (5 cases)
-  - `POLAR.07.10.004` — Selenoxide rearrangement (5 cases)
-  - `POLAR.07.10.005` — Phosphorane rearrangement (5 cases)
-  - `POLAR.07.10.006` — Arbuzov rearrangement (5 cases)
-  - `POLAR.07.10.007` — Perkow rearrangement (5 cases)
-  - `POLAR.07.10.008` — Atherton–Todd rearrangement (5 cases)
-  - `POLAR.07.10.009` — Sulfenate–sulfoxide rearrangement (5 cases)
-
-- **POLAR.07.11 — Onium ylide rearrangement** (8 Level-4 groups)
-  - `POLAR.07.11.001` — Stevens rearrangement of ammonium ylides (5 cases)
-  - `POLAR.07.11.002` — Stevens rearrangement of sulfonium ylides (5 cases)
-  - `POLAR.07.11.003` — Doyle–Kirmse rearrangement polar tag (5 cases)
-  - `POLAR.07.11.004` — Sommelet–Hauser rearrangement of ammonium ylides (5 cases)
-  - `POLAR.07.11.005` — [2,3]-Sulfonium ylide rearrangement (5 cases)
-  - `POLAR.07.11.006` — [1,2]-Sulfonium ylide rearrangement (5 cases)
-  - `POLAR.07.11.007` — [2,3]-Oxonium ylide rearrangement (5 cases)
-  - `POLAR.07.11.008` — [1,2]-Oxonium ylide rearrangement (5 cases)
-
-- **POLAR.07.12 — Acetal / anomeric / carbohydrate rearrangement** (8 Level-4 groups)
-  - `POLAR.07.12.001` — Glycal oxocarbenium rearrangement (5 cases)
-  - `POLAR.07.12.002` — Anomeric rearrangement (5 cases)
-  - `POLAR.07.12.003` — Glycosyl orthoester rearrangement (5 cases)
-  - `POLAR.07.12.004` — Acetal migration (5 cases)
-  - `POLAR.07.12.005` — Benzylidene acetal rearrangement (5 cases)
-  - `POLAR.07.12.006` — Acyl migration in carbohydrates (5 cases)
-  - `POLAR.07.12.007` — Silyl migration in carbohydrates (5 cases)
-  - `POLAR.07.12.008` — Glycal allylic rearrangement (5 cases)
-
-- **POLAR.07.13 — Acid/base-induced skeletal rearrangement** (9 Level-4 groups)
-  - `POLAR.07.13.001` — Retropinacol rearrangement (5 cases)
-  - `POLAR.07.13.002` — Epoxide Meinwald rearrangement (5 cases)
-  - `POLAR.07.13.003` — Allylic alcohol rearrangement under acid (5 cases)
-  - `POLAR.07.13.004` — Tertiary alcohol skeletal rearrangement (5 cases)
-  - `POLAR.07.13.005` — Terpene skeletal rearrangement (5 cases)
-  - `POLAR.07.13.006` — Steroidal cation rearrangement (5 cases)
-  - `POLAR.07.13.007` — Cationic ring-contraction rearrangement (5 cases)
-  - `POLAR.07.13.008` — Cationic ring-expansion rearrangement (5 cases)
-  - `POLAR.07.13.009` — Oxaspiropentane rearrangement (5 cases)
-
-### POLAR.08 — Composite polar transformation
-
-- **POLAR.08.01 — Condensation sequence** (14 Level-4 groups)
-  - `POLAR.08.01.001` — Robinson annulation (5 cases)
-  - `POLAR.08.01.002` — Mannich reaction (5 cases)
-  - `POLAR.08.01.003` — Benzoin condensation (5 cases)
-  - `POLAR.08.01.004` — Acyloin condensation polar workup sequence (5 cases)
-  - `POLAR.08.01.005` — Darzens reaction (5 cases)
-  - `POLAR.08.01.006` — Horner–Wadsworth condensation sequence (5 cases)
-  - `POLAR.08.01.007` — Japp–Klingemann reaction (5 cases)
-  - `POLAR.08.01.008` — β-Dicarbonyl aldehyde condensation sequence (5 cases)
-  - `POLAR.08.01.009` — Cinnamic-acid-forming condensation sequence (5 cases)
-  - `POLAR.08.01.010` — Alkylidene active-methylene condensation sequence (5 cases)
-  - `POLAR.08.01.011` — Doebner net condensation (5 cases)
-  - `POLAR.08.01.012` — Pictet–Spengler net condensation (5 cases)
-  - `POLAR.08.01.013` — Pyrrole-forming dicarbonyl condensation sequence (5 cases)
-  - `POLAR.08.01.014` — Dihydropyrimidinone condensation sequence (5 cases)
-
-- **POLAR.08.02 — Protection / deprotection sequence** (16 Level-4 groups)
-  - `POLAR.08.02.001` — Boc protection (5 cases)
-  - `POLAR.08.02.002` — Boc deprotection (5 cases)
-  - `POLAR.08.02.003` — Cbz protection (5 cases)
-  - `POLAR.08.02.004` — Cbz deprotection (5 cases)
-  - `POLAR.08.02.005` — Fmoc protection (5 cases)
-  - `POLAR.08.02.006` — Fmoc carbonate protection (5 cases)
-  - `POLAR.08.02.007` — Silyl ether protection (5 cases)
-  - `POLAR.08.02.008` — Silyl ether deprotection (5 cases)
-  - `POLAR.08.02.009` — Acetal protection (5 cases)
-  - `POLAR.08.02.010` — Acetal deprotection (5 cases)
-  - `POLAR.08.02.011` — Ketal protection (5 cases)
-  - `POLAR.08.02.012` — Ketal deprotection (5 cases)
-  - `POLAR.08.02.013` — Thioacetal protection (5 cases)
-  - `POLAR.08.02.014` — Thioacetal deprotection (5 cases)
-  - `POLAR.08.02.015` — Benzyl protection (5 cases)
-  - `POLAR.08.02.016` — Alloc deprotection (5 cases)
-
-- **POLAR.08.03 — Functional-group activation / derivatization** (14 Level-4 groups)
-  - `POLAR.08.03.001` — Tosylation activation (5 cases)
-  - `POLAR.08.03.002` — Mesylation activation (5 cases)
-  - `POLAR.08.03.003` — Triflation activation (5 cases)
-  - `POLAR.08.03.004` — Nosylation activation (5 cases)
-  - `POLAR.08.03.005` — Acid chloride formation (5 cases)
-  - `POLAR.08.03.006` — Mixed anhydride formation (5 cases)
-  - `POLAR.08.03.007` — Imidazolide formation (5 cases)
-  - `POLAR.08.03.008` — Diazotization (5 cases)
-  - `POLAR.08.03.009` — Azo-dicarboxylate alcohol activation (5 cases)
-  - `POLAR.08.03.010` — Phosphine/tetrahalomethane alcohol activation (5 cases)
-  - `POLAR.08.03.011` — Carbonyldiimidazole activation (5 cases)
-  - `POLAR.08.03.012` — Boc anhydride activation (5 cases)
-  - `POLAR.08.03.013` — Chloroformate activation (5 cases)
-  - `POLAR.08.03.014` — Phosphonium-salt activation (5 cases)
-
-- **POLAR.08.04 — Multicomponent polar transformation** (14 Level-4 groups)
-  - `POLAR.08.04.001` — Ugi reaction (5 cases)
-  - `POLAR.08.04.002` — Passerini reaction (5 cases)
-  - `POLAR.08.04.003` — Biginelli reaction (5 cases)
-  - `POLAR.08.04.004` — Hantzsch dihydropyridine synthesis (5 cases)
-  - `POLAR.08.04.005` — Gewald reaction (5 cases)
-  - `POLAR.08.04.006` — Kabachnik–Fields reaction (5 cases)
-  - `POLAR.08.04.007` — Groebke–Blackburn–Bienaymé reaction (5 cases)
-  - `POLAR.08.04.008` — Petasis borono-Mannich reaction (5 cases)
-  - `POLAR.08.04.009` — Asinger reaction (5 cases)
-  - `POLAR.08.04.010` — Strecker multicomponent synthesis (5 cases)
-  - `POLAR.08.04.011` — Mannich multicomponent variant (5 cases)
-  - `POLAR.08.04.012` — Bucherer–Bergs reaction (5 cases)
-  - `POLAR.08.04.013` — Betti reaction (5 cases)
-  - `POLAR.08.04.014` — Hantzsch thiazole synthesis (5 cases)
-
-- **POLAR.08.05 — Polar cascade / tandem sequence** (12 Level-4 groups)
-  - `POLAR.08.05.001` — Michael–aldol sequence (5 cases)
-  - `POLAR.08.05.002` — Michael–Dieckmann sequence (5 cases)
-  - `POLAR.08.05.003` — Knoevenagel–Michael sequence (5 cases)
-  - `POLAR.08.05.004` — Knoevenagel–Michael–cyclization sequence (5 cases)
-  - `POLAR.08.05.005` — Prins cascade (5 cases)
-  - `POLAR.08.05.006` — Pictet–Spengler cascade (5 cases)
-  - `POLAR.08.05.007` — Cationic polycyclization cascade (5 cases)
-  - `POLAR.08.05.008` — Oxa-Michael–aldol sequence (5 cases)
-  - `POLAR.08.05.009` — Aza-Michael–cyclization sequence (5 cases)
-  - `POLAR.08.05.010` — Mannich–cyclization sequence (5 cases)
-  - `POLAR.08.05.011` — Aldol–Michael cascade (5 cases)
-  - `POLAR.08.05.012` — Enamine–iminium cascade (5 cases)
-
-- **POLAR.08.06 — Ionic polymerization / chain-growth sequence** (10 Level-4 groups)
-  - `POLAR.08.06.001` — Cationic alkene polymerization (5 cases)
-  - `POLAR.08.06.002` — Anionic alkene polymerization (5 cases)
-  - `POLAR.08.06.003` — Cationic ring-opening polymerization (5 cases)
-  - `POLAR.08.06.004` — Anionic ring-opening polymerization (5 cases)
-  - `POLAR.08.06.005` — Epoxide polymerization (5 cases)
-  - `POLAR.08.06.006` — Lactone ring-opening polymerization (5 cases)
-  - `POLAR.08.06.007` — Lactam ring-opening polymerization (5 cases)
-  - `POLAR.08.06.008` — Polyurethane formation (5 cases)
-  - `POLAR.08.06.009` — Epoxy curing (5 cases)
-  - `POLAR.08.06.010` — Polycarbonate formation (5 cases)
-
-- **POLAR.08.07 — Net functional-group interconversion** (10 Level-4 groups)
-  - `POLAR.08.07.001` — Alcohol-to-halide conversion (5 cases)
-  - `POLAR.08.07.002` — Alcohol-to-amine conversion (5 cases)
-  - `POLAR.08.07.003` — Aldehyde-to-alkene conversion (5 cases)
-  - `POLAR.08.07.004` — Carboxylic-acid-to-amine conversion (5 cases)
-  - `POLAR.08.07.005` — Carboxylic-acid homologation sequence (5 cases)
-  - `POLAR.08.07.006` — Amide-to-amine one-carbon degradation sequence (5 cases)
-  - `POLAR.08.07.007` — Acyl azide degradation sequence (5 cases)
-  - `POLAR.08.07.008` — Nitrile-to-carboxylic-acid conversion (5 cases)
-  - `POLAR.08.07.009` — Aldehyde-to-alkyne homologation (5 cases)
-  - `POLAR.08.07.010` — Ketone-to-alkene conversion (5 cases)
-
-- **POLAR.08.08 — Polar olefination / C=C-forming sequence** (12 Level-4 groups)
-  - `POLAR.08.08.001` — Wittig reaction (5 cases)
-  - `POLAR.08.08.002` — Horner–Wadsworth–Emmons reaction (5 cases)
-  - `POLAR.08.08.003` — Horner–Wittig reaction (5 cases)
-  - `POLAR.08.08.004` — Still–Gennari olefination (5 cases)
-  - `POLAR.08.08.005` — Julia olefination (5 cases)
-  - `POLAR.08.08.006` — Julia–Kocienski olefination (5 cases)
-  - `POLAR.08.08.007` — Peterson olefination sequence (5 cases)
-  - `POLAR.08.08.008` — Corey–Fuchs reaction (5 cases)
-  - `POLAR.08.08.009` — Seyferth–Gilbert homologation (5 cases)
-  - `POLAR.08.08.010` — Ohira–Bestmann homologation (5 cases)
-  - `POLAR.08.08.011` — Tebbe-type polar carbonyl olefination tag (5 cases)
-  - `POLAR.08.08.012` — Lombardo methylenation (5 cases)
-
-- **POLAR.08.09 — Heterocycle-forming polar sequence** (14 Level-4 groups)
-  - `POLAR.08.09.001` — Fischer indole synthesis (5 cases)
-  - `POLAR.08.09.002` — Bischler–Napieralski reaction (5 cases)
-  - `POLAR.08.09.003` — Skraup synthesis (5 cases)
-  - `POLAR.08.09.004` — Friedländer quinoline synthesis (5 cases)
-  - `POLAR.08.09.005` — Doebner–Miller quinoline synthesis (5 cases)
-  - `POLAR.08.09.006` — Pomeranz–Fritsch reaction (5 cases)
-  - `POLAR.08.09.007` — Knorr pyrazole synthesis (5 cases)
-  - `POLAR.08.09.008` — Debus–Radziszewski imidazole synthesis (5 cases)
-  - `POLAR.08.09.009` — Hantzsch pyridine synthesis (5 cases)
-  - `POLAR.08.09.010` — Pinner synthesis (5 cases)
-  - `POLAR.08.09.011` — Niementowski quinazoline synthesis (5 cases)
-  - `POLAR.08.09.012` — Leimgruber–Batcho indole synthesis (5 cases)
-  - `POLAR.08.09.013` — Bischler–Möhlau indole synthesis (5 cases)
-  - `POLAR.08.09.014` — Combes quinoline synthesis (5 cases)
-
-- **POLAR.08.10 — Carbohydrate / nucleotide conjugation sequence** (6 Level-4 groups)
-  - `POLAR.08.10.001` — Glycoside formation sequence (5 cases)
-  - `POLAR.08.10.002` — N-Glycosylation sequence (5 cases)
-  - `POLAR.08.10.003` — O-Glycosylation sequence (5 cases)
-  - `POLAR.08.10.004` — S-Glycosylation sequence (5 cases)
-  - `POLAR.08.10.005` — Nucleotide phosphoramidite coupling (5 cases)
-  - `POLAR.08.10.006` — Nucleotide deprotection sequence (5 cases)
-
-- **POLAR.08.11 — Peptide / bioconjugation polar sequence** (4 Level-4 groups)
-  - `POLAR.08.11.001` — Solid-phase peptide coupling cycle (5 cases)
-  - `POLAR.08.11.002` — Native chemical ligation polar step (5 cases)
-  - `POLAR.08.11.003` — Oxime bioconjugation sequence (5 cases)
-  - `POLAR.08.11.004` — Hydrazone bioconjugation sequence (5 cases)
-
-- **POLAR.08.12 — Dearomatization / rearomatization polar sequence** (4 Level-4 groups)
-  - `POLAR.08.12.001` — Phenolic oxidative dearomatization sequence (5 cases)
-  - `POLAR.08.12.002` — Arenium-ion dearomatization sequence (5 cases)
-  - `POLAR.08.12.003` — Dearomatizing spirocyclization sequence (5 cases)
-  - `POLAR.08.12.004` — Rearomatizing elimination sequence (5 cases)
-
-### POLAR.99 — Other / ambiguous polar
-
-- **POLAR.99.01 — Ambiguous polar net reaction** (5 Level-4 groups)
-  - `POLAR.99.01.001` — Multiple plausible polar mechanisms (5 cases)
-  - `POLAR.99.01.002` — Unclear dominant elementary step (5 cases)
-  - `POLAR.99.01.003` — Insufficient mechanism information (5 cases)
-  - `POLAR.99.01.004` — Only net transformation reported (5 cases)
-  - `POLAR.99.01.005` — Reagent role unclear (5 cases)
-
-- **POLAR.99.02 — Borderline polar transformation** (5 Level-4 groups)
-  - `POLAR.99.02.001` — Organometallic polar step outside scope (5 cases)
-  - `POLAR.99.02.002` — SET-assisted polar reaction (5 cases)
-  - `POLAR.99.02.003` — Photoredox-assisted polar reaction (5 cases)
-  - `POLAR.99.02.004` — Enzymatic polar transformation outside scope (5 cases)
-  - `POLAR.99.02.005` — Polymer/material polar transformation outside scope (5 cases)
-
-## RADICAL — Radical / single-electron / atom-transfer chemistry
-
-### RADICAL.01 — Radical generation / initiation
-
-- **RADICAL.01.01 — Homolytic bond cleavage** (18 Level-4 groups)
-  - `RADICAL.01.01.001` — aliphatic C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.002` — benzylic C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.003` — allylic C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.004` — tertiary C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.005` — secondary C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.006` — primary C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.007` — heteroatom-adjacent C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.008` — carbonyl-adjacent C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.009` — electron-rich C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.010` — electron-poor C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.011` — intramolecular C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.012` — intermolecular C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.013` — photochemical C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.014` — thermal C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.015` — redox-neutral C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.016` — decarboxylative C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.017` — halogenative C–halogen homolysis (5 cases)
-  - `RADICAL.01.01.018` — hydrofunctionalizing C–halogen homolysis (5 cases)
-
-- **RADICAL.01.02 — Single-electron reduction to radical** (18 Level-4 groups)
-  - `RADICAL.01.02.001` — aliphatic reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.002` — benzylic reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.003` — allylic reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.004` — tertiary reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.005` — secondary reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.006` — primary reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.007` — heteroatom-adjacent reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.008` — carbonyl-adjacent reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.009` — electron-rich reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.010` — electron-poor reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.011` — intramolecular reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.012` — intermolecular reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.013` — photochemical reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.014` — thermal reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.015` — redox-neutral reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.016` — decarboxylative reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.017` — halogenative reductive dehalogenation (5 cases)
-  - `RADICAL.01.02.018` — hydrofunctionalizing reductive dehalogenation (5 cases)
-
-- **RADICAL.01.03 — Single-electron oxidation to radical** (18 Level-4 groups)
-  - `RADICAL.01.03.001` — aliphatic amine radical cation formation (5 cases)
-  - `RADICAL.01.03.002` — benzylic amine radical cation formation (5 cases)
-  - `RADICAL.01.03.003` — allylic amine radical cation formation (5 cases)
-  - `RADICAL.01.03.004` — tertiary amine radical cation formation (5 cases)
-  - `RADICAL.01.03.005` — secondary amine radical cation formation (5 cases)
-  - `RADICAL.01.03.006` — primary amine radical cation formation (5 cases)
-  - `RADICAL.01.03.007` — heteroatom-adjacent amine radical cation formation (5 cases)
-  - `RADICAL.01.03.008` — carbonyl-adjacent amine radical cation formation (5 cases)
-  - `RADICAL.01.03.009` — electron-rich amine radical cation formation (5 cases)
-  - `RADICAL.01.03.010` — electron-poor amine radical cation formation (5 cases)
-  - `RADICAL.01.03.011` — intramolecular amine radical cation formation (5 cases)
-  - `RADICAL.01.03.012` — intermolecular amine radical cation formation (5 cases)
-  - `RADICAL.01.03.013` — photochemical amine radical cation formation (5 cases)
-  - `RADICAL.01.03.014` — thermal amine radical cation formation (5 cases)
-  - `RADICAL.01.03.015` — redox-neutral amine radical cation formation (5 cases)
-  - `RADICAL.01.03.016` — decarboxylative amine radical cation formation (5 cases)
-  - `RADICAL.01.03.017` — halogenative amine radical cation formation (5 cases)
-  - `RADICAL.01.03.018` — hydrofunctionalizing amine radical cation formation (5 cases)
-
-- **RADICAL.01.04 — Radical precursor fragmentation** (16 Level-4 groups)
-  - `RADICAL.01.04.001` — aliphatic Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.002` — benzylic Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.003` — allylic Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.004` — tertiary Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.005` — secondary Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.006` — primary Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.007` — heteroatom-adjacent Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.008` — carbonyl-adjacent Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.009` — electron-rich Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.010` — electron-poor Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.011` — intramolecular Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.012` — intermolecular Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.013` — photochemical Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.014` — thermal Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.015` — redox-neutral Barton ester fragmentation (5 cases)
-  - `RADICAL.01.04.016` — decarboxylative Barton ester fragmentation (5 cases)
-
-### RADICAL.02 — Atom transfer / abstraction
-
-- **RADICAL.02.01 — Hydrogen-atom transfer from C–H** (25 Level-4 groups)
-  - `RADICAL.02.01.001` — aliphatic C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.002` — benzylic C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.003` — allylic C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.004` — tertiary C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.005` — secondary C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.006` — primary C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.007` — heteroatom-adjacent C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.008` — carbonyl-adjacent C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.009` — electron-rich C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.010` — electron-poor C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.011` — intramolecular C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.012` — intermolecular C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.013` — photochemical C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.014` — thermal C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.015` — redox-neutral C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.016` — decarboxylative C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.017` — halogenative C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.018` — hydrofunctionalizing C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.019` — cascade C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.020` — strained-ring C–H hydrogen atom transfer (5 cases)
-  - `RADICAL.02.01.021` — aliphatic benzylic HAT (5 cases)
-  - `RADICAL.02.01.022` — benzylic benzylic HAT (5 cases)
-  - `RADICAL.02.01.023` — allylic benzylic HAT (5 cases)
-  - `RADICAL.02.01.024` — tertiary benzylic HAT (5 cases)
-  - `RADICAL.02.01.025` — secondary benzylic HAT (5 cases)
-
-- **RADICAL.02.02 — Hydrogen-atom transfer from heteroatom–H** (18 Level-4 groups)
-  - `RADICAL.02.02.001` — aliphatic thiol HAT (5 cases)
-  - `RADICAL.02.02.002` — benzylic thiol HAT (5 cases)
-  - `RADICAL.02.02.003` — allylic thiol HAT (5 cases)
-  - `RADICAL.02.02.004` — tertiary thiol HAT (5 cases)
-  - `RADICAL.02.02.005` — secondary thiol HAT (5 cases)
-  - `RADICAL.02.02.006` — primary thiol HAT (5 cases)
-  - `RADICAL.02.02.007` — heteroatom-adjacent thiol HAT (5 cases)
-  - `RADICAL.02.02.008` — carbonyl-adjacent thiol HAT (5 cases)
-  - `RADICAL.02.02.009` — electron-rich thiol HAT (5 cases)
-  - `RADICAL.02.02.010` — electron-poor thiol HAT (5 cases)
-  - `RADICAL.02.02.011` — intramolecular thiol HAT (5 cases)
-  - `RADICAL.02.02.012` — intermolecular thiol HAT (5 cases)
-  - `RADICAL.02.02.013` — photochemical thiol HAT (5 cases)
-  - `RADICAL.02.02.014` — thermal thiol HAT (5 cases)
-  - `RADICAL.02.02.015` — redox-neutral thiol HAT (5 cases)
-  - `RADICAL.02.02.016` — decarboxylative thiol HAT (5 cases)
-  - `RADICAL.02.02.017` — halogenative thiol HAT (5 cases)
-  - `RADICAL.02.02.018` — hydrofunctionalizing thiol HAT (5 cases)
-
-- **RADICAL.02.03 — Halogen-atom transfer** (22 Level-4 groups)
-  - `RADICAL.02.03.001` — aliphatic chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.002` — benzylic chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.003` — allylic chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.004` — tertiary chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.005` — secondary chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.006` — primary chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.007` — heteroatom-adjacent chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.008` — carbonyl-adjacent chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.009` — electron-rich chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.010` — electron-poor chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.011` — intramolecular chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.012` — intermolecular chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.013` — photochemical chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.014` — thermal chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.015` — redox-neutral chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.016` — decarboxylative chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.017` — halogenative chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.018` — hydrofunctionalizing chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.019` — cascade chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.020` — strained-ring chlorine atom transfer (5 cases)
-  - `RADICAL.02.03.021` — aliphatic bromine atom transfer (5 cases)
-  - `RADICAL.02.03.022` — benzylic bromine atom transfer (5 cases)
-
-- **RADICAL.02.04 — Main-group atom transfer** (15 Level-4 groups)
-  - `RADICAL.02.04.001` — aliphatic tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.002` — benzylic tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.003` — allylic tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.004` — tertiary tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.005` — secondary tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.006` — primary tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.007` — heteroatom-adjacent tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.008` — carbonyl-adjacent tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.009` — electron-rich tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.010` — electron-poor tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.011` — intramolecular tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.012` — intermolecular tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.013` — photochemical tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.014` — thermal tin hydride atom transfer (5 cases)
-  - `RADICAL.02.04.015` — redox-neutral tin hydride atom transfer (5 cases)
-
-### RADICAL.03 — Radical addition
-
-- **RADICAL.03.01 — Radical addition to alkene** (30 Level-4 groups)
-  - `RADICAL.03.01.001` — aliphatic alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.002` — benzylic alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.003` — allylic alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.004` — tertiary alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.005` — secondary alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.006` — primary alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.007` — heteroatom-adjacent alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.008` — carbonyl-adjacent alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.009` — electron-rich alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.010` — electron-poor alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.011` — intramolecular alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.012` — intermolecular alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.013` — photochemical alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.014` — thermal alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.015` — redox-neutral alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.016` — decarboxylative alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.017` — halogenative alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.018` — hydrofunctionalizing alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.019` — cascade alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.020` — strained-ring alkyl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.021` — aliphatic aryl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.022` — benzylic aryl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.023` — allylic aryl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.024` — tertiary aryl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.025` — secondary aryl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.026` — primary aryl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.027` — heteroatom-adjacent aryl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.028` — carbonyl-adjacent aryl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.029` — electron-rich aryl radical addition to alkene (5 cases)
-  - `RADICAL.03.01.030` — electron-poor aryl radical addition to alkene (5 cases)
-
-- **RADICAL.03.02 — Radical addition to activated alkene** (25 Level-4 groups)
-  - `RADICAL.03.02.001` — aliphatic Giese addition (5 cases)
-  - `RADICAL.03.02.002` — benzylic Giese addition (5 cases)
-  - `RADICAL.03.02.003` — allylic Giese addition (5 cases)
-  - `RADICAL.03.02.004` — tertiary Giese addition (5 cases)
-  - `RADICAL.03.02.005` — secondary Giese addition (5 cases)
-  - `RADICAL.03.02.006` — primary Giese addition (5 cases)
-  - `RADICAL.03.02.007` — heteroatom-adjacent Giese addition (5 cases)
-  - `RADICAL.03.02.008` — carbonyl-adjacent Giese addition (5 cases)
-  - `RADICAL.03.02.009` — electron-rich Giese addition (5 cases)
-  - `RADICAL.03.02.010` — electron-poor Giese addition (5 cases)
-  - `RADICAL.03.02.011` — intramolecular Giese addition (5 cases)
-  - `RADICAL.03.02.012` — intermolecular Giese addition (5 cases)
-  - `RADICAL.03.02.013` — photochemical Giese addition (5 cases)
-  - `RADICAL.03.02.014` — thermal Giese addition (5 cases)
-  - `RADICAL.03.02.015` — redox-neutral Giese addition (5 cases)
-  - `RADICAL.03.02.016` — decarboxylative Giese addition (5 cases)
-  - `RADICAL.03.02.017` — halogenative Giese addition (5 cases)
-  - `RADICAL.03.02.018` — hydrofunctionalizing Giese addition (5 cases)
-  - `RADICAL.03.02.019` — cascade Giese addition (5 cases)
-  - `RADICAL.03.02.020` — strained-ring Giese addition (5 cases)
-  - `RADICAL.03.02.021` — aliphatic radical Michael addition (5 cases)
-  - `RADICAL.03.02.022` — benzylic radical Michael addition (5 cases)
-  - `RADICAL.03.02.023` — allylic radical Michael addition (5 cases)
-  - `RADICAL.03.02.024` — tertiary radical Michael addition (5 cases)
-  - `RADICAL.03.02.025` — secondary radical Michael addition (5 cases)
-
-- **RADICAL.03.03 — Radical addition to alkyne** (18 Level-4 groups)
-  - `RADICAL.03.03.001` — aliphatic vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.002` — benzylic vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.003` — allylic vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.004` — tertiary vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.005` — secondary vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.006` — primary vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.007` — heteroatom-adjacent vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.008` — carbonyl-adjacent vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.009` — electron-rich vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.010` — electron-poor vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.011` — intramolecular vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.012` — intermolecular vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.013` — photochemical vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.014` — thermal vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.015` — redox-neutral vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.016` — decarboxylative vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.017` — halogenative vinyl radical formation from alkyne (5 cases)
-  - `RADICAL.03.03.018` — hydrofunctionalizing vinyl radical formation from alkyne (5 cases)
-
-- **RADICAL.03.04 — Radical addition to aromatic / heteroaromatic ring** (22 Level-4 groups)
-  - `RADICAL.03.04.001` — aliphatic Minisci addition (5 cases)
-  - `RADICAL.03.04.002` — benzylic Minisci addition (5 cases)
-  - `RADICAL.03.04.003` — allylic Minisci addition (5 cases)
-  - `RADICAL.03.04.004` — tertiary Minisci addition (5 cases)
-  - `RADICAL.03.04.005` — secondary Minisci addition (5 cases)
-  - `RADICAL.03.04.006` — primary Minisci addition (5 cases)
-  - `RADICAL.03.04.007` — heteroatom-adjacent Minisci addition (5 cases)
-  - `RADICAL.03.04.008` — carbonyl-adjacent Minisci addition (5 cases)
-  - `RADICAL.03.04.009` — electron-rich Minisci addition (5 cases)
-  - `RADICAL.03.04.010` — electron-poor Minisci addition (5 cases)
-  - `RADICAL.03.04.011` — intramolecular Minisci addition (5 cases)
-  - `RADICAL.03.04.012` — intermolecular Minisci addition (5 cases)
-  - `RADICAL.03.04.013` — photochemical Minisci addition (5 cases)
-  - `RADICAL.03.04.014` — thermal Minisci addition (5 cases)
-  - `RADICAL.03.04.015` — redox-neutral Minisci addition (5 cases)
-  - `RADICAL.03.04.016` — decarboxylative Minisci addition (5 cases)
-  - `RADICAL.03.04.017` — halogenative Minisci addition (5 cases)
-  - `RADICAL.03.04.018` — hydrofunctionalizing Minisci addition (5 cases)
-  - `RADICAL.03.04.019` — cascade Minisci addition (5 cases)
-  - `RADICAL.03.04.020` — strained-ring Minisci addition (5 cases)
-  - `RADICAL.03.04.021` — aliphatic homolytic aromatic substitution (5 cases)
-  - `RADICAL.03.04.022` — benzylic homolytic aromatic substitution (5 cases)
-
-- **RADICAL.03.05 — Radical addition to carbonyl / imine** (15 Level-4 groups)
-  - `RADICAL.03.05.001` — aliphatic ketyl radical addition (5 cases)
-  - `RADICAL.03.05.002` — benzylic ketyl radical addition (5 cases)
-  - `RADICAL.03.05.003` — allylic ketyl radical addition (5 cases)
-  - `RADICAL.03.05.004` — tertiary ketyl radical addition (5 cases)
-  - `RADICAL.03.05.005` — secondary ketyl radical addition (5 cases)
-  - `RADICAL.03.05.006` — primary ketyl radical addition (5 cases)
-  - `RADICAL.03.05.007` — heteroatom-adjacent ketyl radical addition (5 cases)
-  - `RADICAL.03.05.008` — carbonyl-adjacent ketyl radical addition (5 cases)
-  - `RADICAL.03.05.009` — electron-rich ketyl radical addition (5 cases)
-  - `RADICAL.03.05.010` — electron-poor ketyl radical addition (5 cases)
-  - `RADICAL.03.05.011` — intramolecular ketyl radical addition (5 cases)
-  - `RADICAL.03.05.012` — intermolecular ketyl radical addition (5 cases)
-  - `RADICAL.03.05.013` — photochemical ketyl radical addition (5 cases)
-  - `RADICAL.03.05.014` — thermal ketyl radical addition (5 cases)
-  - `RADICAL.03.05.015` — redox-neutral ketyl radical addition (5 cases)
-
-- **RADICAL.03.06 — Radical addition to heteroatom multiple bond** (10 Level-4 groups)
-  - `RADICAL.03.06.001` — aliphatic radical addition to nitrile (5 cases)
-  - `RADICAL.03.06.002` — benzylic radical addition to nitrile (5 cases)
-  - `RADICAL.03.06.003` — allylic radical addition to nitrile (5 cases)
-  - `RADICAL.03.06.004` — tertiary radical addition to nitrile (5 cases)
-  - `RADICAL.03.06.005` — secondary radical addition to nitrile (5 cases)
-  - `RADICAL.03.06.006` — primary radical addition to nitrile (5 cases)
-  - `RADICAL.03.06.007` — heteroatom-adjacent radical addition to nitrile (5 cases)
-  - `RADICAL.03.06.008` — carbonyl-adjacent radical addition to nitrile (5 cases)
-  - `RADICAL.03.06.009` — electron-rich radical addition to nitrile (5 cases)
-  - `RADICAL.03.06.010` — electron-poor radical addition to nitrile (5 cases)
-
-### RADICAL.04 — Radical substitution
-
-- **RADICAL.04.01 — Radical substitution at saturated carbon** (28 Level-4 groups)
-  - `RADICAL.04.01.001` — aliphatic alkane chlorination (5 cases)
-  - `RADICAL.04.01.002` — benzylic alkane chlorination (5 cases)
-  - `RADICAL.04.01.003` — allylic alkane chlorination (5 cases)
-  - `RADICAL.04.01.004` — tertiary alkane chlorination (5 cases)
-  - `RADICAL.04.01.005` — secondary alkane chlorination (5 cases)
-  - `RADICAL.04.01.006` — primary alkane chlorination (5 cases)
-  - `RADICAL.04.01.007` — heteroatom-adjacent alkane chlorination (5 cases)
-  - `RADICAL.04.01.008` — carbonyl-adjacent alkane chlorination (5 cases)
-  - `RADICAL.04.01.009` — electron-rich alkane chlorination (5 cases)
-  - `RADICAL.04.01.010` — electron-poor alkane chlorination (5 cases)
-  - `RADICAL.04.01.011` — intramolecular alkane chlorination (5 cases)
-  - `RADICAL.04.01.012` — intermolecular alkane chlorination (5 cases)
-  - `RADICAL.04.01.013` — photochemical alkane chlorination (5 cases)
-  - `RADICAL.04.01.014` — thermal alkane chlorination (5 cases)
-  - `RADICAL.04.01.015` — redox-neutral alkane chlorination (5 cases)
-  - `RADICAL.04.01.016` — decarboxylative alkane chlorination (5 cases)
-  - `RADICAL.04.01.017` — halogenative alkane chlorination (5 cases)
-  - `RADICAL.04.01.018` — hydrofunctionalizing alkane chlorination (5 cases)
-  - `RADICAL.04.01.019` — cascade alkane chlorination (5 cases)
-  - `RADICAL.04.01.020` — strained-ring alkane chlorination (5 cases)
-  - `RADICAL.04.01.021` — aliphatic alkane bromination (5 cases)
-  - `RADICAL.04.01.022` — benzylic alkane bromination (5 cases)
-  - `RADICAL.04.01.023` — allylic alkane bromination (5 cases)
-  - `RADICAL.04.01.024` — tertiary alkane bromination (5 cases)
-  - `RADICAL.04.01.025` — secondary alkane bromination (5 cases)
-  - `RADICAL.04.01.026` — primary alkane bromination (5 cases)
-  - `RADICAL.04.01.027` — heteroatom-adjacent alkane bromination (5 cases)
-  - `RADICAL.04.01.028` — carbonyl-adjacent alkane bromination (5 cases)
-
-- **RADICAL.04.02 — Radical nucleophilic substitution** (20 Level-4 groups)
-  - `RADICAL.04.02.001` — aliphatic SRN1 substitution (5 cases)
-  - `RADICAL.04.02.002` — benzylic SRN1 substitution (5 cases)
-  - `RADICAL.04.02.003` — allylic SRN1 substitution (5 cases)
-  - `RADICAL.04.02.004` — tertiary SRN1 substitution (5 cases)
-  - `RADICAL.04.02.005` — secondary SRN1 substitution (5 cases)
-  - `RADICAL.04.02.006` — primary SRN1 substitution (5 cases)
-  - `RADICAL.04.02.007` — heteroatom-adjacent SRN1 substitution (5 cases)
-  - `RADICAL.04.02.008` — carbonyl-adjacent SRN1 substitution (5 cases)
-  - `RADICAL.04.02.009` — electron-rich SRN1 substitution (5 cases)
-  - `RADICAL.04.02.010` — electron-poor SRN1 substitution (5 cases)
-  - `RADICAL.04.02.011` — intramolecular SRN1 substitution (5 cases)
-  - `RADICAL.04.02.012` — intermolecular SRN1 substitution (5 cases)
-  - `RADICAL.04.02.013` — photochemical SRN1 substitution (5 cases)
-  - `RADICAL.04.02.014` — thermal SRN1 substitution (5 cases)
-  - `RADICAL.04.02.015` — redox-neutral SRN1 substitution (5 cases)
-  - `RADICAL.04.02.016` — decarboxylative SRN1 substitution (5 cases)
-  - `RADICAL.04.02.017` — halogenative SRN1 substitution (5 cases)
-  - `RADICAL.04.02.018` — hydrofunctionalizing SRN1 substitution (5 cases)
-  - `RADICAL.04.02.019` — cascade SRN1 substitution (5 cases)
-  - `RADICAL.04.02.020` — strained-ring SRN1 substitution (5 cases)
-
-- **RADICAL.04.03 — Decarboxylative radical substitution** (22 Level-4 groups)
-  - `RADICAL.04.03.001` — aliphatic Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.002` — benzylic Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.003` — allylic Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.004` — tertiary Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.005` — secondary Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.006` — primary Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.007` — heteroatom-adjacent Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.008` — carbonyl-adjacent Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.009` — electron-rich Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.010` — electron-poor Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.011` — intramolecular Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.012` — intermolecular Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.013` — photochemical Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.014` — thermal Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.015` — redox-neutral Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.016` — decarboxylative Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.017` — halogenative Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.018` — hydrofunctionalizing Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.019` — cascade Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.020` — strained-ring Barton decarboxylation (5 cases)
-  - `RADICAL.04.03.021` — aliphatic Hunsdiecker reaction (5 cases)
-  - `RADICAL.04.03.022` — benzylic Hunsdiecker reaction (5 cases)
-
-### RADICAL.05 — Radical fragmentation / beta-scission
-
-- **RADICAL.05.01 — β-Scission of carbon-centered radical** (22 Level-4 groups)
-  - `RADICAL.05.01.001` — aliphatic alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.002` — benzylic alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.003` — allylic alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.004` — tertiary alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.005` — secondary alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.006` — primary alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.007` — heteroatom-adjacent alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.008` — carbonyl-adjacent alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.009` — electron-rich alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.010` — electron-poor alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.011` — intramolecular alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.012` — intermolecular alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.013` — photochemical alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.014` — thermal alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.015` — redox-neutral alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.016` — decarboxylative alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.017` — halogenative alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.018` — hydrofunctionalizing alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.019` — cascade alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.020` — strained-ring alkoxy radical β-scission (5 cases)
-  - `RADICAL.05.01.021` — aliphatic cyclopropylcarbinyl ring opening (5 cases)
-  - `RADICAL.05.01.022` — benzylic cyclopropylcarbinyl ring opening (5 cases)
-
-- **RADICAL.05.02 — Radical decarboxylation / decarbonylation** (18 Level-4 groups)
-  - `RADICAL.05.02.001` — aliphatic acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.002` — benzylic acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.003` — allylic acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.004` — tertiary acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.005` — secondary acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.006` — primary acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.007` — heteroatom-adjacent acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.008` — carbonyl-adjacent acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.009` — electron-rich acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.010` — electron-poor acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.011` — intramolecular acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.012` — intermolecular acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.013` — photochemical acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.014` — thermal acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.015` — redox-neutral acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.016` — decarboxylative acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.017` — halogenative acyloxy radical decarboxylation (5 cases)
-  - `RADICAL.05.02.018` — hydrofunctionalizing acyloxy radical decarboxylation (5 cases)
-
-- **RADICAL.05.03 — Norrish-type photofragmentation** (12 Level-4 groups)
-  - `RADICAL.05.03.001` — aliphatic Norrish type I cleavage (5 cases)
-  - `RADICAL.05.03.002` — benzylic Norrish type I cleavage (5 cases)
-  - `RADICAL.05.03.003` — allylic Norrish type I cleavage (5 cases)
-  - `RADICAL.05.03.004` — tertiary Norrish type I cleavage (5 cases)
-  - `RADICAL.05.03.005` — secondary Norrish type I cleavage (5 cases)
-  - `RADICAL.05.03.006` — primary Norrish type I cleavage (5 cases)
-  - `RADICAL.05.03.007` — heteroatom-adjacent Norrish type I cleavage (5 cases)
-  - `RADICAL.05.03.008` — carbonyl-adjacent Norrish type I cleavage (5 cases)
-  - `RADICAL.05.03.009` — electron-rich Norrish type I cleavage (5 cases)
-  - `RADICAL.05.03.010` — electron-poor Norrish type I cleavage (5 cases)
-  - `RADICAL.05.03.011` — intramolecular Norrish type I cleavage (5 cases)
-  - `RADICAL.05.03.012` — intermolecular Norrish type I cleavage (5 cases)
-
-- **RADICAL.05.04 — Heteroatom-centered radical fragmentation** (8 Level-4 groups)
-  - `RADICAL.05.04.001` — aliphatic alkoxy radical C–C cleavage (5 cases)
-  - `RADICAL.05.04.002` — benzylic alkoxy radical C–C cleavage (5 cases)
-  - `RADICAL.05.04.003` — allylic alkoxy radical C–C cleavage (5 cases)
-  - `RADICAL.05.04.004` — tertiary alkoxy radical C–C cleavage (5 cases)
-  - `RADICAL.05.04.005` — secondary alkoxy radical C–C cleavage (5 cases)
-  - `RADICAL.05.04.006` — primary alkoxy radical C–C cleavage (5 cases)
-  - `RADICAL.05.04.007` — heteroatom-adjacent alkoxy radical C–C cleavage (5 cases)
-  - `RADICAL.05.04.008` — carbonyl-adjacent alkoxy radical C–C cleavage (5 cases)
-
-### RADICAL.06 — Radical cyclization / cascade
-
-- **RADICAL.06.01 — 5-exo-trig radical cyclization** (24 Level-4 groups)
-  - `RADICAL.06.01.001` — aliphatic hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.002` — benzylic hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.003` — allylic hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.004` — tertiary hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.005` — secondary hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.006` — primary hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.007` — heteroatom-adjacent hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.008` — carbonyl-adjacent hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.009` — electron-rich hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.010` — electron-poor hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.011` — intramolecular hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.012` — intermolecular hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.013` — photochemical hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.014` — thermal hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.015` — redox-neutral hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.016` — decarboxylative hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.017` — halogenative hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.018` — hydrofunctionalizing hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.019` — cascade hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.020` — strained-ring hexenyl radical cyclization (5 cases)
-  - `RADICAL.06.01.021` — aliphatic 5-exo carbocyclization (5 cases)
-  - `RADICAL.06.01.022` — benzylic 5-exo carbocyclization (5 cases)
-  - `RADICAL.06.01.023` — allylic 5-exo carbocyclization (5 cases)
-  - `RADICAL.06.01.024` — tertiary 5-exo carbocyclization (5 cases)
-
-- **RADICAL.06.02 — 6-exo-trig radical cyclization** (18 Level-4 groups)
-  - `RADICAL.06.02.001` — aliphatic 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.002` — benzylic 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.003` — allylic 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.004` — tertiary 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.005` — secondary 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.006` — primary 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.007` — heteroatom-adjacent 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.008` — carbonyl-adjacent 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.009` — electron-rich 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.010` — electron-poor 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.011` — intramolecular 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.012` — intermolecular 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.013` — photochemical 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.014` — thermal 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.015` — redox-neutral 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.016` — decarboxylative 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.017` — halogenative 6-exo carbocyclization (5 cases)
-  - `RADICAL.06.02.018` — hydrofunctionalizing 6-exo carbocyclization (5 cases)
-
-- **RADICAL.06.03 — Atom-transfer radical cyclization** (18 Level-4 groups)
-  - `RADICAL.06.03.001` — aliphatic ATRA cyclization (5 cases)
-  - `RADICAL.06.03.002` — benzylic ATRA cyclization (5 cases)
-  - `RADICAL.06.03.003` — allylic ATRA cyclization (5 cases)
-  - `RADICAL.06.03.004` — tertiary ATRA cyclization (5 cases)
-  - `RADICAL.06.03.005` — secondary ATRA cyclization (5 cases)
-  - `RADICAL.06.03.006` — primary ATRA cyclization (5 cases)
-  - `RADICAL.06.03.007` — heteroatom-adjacent ATRA cyclization (5 cases)
-  - `RADICAL.06.03.008` — carbonyl-adjacent ATRA cyclization (5 cases)
-  - `RADICAL.06.03.009` — electron-rich ATRA cyclization (5 cases)
-  - `RADICAL.06.03.010` — electron-poor ATRA cyclization (5 cases)
-  - `RADICAL.06.03.011` — intramolecular ATRA cyclization (5 cases)
-  - `RADICAL.06.03.012` — intermolecular ATRA cyclization (5 cases)
-  - `RADICAL.06.03.013` — photochemical ATRA cyclization (5 cases)
-  - `RADICAL.06.03.014` — thermal ATRA cyclization (5 cases)
-  - `RADICAL.06.03.015` — redox-neutral ATRA cyclization (5 cases)
-  - `RADICAL.06.03.016` — decarboxylative ATRA cyclization (5 cases)
-  - `RADICAL.06.03.017` — halogenative ATRA cyclization (5 cases)
-  - `RADICAL.06.03.018` — hydrofunctionalizing ATRA cyclization (5 cases)
-
-- **RADICAL.06.04 — Radical cascade / tandem sequence** (20 Level-4 groups)
-  - `RADICAL.06.04.001` — aliphatic radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.002` — benzylic radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.003` — allylic radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.004` — tertiary radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.005` — secondary radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.006` — primary radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.007` — heteroatom-adjacent radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.008` — carbonyl-adjacent radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.009` — electron-rich radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.010` — electron-poor radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.011` — intramolecular radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.012` — intermolecular radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.013` — photochemical radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.014` — thermal radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.015` — redox-neutral radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.016` — decarboxylative radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.017` — halogenative radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.018` — hydrofunctionalizing radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.019` — cascade radical cyclization–addition cascade (5 cases)
-  - `RADICAL.06.04.020` — strained-ring radical cyclization–addition cascade (5 cases)
-
-### RADICAL.07 — Radical rearrangement / migration
-
-- **RADICAL.07.01 — 1,2-Radical migration** (18 Level-4 groups)
-  - `RADICAL.07.01.001` — aliphatic 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.002` — benzylic 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.003` — allylic 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.004` — tertiary 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.005` — secondary 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.006` — primary 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.007` — heteroatom-adjacent 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.008` — carbonyl-adjacent 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.009` — electron-rich 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.010` — electron-poor 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.011` — intramolecular 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.012` — intermolecular 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.013` — photochemical 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.014` — thermal 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.015` — redox-neutral 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.016` — decarboxylative 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.017` — halogenative 1,2-aryl radical migration (5 cases)
-  - `RADICAL.07.01.018` — hydrofunctionalizing 1,2-aryl radical migration (5 cases)
-
-- **RADICAL.07.02 — Radical ring expansion / contraction** (16 Level-4 groups)
-  - `RADICAL.07.02.001` — aliphatic Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.002` — benzylic Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.003` — allylic Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.004` — tertiary Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.005` — secondary Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.006` — primary Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.007` — heteroatom-adjacent Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.008` — carbonyl-adjacent Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.009` — electron-rich Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.010` — electron-poor Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.011` — intramolecular Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.012` — intermolecular Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.013` — photochemical Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.014` — thermal Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.015` — redox-neutral Dowd–Beckwith ring expansion (5 cases)
-  - `RADICAL.07.02.016` — decarboxylative Dowd–Beckwith ring expansion (5 cases)
-
-- **RADICAL.07.03 — Heteroatom radical rearrangement** (16 Level-4 groups)
-  - `RADICAL.07.03.001` — aliphatic alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.002` — benzylic alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.003` — allylic alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.004` — tertiary alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.005` — secondary alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.006` — primary alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.007` — heteroatom-adjacent alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.008` — carbonyl-adjacent alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.009` — electron-rich alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.010` — electron-poor alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.011` — intramolecular alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.012` — intermolecular alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.013` — photochemical alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.014` — thermal alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.015` — redox-neutral alkoxy radical rearrangement (5 cases)
-  - `RADICAL.07.03.016` — decarboxylative alkoxy radical rearrangement (5 cases)
-
-### RADICAL.08 — SET / radical-polar crossover
-
-- **RADICAL.08.01 — Reductive SET radical process** (20 Level-4 groups)
-  - `RADICAL.08.01.001` — aliphatic SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.002` — benzylic SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.003` — allylic SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.004` — tertiary SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.005` — secondary SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.006` — primary SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.007` — heteroatom-adjacent SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.008` — carbonyl-adjacent SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.009` — electron-rich SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.010` — electron-poor SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.011` — intramolecular SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.012` — intermolecular SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.013` — photochemical SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.014` — thermal SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.015` — redox-neutral SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.016` — decarboxylative SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.017` — halogenative SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.018` — hydrofunctionalizing SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.019` — cascade SmI2-mediated ketyl coupling (5 cases)
-  - `RADICAL.08.01.020` — strained-ring SmI2-mediated ketyl coupling (5 cases)
-
-- **RADICAL.08.02 — Oxidative SET radical process** (18 Level-4 groups)
-  - `RADICAL.08.02.001` — aliphatic Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.002` — benzylic Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.003` — allylic Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.004` — tertiary Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.005` — secondary Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.006` — primary Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.007` — heteroatom-adjacent Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.008` — carbonyl-adjacent Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.009` — electron-rich Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.010` — electron-poor Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.011` — intramolecular Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.012` — intermolecular Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.013` — photochemical Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.014` — thermal Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.015` — redox-neutral Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.016` — decarboxylative Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.017` — halogenative Kolbe electrolysis (5 cases)
-  - `RADICAL.08.02.018` — hydrofunctionalizing Kolbe electrolysis (5 cases)
-
-- **RADICAL.08.03 — Photoredox radical process** (18 Level-4 groups)
-  - `RADICAL.08.03.001` — aliphatic photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.002` — benzylic photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.003` — allylic photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.004` — tertiary photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.005` — secondary photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.006` — primary photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.007` — heteroatom-adjacent photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.008` — carbonyl-adjacent photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.009` — electron-rich photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.010` — electron-poor photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.011` — intramolecular photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.012` — intermolecular photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.013` — photochemical photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.014` — thermal photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.015` — redox-neutral photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.016` — decarboxylative photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.017` — halogenative photoredox reductive quench (5 cases)
-  - `RADICAL.08.03.018` — hydrofunctionalizing photoredox reductive quench (5 cases)
-
-- **RADICAL.08.04 — Radical-polar crossover** (14 Level-4 groups)
-  - `RADICAL.08.04.001` — aliphatic radical oxidation to carbocation (5 cases)
-  - `RADICAL.08.04.002` — benzylic radical oxidation to carbocation (5 cases)
-  - `RADICAL.08.04.003` — allylic radical oxidation to carbocation (5 cases)
-  - `RADICAL.08.04.004` — tertiary radical oxidation to carbocation (5 cases)
-  - `RADICAL.08.04.005` — secondary radical oxidation to carbocation (5 cases)
-  - `RADICAL.08.04.006` — primary radical oxidation to carbocation (5 cases)
-  - `RADICAL.08.04.007` — heteroatom-adjacent radical oxidation to carbocation (5 cases)
-  - `RADICAL.08.04.008` — carbonyl-adjacent radical oxidation to carbocation (5 cases)
-  - `RADICAL.08.04.009` — electron-rich radical oxidation to carbocation (5 cases)
-  - `RADICAL.08.04.010` — electron-poor radical oxidation to carbocation (5 cases)
-  - `RADICAL.08.04.011` — intramolecular radical oxidation to carbocation (5 cases)
-  - `RADICAL.08.04.012` — intermolecular radical oxidation to carbocation (5 cases)
-  - `RADICAL.08.04.013` — photochemical radical oxidation to carbocation (5 cases)
-  - `RADICAL.08.04.014` — thermal radical oxidation to carbocation (5 cases)
-
-### RADICAL.09 — Radical polymerization
-
-- **RADICAL.09.01 — Free-radical chain polymerization** (28 Level-4 groups)
-  - `RADICAL.09.01.001` — aliphatic styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.002` — benzylic styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.003` — allylic styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.004` — tertiary styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.005` — secondary styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.006` — primary styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.007` — heteroatom-adjacent styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.008` — carbonyl-adjacent styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.009` — electron-rich styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.010` — electron-poor styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.011` — intramolecular styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.012` — intermolecular styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.013` — photochemical styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.014` — thermal styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.015` — redox-neutral styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.016` — decarboxylative styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.017` — halogenative styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.018` — hydrofunctionalizing styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.019` — cascade styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.020` — strained-ring styrene radical polymerization (5 cases)
-  - `RADICAL.09.01.021` — aliphatic acrylate radical polymerization (5 cases)
-  - `RADICAL.09.01.022` — benzylic acrylate radical polymerization (5 cases)
-  - `RADICAL.09.01.023` — allylic acrylate radical polymerization (5 cases)
-  - `RADICAL.09.01.024` — tertiary acrylate radical polymerization (5 cases)
-  - `RADICAL.09.01.025` — secondary acrylate radical polymerization (5 cases)
-  - `RADICAL.09.01.026` — primary acrylate radical polymerization (5 cases)
-  - `RADICAL.09.01.027` — heteroatom-adjacent acrylate radical polymerization (5 cases)
-  - `RADICAL.09.01.028` — carbonyl-adjacent acrylate radical polymerization (5 cases)
-
-- **RADICAL.09.02 — Controlled radical polymerization** (22 Level-4 groups)
-  - `RADICAL.09.02.001` — aliphatic ATRP (5 cases)
-  - `RADICAL.09.02.002` — benzylic ATRP (5 cases)
-  - `RADICAL.09.02.003` — allylic ATRP (5 cases)
-  - `RADICAL.09.02.004` — tertiary ATRP (5 cases)
-  - `RADICAL.09.02.005` — secondary ATRP (5 cases)
-  - `RADICAL.09.02.006` — primary ATRP (5 cases)
-  - `RADICAL.09.02.007` — heteroatom-adjacent ATRP (5 cases)
-  - `RADICAL.09.02.008` — carbonyl-adjacent ATRP (5 cases)
-  - `RADICAL.09.02.009` — electron-rich ATRP (5 cases)
-  - `RADICAL.09.02.010` — electron-poor ATRP (5 cases)
-  - `RADICAL.09.02.011` — intramolecular ATRP (5 cases)
-  - `RADICAL.09.02.012` — intermolecular ATRP (5 cases)
-  - `RADICAL.09.02.013` — photochemical ATRP (5 cases)
-  - `RADICAL.09.02.014` — thermal ATRP (5 cases)
-  - `RADICAL.09.02.015` — redox-neutral ATRP (5 cases)
-  - `RADICAL.09.02.016` — decarboxylative ATRP (5 cases)
-  - `RADICAL.09.02.017` — halogenative ATRP (5 cases)
-  - `RADICAL.09.02.018` — hydrofunctionalizing ATRP (5 cases)
-  - `RADICAL.09.02.019` — cascade ATRP (5 cases)
-  - `RADICAL.09.02.020` — strained-ring ATRP (5 cases)
-  - `RADICAL.09.02.021` — aliphatic RAFT polymerization (5 cases)
-  - `RADICAL.09.02.022` — benzylic RAFT polymerization (5 cases)
-
-### RADICAL.10 — Radical / H-atom / molecular-hydrogen redox
-
-- **RADICAL.10.01 — Molecular-hydrogen addition to C=C / C≡C** (15 Level-4 groups)
-  - `RADICAL.10.01.001` — Alkene hydrogenation by H2 (5 cases)
-  - `RADICAL.10.01.002` — Terminal alkene hydrogenation by H2 (5 cases)
-  - `RADICAL.10.01.003` — Internal alkene hydrogenation by H2 (5 cases)
-  - `RADICAL.10.01.004` — Styrene hydrogenation by H2 (5 cases)
-  - `RADICAL.10.01.005` — Diene hydrogenation by H2 (5 cases)
-  - `RADICAL.10.01.006` — Enone C=C-selective hydrogenation by H2 (5 cases)
-  - `RADICAL.10.01.007` — Alkyne hydrogenation by H2 (5 cases)
-  - `RADICAL.10.01.008` — Alkyne semihydrogenation by H2 (5 cases)
-  - `RADICAL.10.01.009` — Lindlar-type alkyne semihydrogenation (5 cases)
-  - `RADICAL.10.01.010` — Dissolving-metal alkyne anti-reduction (5 cases)
-  - `RADICAL.10.01.011` — Aromatic ring hydrogenation by H2 (5 cases)
-  - `RADICAL.10.01.012` — Heteroarene hydrogenation by H2 (5 cases)
-  - `RADICAL.10.01.013` — Transfer hydrogenation of alkenes (5 cases)
-  - `RADICAL.10.01.014` — Hydrogenative hydrofunctionalization of alkenes (5 cases)
-  - `RADICAL.10.01.015` — Hydrogenation of strained alkenes (5 cases)
-
-- **RADICAL.10.02 — Molecular-hydrogen addition to C=O / C=N / C≡N** (15 Level-4 groups)
-  - `RADICAL.10.02.001` — Aldehyde hydrogenation by H2 (5 cases)
-  - `RADICAL.10.02.002` — Ketone hydrogenation by H2 (5 cases)
-  - `RADICAL.10.02.003` — Asymmetric ketone hydrogenation by H2 (5 cases)
-  - `RADICAL.10.02.004` — Noyori-type ketone hydrogenation (5 cases)
-  - `RADICAL.10.02.005` — Ester hydrogenation by H2 (5 cases)
-  - `RADICAL.10.02.006` — Carboxylic-acid hydrogenation by H2 (5 cases)
-  - `RADICAL.10.02.007` — Amide hydrogenation by H2 (5 cases)
-  - `RADICAL.10.02.008` — Imine hydrogenation by H2 (5 cases)
-  - `RADICAL.10.02.009` — Enamine hydrogenation by H2 (5 cases)
-  - `RADICAL.10.02.010` — Nitrile hydrogenation by H2 (5 cases)
-  - `RADICAL.10.02.011` — Oxime hydrogenation by H2 (5 cases)
-  - `RADICAL.10.02.012` — Nitroarene hydrogenation by H2 (5 cases)
-  - `RADICAL.10.02.013` — CO2 hydrogenation (5 cases)
-  - `RADICAL.10.02.014` — Carbonyl transfer hydrogenation (5 cases)
-  - `RADICAL.10.02.015` — Imine transfer hydrogenation (5 cases)
-
-- **RADICAL.10.03 — Hydrogenolysis / reductive bond cleavage by H2 or H-atom pathway** (12 Level-4 groups)
-  - `RADICAL.10.03.001` — Benzyl ether hydrogenolysis (5 cases)
-  - `RADICAL.10.03.002` — Benzyl ester hydrogenolysis (5 cases)
-  - `RADICAL.10.03.003` — N-Cbz hydrogenolysis (5 cases)
-  - `RADICAL.10.03.004` — Aryl halide hydrodehalogenation (5 cases)
-  - `RADICAL.10.03.005` — Alkyl halide hydrodehalogenation (5 cases)
-  - `RADICAL.10.03.006` — Reductive N–O bond cleavage (5 cases)
-  - `RADICAL.10.03.007` — Reductive S–S bond cleavage (5 cases)
-  - `RADICAL.10.03.008` — Hydrogenolysis of epoxides (5 cases)
-  - `RADICAL.10.03.009` — Hydrogenolysis of acetals (5 cases)
-  - `RADICAL.10.03.010` — Hydrogenolysis of sulfones (5 cases)
-  - `RADICAL.10.03.011` — Hydrogenolysis of sulfonyl protecting groups (5 cases)
-  - `RADICAL.10.03.012` — Hydrogenolysis of allylic C–X bonds (5 cases)
-
-- **RADICAL.10.04 — Single-electron / radical reduction of unsaturated functional groups** (12 Level-4 groups)
-  - `RADICAL.10.04.001` — SET carbonyl-to-ketyl reduction (5 cases)
-  - `RADICAL.10.04.002` — Pinacolizing ketyl coupling (5 cases)
-  - `RADICAL.10.04.003` — SmI2-mediated carbonyl reduction (5 cases)
-  - `RADICAL.10.04.004` — Dissolving-metal arene reduction (5 cases)
-  - `RADICAL.10.04.005` — Birch reduction radical-anion step (5 cases)
-  - `RADICAL.10.04.006` — Reductive dehalogenation by SET (5 cases)
-  - `RADICAL.10.04.007` — Reductive radical cyclization (5 cases)
-  - `RADICAL.10.04.008` — Reductive decarboxylation to carbon radical (5 cases)
-  - `RADICAL.10.04.009` — Reductive nitroarene radical pathway (5 cases)
-  - `RADICAL.10.04.010` — Reductive imine radical-anion pathway (5 cases)
-  - `RADICAL.10.04.011` — Radical anion fragmentation (5 cases)
-  - `RADICAL.10.04.012` — Photoredox reductive generation of carbon radical (5 cases)
-
-- **RADICAL.10.05 — Single-electron / radical oxidation** (12 Level-4 groups)
-  - `RADICAL.10.05.001` — Amine radical-cation oxidation (5 cases)
-  - `RADICAL.10.05.002` — Enamine radical-cation oxidation (5 cases)
-  - `RADICAL.10.05.003` — Phenoxy radical oxidation (5 cases)
-  - `RADICAL.10.05.004` — Thiyl radical oxidation (5 cases)
-  - `RADICAL.10.05.005` — Carboxylate oxidative decarboxylation (5 cases)
-  - `RADICAL.10.05.006` — Kolbe electrolysis oxidation (5 cases)
-  - `RADICAL.10.05.007` — Hofer–Moest oxidative decarboxylation (5 cases)
-  - `RADICAL.10.05.008` — Photoredox oxidative radical generation (5 cases)
-  - `RADICAL.10.05.009` — Arene radical-cation oxidation (5 cases)
-  - `RADICAL.10.05.010` — Sulfide radical-cation oxidation (5 cases)
-  - `RADICAL.10.05.011` — Oxidative C–H radical generation (5 cases)
-  - `RADICAL.10.05.012` — Oxidative radical-polar crossover (5 cases)
-
-- **RADICAL.10.06 — Radical oxygenation / autoxidation** (10 Level-4 groups)
-  - `RADICAL.10.06.001` — Benzylic autoxidation (5 cases)
-  - `RADICAL.10.06.002` — Allylic autoxidation (5 cases)
-  - `RADICAL.10.06.003` — Radical peroxidation (5 cases)
-  - `RADICAL.10.06.004` — Hydroperoxide formation by radical chain (5 cases)
-  - `RADICAL.10.06.005` — Lipid peroxidation model reaction (5 cases)
-  - `RADICAL.10.06.006` — Triplet-oxygen radical trapping (5 cases)
-  - `RADICAL.10.06.007` — Peroxy radical propagation (5 cases)
-  - `RADICAL.10.06.008` — Alkoxy radical formation by peroxide cleavage (5 cases)
-  - `RADICAL.10.06.009` — Radical C–H oxygenation (5 cases)
-  - `RADICAL.10.06.010` — Radical hydroperoxide reduction sequence (5 cases)
-
-## PERICYCLIC — Pericyclic / concerted cyclic chemistry
-
-### PERICYCLIC.01 — Cycloaddition
-
-- **PERICYCLIC.01.01 — Thermal [4+2] cycloaddition** (30 Level-4 groups)
-  - `PERICYCLIC.01.01.001` — thermal Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.002` — photochemical Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.003` — intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.004` — intermolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.005` — electron-rich Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.006` — electron-poor Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.007` — heteroatom-containing Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.008` — cationic Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.009` — anion-accelerated Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.010` — strained Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.011` — acyclic Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.012` — cyclic Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.013` — tandem Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.014` — regioselective Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.015` — stereospecific Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.016` — thermal intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.017` — photochemical intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.018` — intramolecular intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.019` — intermolecular intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.020` — electron-rich intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.021` — electron-poor intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.022` — heteroatom-containing intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.023` — cationic intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.024` — anion-accelerated intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.025` — strained intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.026` — acyclic intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.027` — cyclic intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.028` — tandem intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.029` — regioselective intramolecular Diels–Alder cycloaddition (5 cases)
-  - `PERICYCLIC.01.01.030` — stereospecific intramolecular Diels–Alder cycloaddition (5 cases)
-
-- **PERICYCLIC.01.02 — Photochemical [2+2] cycloaddition** (22 Level-4 groups)
-  - `PERICYCLIC.01.02.001` — thermal alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.002` — photochemical alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.003` — intramolecular alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.004` — intermolecular alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.005` — electron-rich alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.006` — electron-poor alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.007` — heteroatom-containing alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.008` — cationic alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.009` — anion-accelerated alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.010` — strained alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.011` — acyclic alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.012` — cyclic alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.013` — tandem alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.014` — regioselective alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.015` — stereospecific alkene–alkene [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.016` — thermal enone [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.017` — photochemical enone [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.018` — intramolecular enone [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.019` — intermolecular enone [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.020` — electron-rich enone [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.021` — electron-poor enone [2+2] photocycloaddition (5 cases)
-  - `PERICYCLIC.01.02.022` — heteroatom-containing enone [2+2] photocycloaddition (5 cases)
-
-- **PERICYCLIC.01.03 — Thermal [2+2] / ketene cycloaddition** (18 Level-4 groups)
-  - `PERICYCLIC.01.03.001` — thermal ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.002` — photochemical ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.003` — intramolecular ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.004` — intermolecular ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.005` — electron-rich ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.006` — electron-poor ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.007` — heteroatom-containing ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.008` — cationic ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.009` — anion-accelerated ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.010` — strained ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.011` — acyclic ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.012` — cyclic ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.013` — tandem ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.014` — regioselective ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.015` — stereospecific ketene–alkene [2+2] cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.016` — thermal Staudinger ketene–imine cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.017` — photochemical Staudinger ketene–imine cycloaddition (5 cases)
-  - `PERICYCLIC.01.03.018` — intramolecular Staudinger ketene–imine cycloaddition (5 cases)
-
-- **PERICYCLIC.01.04 — 1,3-Dipolar [3+2] cycloaddition** (25 Level-4 groups)
-  - `PERICYCLIC.01.04.001` — thermal azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.002` — photochemical azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.003` — intramolecular azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.004` — intermolecular azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.005` — electron-rich azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.006` — electron-poor azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.007` — heteroatom-containing azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.008` — cationic azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.009` — anion-accelerated azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.010` — strained azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.011` — acyclic azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.012` — cyclic azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.013` — tandem azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.014` — regioselective azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.015` — stereospecific azide–alkyne cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.016` — thermal Huisgen cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.017` — photochemical Huisgen cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.018` — intramolecular Huisgen cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.019` — intermolecular Huisgen cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.020` — electron-rich Huisgen cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.021` — electron-poor Huisgen cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.022` — heteroatom-containing Huisgen cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.023` — cationic Huisgen cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.024` — anion-accelerated Huisgen cycloaddition (5 cases)
-  - `PERICYCLIC.01.04.025` — strained Huisgen cycloaddition (5 cases)
-
-- **PERICYCLIC.01.05 — Higher-order cycloaddition** (15 Level-4 groups)
-  - `PERICYCLIC.01.05.001` — thermal [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.002` — photochemical [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.003` — intramolecular [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.004` — intermolecular [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.005` — electron-rich [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.006` — electron-poor [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.007` — heteroatom-containing [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.008` — cationic [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.009` — anion-accelerated [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.010` — strained [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.011` — acyclic [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.012` — cyclic [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.013` — tandem [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.014` — regioselective [4+3] cycloaddition (5 cases)
-  - `PERICYCLIC.01.05.015` — stereospecific [4+3] cycloaddition (5 cases)
-
-### PERICYCLIC.02 — Electrocyclization
-
-- **PERICYCLIC.02.01 — 4π electrocyclization** (14 Level-4 groups)
-  - `PERICYCLIC.02.01.001` — thermal thermal 4π conrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.01.002` — photochemical thermal 4π conrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.01.003` — intramolecular thermal 4π conrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.01.004` — intermolecular thermal 4π conrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.01.005` — electron-rich thermal 4π conrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.01.006` — electron-poor thermal 4π conrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.01.007` — heteroatom-containing thermal 4π conrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.01.008` — cationic thermal 4π conrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.01.009` — anion-accelerated thermal 4π conrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.01.010` — strained thermal 4π conrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.01.011` — acyclic thermal 4π conrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.01.012` — cyclic thermal 4π conrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.01.013` — tandem thermal 4π conrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.01.014` — regioselective thermal 4π conrotatory electrocyclization (5 cases)
-
-- **PERICYCLIC.02.02 — 6π electrocyclization** (14 Level-4 groups)
-  - `PERICYCLIC.02.02.001` — thermal thermal 6π disrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.02.002` — photochemical thermal 6π disrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.02.003` — intramolecular thermal 6π disrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.02.004` — intermolecular thermal 6π disrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.02.005` — electron-rich thermal 6π disrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.02.006` — electron-poor thermal 6π disrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.02.007` — heteroatom-containing thermal 6π disrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.02.008` — cationic thermal 6π disrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.02.009` — anion-accelerated thermal 6π disrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.02.010` — strained thermal 6π disrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.02.011` — acyclic thermal 6π disrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.02.012` — cyclic thermal 6π disrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.02.013` — tandem thermal 6π disrotatory electrocyclization (5 cases)
-  - `PERICYCLIC.02.02.014` — regioselective thermal 6π disrotatory electrocyclization (5 cases)
-
-- **PERICYCLIC.02.03 — Cationic electrocyclization** (12 Level-4 groups)
-  - `PERICYCLIC.02.03.001` — thermal Nazarov cyclization (5 cases)
-  - `PERICYCLIC.02.03.002` — photochemical Nazarov cyclization (5 cases)
-  - `PERICYCLIC.02.03.003` — intramolecular Nazarov cyclization (5 cases)
-  - `PERICYCLIC.02.03.004` — intermolecular Nazarov cyclization (5 cases)
-  - `PERICYCLIC.02.03.005` — electron-rich Nazarov cyclization (5 cases)
-  - `PERICYCLIC.02.03.006` — electron-poor Nazarov cyclization (5 cases)
-  - `PERICYCLIC.02.03.007` — heteroatom-containing Nazarov cyclization (5 cases)
-  - `PERICYCLIC.02.03.008` — cationic Nazarov cyclization (5 cases)
-  - `PERICYCLIC.02.03.009` — anion-accelerated Nazarov cyclization (5 cases)
-  - `PERICYCLIC.02.03.010` — strained Nazarov cyclization (5 cases)
-  - `PERICYCLIC.02.03.011` — acyclic Nazarov cyclization (5 cases)
-  - `PERICYCLIC.02.03.012` — cyclic Nazarov cyclization (5 cases)
-
-- **PERICYCLIC.02.04 — Higher π electrocyclization** (10 Level-4 groups)
-  - `PERICYCLIC.02.04.001` — thermal 8π electrocyclization (5 cases)
-  - `PERICYCLIC.02.04.002` — photochemical 8π electrocyclization (5 cases)
-  - `PERICYCLIC.02.04.003` — intramolecular 8π electrocyclization (5 cases)
-  - `PERICYCLIC.02.04.004` — intermolecular 8π electrocyclization (5 cases)
-  - `PERICYCLIC.02.04.005` — electron-rich 8π electrocyclization (5 cases)
-  - `PERICYCLIC.02.04.006` — electron-poor 8π electrocyclization (5 cases)
-  - `PERICYCLIC.02.04.007` — heteroatom-containing 8π electrocyclization (5 cases)
-  - `PERICYCLIC.02.04.008` — cationic 8π electrocyclization (5 cases)
-  - `PERICYCLIC.02.04.009` — anion-accelerated 8π electrocyclization (5 cases)
-  - `PERICYCLIC.02.04.010` — strained 8π electrocyclization (5 cases)
-
-### PERICYCLIC.03 — Sigmatropic rearrangement
-
-- **PERICYCLIC.03.01 — [3,3]-Sigmatropic rearrangement** (25 Level-4 groups)
-  - `PERICYCLIC.03.01.001` — thermal Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.002` — photochemical Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.003` — intramolecular Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.004` — intermolecular Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.005` — electron-rich Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.006` — electron-poor Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.007` — heteroatom-containing Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.008` — cationic Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.009` — anion-accelerated Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.010` — strained Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.011` — acyclic Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.012` — cyclic Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.013` — tandem Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.014` — regioselective Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.015` — stereospecific Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.016` — thermal oxy-Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.017` — photochemical oxy-Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.018` — intramolecular oxy-Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.019` — intermolecular oxy-Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.020` — electron-rich oxy-Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.021` — electron-poor oxy-Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.022` — heteroatom-containing oxy-Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.023` — cationic oxy-Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.024` — anion-accelerated oxy-Cope rearrangement (5 cases)
-  - `PERICYCLIC.03.01.025` — strained oxy-Cope rearrangement (5 cases)
-
-- **PERICYCLIC.03.02 — [2,3]-Sigmatropic rearrangement** (18 Level-4 groups)
-  - `PERICYCLIC.03.02.001` — thermal [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.002` — photochemical [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.003` — intramolecular [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.004` — intermolecular [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.005` — electron-rich [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.006` — electron-poor [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.007` — heteroatom-containing [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.008` — cationic [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.009` — anion-accelerated [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.010` — strained [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.011` — acyclic [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.012` — cyclic [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.013` — tandem [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.014` — regioselective [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.015` — stereospecific [2,3]-Wittig rearrangement (5 cases)
-  - `PERICYCLIC.03.02.016` — thermal Mislow–Evans rearrangement (5 cases)
-  - `PERICYCLIC.03.02.017` — photochemical Mislow–Evans rearrangement (5 cases)
-  - `PERICYCLIC.03.02.018` — intramolecular Mislow–Evans rearrangement (5 cases)
-
-- **PERICYCLIC.03.03 — Hydrogen sigmatropic shift** (14 Level-4 groups)
-  - `PERICYCLIC.03.03.001` — thermal [1,5]-hydrogen shift (5 cases)
-  - `PERICYCLIC.03.03.002` — photochemical [1,5]-hydrogen shift (5 cases)
-  - `PERICYCLIC.03.03.003` — intramolecular [1,5]-hydrogen shift (5 cases)
-  - `PERICYCLIC.03.03.004` — intermolecular [1,5]-hydrogen shift (5 cases)
-  - `PERICYCLIC.03.03.005` — electron-rich [1,5]-hydrogen shift (5 cases)
-  - `PERICYCLIC.03.03.006` — electron-poor [1,5]-hydrogen shift (5 cases)
-  - `PERICYCLIC.03.03.007` — heteroatom-containing [1,5]-hydrogen shift (5 cases)
-  - `PERICYCLIC.03.03.008` — cationic [1,5]-hydrogen shift (5 cases)
-  - `PERICYCLIC.03.03.009` — anion-accelerated [1,5]-hydrogen shift (5 cases)
-  - `PERICYCLIC.03.03.010` — strained [1,5]-hydrogen shift (5 cases)
-  - `PERICYCLIC.03.03.011` — acyclic [1,5]-hydrogen shift (5 cases)
-  - `PERICYCLIC.03.03.012` — cyclic [1,5]-hydrogen shift (5 cases)
-  - `PERICYCLIC.03.03.013` — tandem [1,5]-hydrogen shift (5 cases)
-  - `PERICYCLIC.03.03.014` — regioselective [1,5]-hydrogen shift (5 cases)
-
-- **PERICYCLIC.03.04 — Carbon sigmatropic shift** (13 Level-4 groups)
-  - `PERICYCLIC.03.04.001` — thermal [1,5]-carbon shift (5 cases)
-  - `PERICYCLIC.03.04.002` — photochemical [1,5]-carbon shift (5 cases)
-  - `PERICYCLIC.03.04.003` — intramolecular [1,5]-carbon shift (5 cases)
-  - `PERICYCLIC.03.04.004` — intermolecular [1,5]-carbon shift (5 cases)
-  - `PERICYCLIC.03.04.005` — electron-rich [1,5]-carbon shift (5 cases)
-  - `PERICYCLIC.03.04.006` — electron-poor [1,5]-carbon shift (5 cases)
-  - `PERICYCLIC.03.04.007` — heteroatom-containing [1,5]-carbon shift (5 cases)
-  - `PERICYCLIC.03.04.008` — cationic [1,5]-carbon shift (5 cases)
-  - `PERICYCLIC.03.04.009` — anion-accelerated [1,5]-carbon shift (5 cases)
-  - `PERICYCLIC.03.04.010` — strained [1,5]-carbon shift (5 cases)
-  - `PERICYCLIC.03.04.011` — acyclic [1,5]-carbon shift (5 cases)
-  - `PERICYCLIC.03.04.012` — cyclic [1,5]-carbon shift (5 cases)
-  - `PERICYCLIC.03.04.013` — tandem [1,5]-carbon shift (5 cases)
-
-### PERICYCLIC.04 — Ene / group-transfer pericyclic reaction
-
-- **PERICYCLIC.04.01 — Alder–ene reaction** (15 Level-4 groups)
-  - `PERICYCLIC.04.01.001` — thermal alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.002` — photochemical alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.003` — intramolecular alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.004` — intermolecular alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.005` — electron-rich alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.006` — electron-poor alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.007` — heteroatom-containing alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.008` — cationic alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.009` — anion-accelerated alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.010` — strained alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.011` — acyclic alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.012` — cyclic alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.013` — tandem alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.014` — regioselective alkene–alkene ene reaction (5 cases)
-  - `PERICYCLIC.04.01.015` — stereospecific alkene–alkene ene reaction (5 cases)
-
-- **PERICYCLIC.04.02 — Hetero-ene reaction** (12 Level-4 groups)
-  - `PERICYCLIC.04.02.001` — thermal nitroso-ene reaction (5 cases)
-  - `PERICYCLIC.04.02.002` — photochemical nitroso-ene reaction (5 cases)
-  - `PERICYCLIC.04.02.003` — intramolecular nitroso-ene reaction (5 cases)
-  - `PERICYCLIC.04.02.004` — intermolecular nitroso-ene reaction (5 cases)
-  - `PERICYCLIC.04.02.005` — electron-rich nitroso-ene reaction (5 cases)
-  - `PERICYCLIC.04.02.006` — electron-poor nitroso-ene reaction (5 cases)
-  - `PERICYCLIC.04.02.007` — heteroatom-containing nitroso-ene reaction (5 cases)
-  - `PERICYCLIC.04.02.008` — cationic nitroso-ene reaction (5 cases)
-  - `PERICYCLIC.04.02.009` — anion-accelerated nitroso-ene reaction (5 cases)
-  - `PERICYCLIC.04.02.010` — strained nitroso-ene reaction (5 cases)
-  - `PERICYCLIC.04.02.011` — acyclic nitroso-ene reaction (5 cases)
-  - `PERICYCLIC.04.02.012` — cyclic nitroso-ene reaction (5 cases)
-
-- **PERICYCLIC.04.03 — Retro-ene reaction** (8 Level-4 groups)
-  - `PERICYCLIC.04.03.001` — thermal thermal retro-ene reaction (5 cases)
-  - `PERICYCLIC.04.03.002` — photochemical thermal retro-ene reaction (5 cases)
-  - `PERICYCLIC.04.03.003` — intramolecular thermal retro-ene reaction (5 cases)
-  - `PERICYCLIC.04.03.004` — intermolecular thermal retro-ene reaction (5 cases)
-  - `PERICYCLIC.04.03.005` — electron-rich thermal retro-ene reaction (5 cases)
-  - `PERICYCLIC.04.03.006` — electron-poor thermal retro-ene reaction (5 cases)
-  - `PERICYCLIC.04.03.007` — heteroatom-containing thermal retro-ene reaction (5 cases)
-  - `PERICYCLIC.04.03.008` — cationic thermal retro-ene reaction (5 cases)
-
-### PERICYCLIC.05 — Cheletropic reaction
-
-- **PERICYCLIC.05.01 — Cheletropic addition** (13 Level-4 groups)
-  - `PERICYCLIC.05.01.001` — thermal carbene cheletropic addition (5 cases)
-  - `PERICYCLIC.05.01.002` — photochemical carbene cheletropic addition (5 cases)
-  - `PERICYCLIC.05.01.003` — intramolecular carbene cheletropic addition (5 cases)
-  - `PERICYCLIC.05.01.004` — intermolecular carbene cheletropic addition (5 cases)
-  - `PERICYCLIC.05.01.005` — electron-rich carbene cheletropic addition (5 cases)
-  - `PERICYCLIC.05.01.006` — electron-poor carbene cheletropic addition (5 cases)
-  - `PERICYCLIC.05.01.007` — heteroatom-containing carbene cheletropic addition (5 cases)
-  - `PERICYCLIC.05.01.008` — cationic carbene cheletropic addition (5 cases)
-  - `PERICYCLIC.05.01.009` — anion-accelerated carbene cheletropic addition (5 cases)
-  - `PERICYCLIC.05.01.010` — strained carbene cheletropic addition (5 cases)
-  - `PERICYCLIC.05.01.011` — acyclic carbene cheletropic addition (5 cases)
-  - `PERICYCLIC.05.01.012` — cyclic carbene cheletropic addition (5 cases)
-  - `PERICYCLIC.05.01.013` — tandem carbene cheletropic addition (5 cases)
-
-- **PERICYCLIC.05.02 — Cheletropic extrusion** (12 Level-4 groups)
-  - `PERICYCLIC.05.02.001` — thermal sulfur dioxide extrusion (5 cases)
-  - `PERICYCLIC.05.02.002` — photochemical sulfur dioxide extrusion (5 cases)
-  - `PERICYCLIC.05.02.003` — intramolecular sulfur dioxide extrusion (5 cases)
-  - `PERICYCLIC.05.02.004` — intermolecular sulfur dioxide extrusion (5 cases)
-  - `PERICYCLIC.05.02.005` — electron-rich sulfur dioxide extrusion (5 cases)
-  - `PERICYCLIC.05.02.006` — electron-poor sulfur dioxide extrusion (5 cases)
-  - `PERICYCLIC.05.02.007` — heteroatom-containing sulfur dioxide extrusion (5 cases)
-  - `PERICYCLIC.05.02.008` — cationic sulfur dioxide extrusion (5 cases)
-  - `PERICYCLIC.05.02.009` — anion-accelerated sulfur dioxide extrusion (5 cases)
-  - `PERICYCLIC.05.02.010` — strained sulfur dioxide extrusion (5 cases)
-  - `PERICYCLIC.05.02.011` — acyclic sulfur dioxide extrusion (5 cases)
-  - `PERICYCLIC.05.02.012` — cyclic sulfur dioxide extrusion (5 cases)
-
-### PERICYCLIC.06 — Cycloreversion / retro-pericyclic reaction
-
-- **PERICYCLIC.06.01 — Retro-[4+2] cycloaddition** (14 Level-4 groups)
-  - `PERICYCLIC.06.01.001` — thermal retro-Diels–Alder reaction (5 cases)
-  - `PERICYCLIC.06.01.002` — photochemical retro-Diels–Alder reaction (5 cases)
-  - `PERICYCLIC.06.01.003` — intramolecular retro-Diels–Alder reaction (5 cases)
-  - `PERICYCLIC.06.01.004` — intermolecular retro-Diels–Alder reaction (5 cases)
-  - `PERICYCLIC.06.01.005` — electron-rich retro-Diels–Alder reaction (5 cases)
-  - `PERICYCLIC.06.01.006` — electron-poor retro-Diels–Alder reaction (5 cases)
-  - `PERICYCLIC.06.01.007` — heteroatom-containing retro-Diels–Alder reaction (5 cases)
-  - `PERICYCLIC.06.01.008` — cationic retro-Diels–Alder reaction (5 cases)
-  - `PERICYCLIC.06.01.009` — anion-accelerated retro-Diels–Alder reaction (5 cases)
-  - `PERICYCLIC.06.01.010` — strained retro-Diels–Alder reaction (5 cases)
-  - `PERICYCLIC.06.01.011` — acyclic retro-Diels–Alder reaction (5 cases)
-  - `PERICYCLIC.06.01.012` — cyclic retro-Diels–Alder reaction (5 cases)
-  - `PERICYCLIC.06.01.013` — tandem retro-Diels–Alder reaction (5 cases)
-  - `PERICYCLIC.06.01.014` — regioselective retro-Diels–Alder reaction (5 cases)
-
-- **PERICYCLIC.06.02 — Retro-[2+2] cycloaddition** (11 Level-4 groups)
-  - `PERICYCLIC.06.02.001` — thermal cyclobutane cycloreversion (5 cases)
-  - `PERICYCLIC.06.02.002` — photochemical cyclobutane cycloreversion (5 cases)
-  - `PERICYCLIC.06.02.003` — intramolecular cyclobutane cycloreversion (5 cases)
-  - `PERICYCLIC.06.02.004` — intermolecular cyclobutane cycloreversion (5 cases)
-  - `PERICYCLIC.06.02.005` — electron-rich cyclobutane cycloreversion (5 cases)
-  - `PERICYCLIC.06.02.006` — electron-poor cyclobutane cycloreversion (5 cases)
-  - `PERICYCLIC.06.02.007` — heteroatom-containing cyclobutane cycloreversion (5 cases)
-  - `PERICYCLIC.06.02.008` — cationic cyclobutane cycloreversion (5 cases)
-  - `PERICYCLIC.06.02.009` — anion-accelerated cyclobutane cycloreversion (5 cases)
-  - `PERICYCLIC.06.02.010` — strained cyclobutane cycloreversion (5 cases)
-  - `PERICYCLIC.06.02.011` — acyclic cyclobutane cycloreversion (5 cases)
-
-- **PERICYCLIC.06.03 — Retro-[3+2] cycloaddition** (10 Level-4 groups)
-  - `PERICYCLIC.06.03.001` — thermal triazoline cycloreversion (5 cases)
-  - `PERICYCLIC.06.03.002` — photochemical triazoline cycloreversion (5 cases)
-  - `PERICYCLIC.06.03.003` — intramolecular triazoline cycloreversion (5 cases)
-  - `PERICYCLIC.06.03.004` — intermolecular triazoline cycloreversion (5 cases)
-  - `PERICYCLIC.06.03.005` — electron-rich triazoline cycloreversion (5 cases)
-  - `PERICYCLIC.06.03.006` — electron-poor triazoline cycloreversion (5 cases)
-  - `PERICYCLIC.06.03.007` — heteroatom-containing triazoline cycloreversion (5 cases)
-  - `PERICYCLIC.06.03.008` — cationic triazoline cycloreversion (5 cases)
-  - `PERICYCLIC.06.03.009` — anion-accelerated triazoline cycloreversion (5 cases)
-  - `PERICYCLIC.06.03.010` — strained triazoline cycloreversion (5 cases)
-
-### PERICYCLIC.07 — Valence isomerization / dyotropic process
-
-- **PERICYCLIC.07.01 — Valence isomerization** (9 Level-4 groups)
-  - `PERICYCLIC.07.01.001` — thermal norbornadiene–quadricyclane isomerization (5 cases)
-  - `PERICYCLIC.07.01.002` — photochemical norbornadiene–quadricyclane isomerization (5 cases)
-  - `PERICYCLIC.07.01.003` — intramolecular norbornadiene–quadricyclane isomerization (5 cases)
-  - `PERICYCLIC.07.01.004` — intermolecular norbornadiene–quadricyclane isomerization (5 cases)
-  - `PERICYCLIC.07.01.005` — electron-rich norbornadiene–quadricyclane isomerization (5 cases)
-  - `PERICYCLIC.07.01.006` — electron-poor norbornadiene–quadricyclane isomerization (5 cases)
-  - `PERICYCLIC.07.01.007` — heteroatom-containing norbornadiene–quadricyclane isomerization (5 cases)
-  - `PERICYCLIC.07.01.008` — cationic norbornadiene–quadricyclane isomerization (5 cases)
-  - `PERICYCLIC.07.01.009` — anion-accelerated norbornadiene–quadricyclane isomerization (5 cases)
-
-- **PERICYCLIC.07.02 — Dyotropic rearrangement** (6 Level-4 groups)
-  - `PERICYCLIC.07.02.001` — thermal type I dyotropic rearrangement (5 cases)
-  - `PERICYCLIC.07.02.002` — photochemical type I dyotropic rearrangement (5 cases)
-  - `PERICYCLIC.07.02.003` — intramolecular type I dyotropic rearrangement (5 cases)
-  - `PERICYCLIC.07.02.004` — intermolecular type I dyotropic rearrangement (5 cases)
-  - `PERICYCLIC.07.02.005` — electron-rich type I dyotropic rearrangement (5 cases)
-  - `PERICYCLIC.07.02.006` — electron-poor type I dyotropic rearrangement (5 cases)
-
-### PERICYCLIC.08 — Pericyclic cascade / tandem sequence
-
-- **PERICYCLIC.08.01 — Cycloaddition cascade** (5 Level-4 groups)
-  - `PERICYCLIC.08.01.001` — thermal Diels–Alder cascade (5 cases)
-  - `PERICYCLIC.08.01.002` — photochemical Diels–Alder cascade (5 cases)
-  - `PERICYCLIC.08.01.003` — intramolecular Diels–Alder cascade (5 cases)
-  - `PERICYCLIC.08.01.004` — intermolecular Diels–Alder cascade (5 cases)
-  - `PERICYCLIC.08.01.005` — electron-rich Diels–Alder cascade (5 cases)
-
-- **PERICYCLIC.08.02 — Rearrangement cascade** (5 Level-4 groups)
-  - `PERICYCLIC.08.02.001` — thermal Cope–Claisen cascade (5 cases)
-  - `PERICYCLIC.08.02.002` — photochemical Cope–Claisen cascade (5 cases)
-  - `PERICYCLIC.08.02.003` — intramolecular Cope–Claisen cascade (5 cases)
-  - `PERICYCLIC.08.02.004` — intermolecular Cope–Claisen cascade (5 cases)
-  - `PERICYCLIC.08.02.005` — electron-rich Cope–Claisen cascade (5 cases)
+# SynEPD POLAR hierarchy
+
+Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are excluded.
+
+# POLAR — Polar reaction mechanisms
+
+## POLAR.01 — Proton / ion / Lewis acid–base transfer
+
+### POLAR.01.01 — Heteroatom proton transfer
+
+#### POLAR.01.01.001 — Alcohol protonation / deprotonation
+
+#### POLAR.01.01.002 — Phenol protonation / deprotonation
+
+#### POLAR.01.01.003 — Carboxylic acid deprotonation
+
+#### POLAR.01.01.004 — Carboxylate protonation
+
+#### POLAR.01.01.005 — Amine protonation
+
+#### POLAR.01.01.006 — Imine protonation
+
+#### POLAR.01.01.007 — Thiol / thiolate proton transfer
+
+#### POLAR.01.01.008 — Oxonium / ammonium neutralization
+
+### POLAR.01.02 — Carbon acid/base proton transfer
+
+#### POLAR.01.02.001 — Enolate generation
+
+#### POLAR.01.02.002 — β-Dicarbonyl deprotonation
+
+#### POLAR.01.02.003 — Malonate deprotonation
+
+#### POLAR.01.02.004 — Acetoacetate deprotonation
+
+#### POLAR.01.02.005 — Nitroalkane deprotonation
+
+#### POLAR.01.02.006 — Terminal alkyne deprotonation
+
+#### POLAR.01.02.007 — Benzylic carbanion formation
+
+#### POLAR.01.02.008 — Cyanomethyl carbanion formation
+
+### POLAR.01.03 — Tautomerizing proton transfer
+
+#### POLAR.01.03.001 — Keto–enol tautomerization
+
+#### POLAR.01.03.002 — Imine–enamine tautomerization
+
+#### POLAR.01.03.003 — Lactam–lactim tautomerization
+
+#### POLAR.01.03.004 — Nitro–aci-nitro tautomerization
+
+#### POLAR.01.03.005 — Oxime–nitroso tautomerization
+
+#### POLAR.01.03.006 — Amide–imidic acid tautomerization
+
+#### POLAR.01.03.007 — Pyridone–hydroxypyridine tautomerization
+
+#### POLAR.01.03.008 — Phenol–cyclohexadienone tautomerization
+
+### POLAR.01.04 — Intramolecular proton transfer
+
+#### POLAR.01.04.001 — Internal proton shuttle
+
+#### POLAR.01.04.002 — Neighboring-group-assisted proton transfer
+
+#### POLAR.01.04.003 — Zwitterion neutralization
+
+#### POLAR.01.04.004 — Hemiacetal proton relay
+
+#### POLAR.01.04.005 — Hemiaminal proton relay
+
+#### POLAR.01.04.006 — Proton transfer in tetrahedral intermediate
+
+#### POLAR.01.04.007 — Proton transfer in betaine intermediate
+
+#### POLAR.01.04.008 — Proton transfer in organocatalytic ion pair
+
+### POLAR.01.05 — Ion-pair / salt formation
+
+#### POLAR.01.05.001 — Ammonium carboxylate salt formation
+
+#### POLAR.01.05.002 — Pyridinium salt formation
+
+#### POLAR.01.05.003 — Imidazolium salt formation
+
+#### POLAR.01.05.004 — Diazonium salt formation
+
+#### POLAR.01.05.005 — Quaternary ammonium salt formation
+
+#### POLAR.01.05.006 — Sulfonium salt formation
+
+#### POLAR.01.05.007 — Phosphonium salt formation
+
+#### POLAR.01.05.008 — Phase-transfer ion-pair formation
+
+### POLAR.01.06 — Lewis acid–base association / dissociation
+
+#### POLAR.01.06.001 — Carbonyl Lewis-acid activation
+
+#### POLAR.01.06.002 — Imine Lewis-acid activation
+
+#### POLAR.01.06.003 — Iminium Lewis-acid activation
+
+#### POLAR.01.06.004 — BF3–etherate adduct formation
+
+#### POLAR.01.06.005 — AlCl3 arene-complex formation
+
+#### POLAR.01.06.006 — TiCl4 carbonyl activation
+
+#### POLAR.01.06.007 — SnCl4 oxocarbenium activation
+
+#### POLAR.01.06.008 — Borane–amine adduct formation
+
+#### POLAR.01.06.009 — Frustrated-Lewis-pair adduct formation
+
+### POLAR.01.07 — Charge relocation / zwitterion / ylide formation
+
+#### POLAR.01.07.001 — Wittig ylide generation
+
+#### POLAR.01.07.002 — Corey–Chaykovsky ylide generation
+
+#### POLAR.01.07.003 — Pyridinium ylide generation
+
+#### POLAR.01.07.004 — Sulfonium ylide generation
+
+#### POLAR.01.07.005 — Phosphonium betaine formation
+
+#### POLAR.01.07.006 — Ammonium enolate formation
+
+#### POLAR.01.07.007 — Betaine zwitterion formation
+
+#### POLAR.01.07.008 — N-heterocyclic carbene generation
+
+### POLAR.01.08 — Ionization / heterolysis
+
+#### POLAR.01.08.001 — Carbocation formation
+
+#### POLAR.01.08.002 — Oxocarbenium ion formation
+
+#### POLAR.01.08.003 — Iminium ion formation
+
+#### POLAR.01.08.004 — Acylium ion formation
+
+#### POLAR.01.08.005 — Nitrilium ion formation
+
+#### POLAR.01.08.006 — Diazonium ion formation
+
+#### POLAR.01.08.007 — Sulfonium ion formation
+
+#### POLAR.01.08.008 — Aziridinium ion formation
+
+#### POLAR.01.08.009 — Episulfonium ion formation
+
+### POLAR.01.09 — Counterion exchange / ion metathesis
+
+#### POLAR.01.09.001 — Halide counterion exchange
+
+#### POLAR.01.09.002 — Tetrafluoroborate salt exchange
+
+#### POLAR.01.09.003 — Hexafluorophosphate salt exchange
+
+#### POLAR.01.09.004 — Ion-exchange resin neutralization
+
+#### POLAR.01.09.005 — Amine salt liberation
+
+#### POLAR.01.09.006 — Carboxylate salt exchange
+
+#### POLAR.01.09.007 — Alkoxide salt formation
+
+#### POLAR.01.09.008 — Enolate metal exchange
+
+#### POLAR.01.09.009 — Phase-transfer counterion swap
+
+## POLAR.02 — Substitution
+
+### POLAR.02.01 — Bimolecular nucleophilic substitution at saturated carbon
+
+#### POLAR.02.01.001 — SN2 reaction
+
+#### POLAR.02.01.002 — Williamson ether synthesis
+
+#### POLAR.02.01.003 — Finkelstein reaction
+
+#### POLAR.02.01.004 — Gabriel synthesis
+
+#### POLAR.02.01.005 — Kolbe nitrile synthesis
+
+#### POLAR.02.01.006 — Azide displacement
+
+#### POLAR.02.01.007 — Thiolate alkylation
+
+#### POLAR.02.01.008 — Halide-to-amine displacement
+
+#### POLAR.02.01.009 — Alkoxide alkylation
+
+#### POLAR.02.01.010 — Cyanide alkylation
+
+#### POLAR.02.01.011 — Malonate alkylation
+
+#### POLAR.02.01.012 — Acetoacetate alkylation
+
+### POLAR.02.02 — Dissociative / solvolytic substitution
+
+#### POLAR.02.02.001 — SN1 reaction
+
+#### POLAR.02.02.002 — Tertiary alkyl halide solvolysis
+
+#### POLAR.02.02.003 — Benzylic solvolysis
+
+#### POLAR.02.02.004 — Allylic solvolysis
+
+#### POLAR.02.02.005 — Lucas reaction
+
+#### POLAR.02.02.006 — Carbocation capture by alcohol
+
+#### POLAR.02.02.007 — Carbocation capture by water
+
+#### POLAR.02.02.008 — tert-Butyl ether formation
+
+#### POLAR.02.02.009 — Acetal-derived oxocarbenium substitution
+
+#### POLAR.02.02.010 — Iminium capture by nucleophile
+
+#### POLAR.02.02.011 — Ritter-type carbocation capture
+
+#### POLAR.02.02.012 — Tertiary alcohol substitution by hydrogen halide
+
+### POLAR.02.03 — Internal-return / neighboring-group-assisted substitution
+
+#### POLAR.02.03.001 — SNi alcohol-to-chloride conversion
+
+#### POLAR.02.03.002 — Thionyl chloride internal-return substitution
+
+#### POLAR.02.03.003 — Anchimeric-assistance substitution
+
+#### POLAR.02.03.004 — Episulfonium-assisted substitution
+
+#### POLAR.02.03.005 — Epoxonium-assisted substitution
+
+#### POLAR.02.03.006 — Phenonium-assisted substitution
+
+#### POLAR.02.03.007 — Acyloxonium-assisted substitution
+
+#### POLAR.02.03.008 — Aziridinium-assisted substitution
+
+#### POLAR.02.03.009 — Neighboring thioether participation
+
+#### POLAR.02.03.010 — Neighboring ester participation
+
+#### POLAR.02.03.011 — Neighboring amide participation
+
+### POLAR.02.04 — Electrophilic substitution at aliphatic or activated carbon
+
+#### POLAR.02.04.001 — Enolate alkylation
+
+#### POLAR.02.04.002 — Enolate halogenation
+
+#### POLAR.02.04.003 — α-Halogenation of aldehydes
+
+#### POLAR.02.04.004 — α-Halogenation of ketones
+
+#### POLAR.02.04.005 — α-Alkylation of β-dicarbonyls
+
+#### POLAR.02.04.006 — Electrophilic fluorination of enolates
+
+#### POLAR.02.04.007 — Electrophilic cyanation of enolates
+
+#### POLAR.02.04.008 — Electrophilic sulfenylation of enolates
+
+#### POLAR.02.04.009 — Electrophilic selenylation of enolates
+
+#### POLAR.02.04.010 — C-Acylation of enolates
+
+#### POLAR.02.04.011 — C-Nitrosation of enolates
+
+#### POLAR.02.04.012 — C-Azo coupling of enolates
+
+### POLAR.02.05 — Electrophilic aromatic / heteroaromatic substitution
+
+#### POLAR.02.05.001 — Aromatic nitration
+
+#### POLAR.02.05.002 — Aromatic sulfonation
+
+#### POLAR.02.05.003 — Aromatic bromination
+
+#### POLAR.02.05.004 — Aromatic chlorination
+
+#### POLAR.02.05.005 — Aromatic iodination
+
+#### POLAR.02.05.006 — Friedel–Crafts alkylation
+
+#### POLAR.02.05.007 — Friedel–Crafts acylation
+
+#### POLAR.02.05.008 — Vilsmeier–Haack formylation
+
+#### POLAR.02.05.009 — Gattermann–Koch formylation
+
+#### POLAR.02.05.010 — Reimer–Tiemann reaction
+
+#### POLAR.02.05.011 — Duff formylation
+
+#### POLAR.02.05.012 — Kolbe–Schmitt carboxylation
+
+#### POLAR.02.05.013 — Houben–Hoesch acylation
+
+#### POLAR.02.05.014 — Blanc chloromethylation
+
+#### POLAR.02.05.015 — Pechmann-type aromatic substitution
+
+#### POLAR.02.05.016 — Azo coupling
+
+#### POLAR.02.05.017 — Scholl-type electrophilic arylation
+
+#### POLAR.02.05.018 — Nencki reaction
+
+### POLAR.02.06 — Diazonium and related aryl leaving-group substitution
+
+#### POLAR.02.06.001 — Sandmeyer reaction
+
+#### POLAR.02.06.002 — Balz–Schiemann reaction
+
+#### POLAR.02.06.003 — Gattermann aryl halide synthesis
+
+#### POLAR.02.06.004 — Schiemann fluorination
+
+#### POLAR.02.06.005 — Diazonium hydrolysis to phenol
+
+#### POLAR.02.06.006 — Diazonium iodide substitution
+
+#### POLAR.02.06.007 — Diazonium cyanation
+
+#### POLAR.02.06.008 — Gomberg–Bachmann arylation
+
+#### POLAR.02.06.009 — Meerwein arylation
+
+#### POLAR.02.06.010 — Aryl diazonium thiolation
+
+#### POLAR.02.06.011 — Aryl diazonium azidation
+
+#### POLAR.02.06.012 — Triazene substitution by electrophile
+
+#### POLAR.02.06.013 — Triazene-to-aryl halide conversion
+
+### POLAR.02.07 — Allylic / benzylic substitution
+
+#### POLAR.02.07.001 — Allylic SN1 substitution
+
+#### POLAR.02.07.002 — Allylic SN2′ substitution
+
+#### POLAR.02.07.003 — Benzylic nucleophilic substitution
+
+#### POLAR.02.07.004 — Tsuji–Trost allylic substitution
+
+#### POLAR.02.07.005 — Mitsunobu substitution
+
+#### POLAR.02.07.006 — Allylic halide displacement
+
+#### POLAR.02.07.007 — Allylic acetate displacement
+
+#### POLAR.02.07.008 — Benzylic alcohol substitution
+
+#### POLAR.02.07.009 — Benzylic halide solvolysis
+
+#### POLAR.02.07.010 — Allylic rearrangement substitution
+
+#### POLAR.02.07.011 — Propargylic substitution
+
+#### POLAR.02.07.012 — Cinnamyl substitution
+
+### POLAR.02.08 — Heteroatom-center substitution
+
+#### POLAR.02.08.001 — Silylation of alcohols
+
+#### POLAR.02.08.002 — Silylation of amines
+
+#### POLAR.02.08.003 — Desilylation of silyl ethers
+
+#### POLAR.02.08.004 — Substitution at silicon by fluoride
+
+#### POLAR.02.08.005 — Sulfonyl chloride substitution
+
+#### POLAR.02.08.006 — Silyl chloride alcohol substitution
+
+#### POLAR.02.08.007 — Silyl chloride amine substitution
+
+#### POLAR.02.08.008 — Phosphoryl chloride substitution
+
+#### POLAR.02.08.009 — Phosphoramidate substitution
+
+#### POLAR.02.08.010 — Phosphate ester substitution
+
+#### POLAR.02.08.011 — Boronate ester exchange
+
+#### POLAR.02.08.012 — Stannane substitution
+
+#### POLAR.02.08.013 — Sulfurane ligand exchange
+
+#### POLAR.02.08.014 — Electrophilic SCF3 transfer by substitution at sulfur
+
+### POLAR.02.09 — Ring-opening substitution
+
+#### POLAR.02.09.001 — Epoxide opening by alcohol
+
+#### POLAR.02.09.002 — Epoxide opening by amine
+
+#### POLAR.02.09.003 — Epoxide opening by thiol
+
+#### POLAR.02.09.004 — Aziridine opening
+
+#### POLAR.02.09.005 — Oxetane opening
+
+#### POLAR.02.09.006 — Cyclic sulfate opening
+
+#### POLAR.02.09.007 — Cyclic sulfite opening
+
+#### POLAR.02.09.008 — Halonium-ion opening
+
+#### POLAR.02.09.009 — Bromonium-ion opening
+
+#### POLAR.02.09.010 — Iodonium-ion opening
+
+#### POLAR.02.09.011 — Cyclic carbonate opening
+
+### POLAR.02.10 — Acetal / oxocarbenium / anomeric substitution
+
+#### POLAR.02.10.001 — Glycosylation
+
+#### POLAR.02.10.002 — Koenigs–Knorr glycosylation
+
+#### POLAR.02.10.003 — Fischer glycosylation
+
+#### POLAR.02.10.004 — Ferrier glycosylation
+
+#### POLAR.02.10.005 — Anomeric substitution
+
+#### POLAR.02.10.006 — Acetal exchange
+
+#### POLAR.02.10.007 — Ketal exchange
+
+#### POLAR.02.10.008 — Thioacetal exchange
+
+#### POLAR.02.10.009 — Glycosyl halide substitution
+
+#### POLAR.02.10.010 — Glycosyl trichloroacetimidate substitution
+
+#### POLAR.02.10.011 — Oxocarbenium alcohol capture
+
+#### POLAR.02.10.012 — Oxocarbenium carbon capture
+
+### POLAR.02.11 — Vinylic / alkynyl polar substitution
+
+#### POLAR.02.11.001 — Vinylic nucleophilic substitution
+
+#### POLAR.02.11.002 — Activated vinyl halide displacement
+
+#### POLAR.02.11.003 — β-Haloenone substitution
+
+#### POLAR.02.11.004 — Vinyl sulfone substitution
+
+#### POLAR.02.11.005 — Alkynyl halide substitution
+
+#### POLAR.02.11.006 — Alkynyl sulfone substitution
+
+#### POLAR.02.11.007 — Ketene acetal substitution
+
+### POLAR.02.12 — Phase-transfer / onium-mediated alkylation
+
+#### POLAR.02.12.001 — Phase-transfer alkylation
+
+#### POLAR.02.12.002 — Crown-ether-assisted substitution
+
+#### POLAR.02.12.003 — Quaternary ammonium alkylation
+
+#### POLAR.02.12.004 — Phosphonium alkylation
+
+#### POLAR.02.12.005 — Sulfonium alkylation
+
+#### POLAR.02.12.006 — Pyridinium alkylation
+
+#### POLAR.02.12.007 — Imidazolium alkylation
+
+## POLAR.03 — Addition
+
+### POLAR.03.01 — Nucleophilic addition to carbonyl C=O bonds
+
+#### POLAR.03.01.001 — Grignard addition to aldehydes
+
+#### POLAR.03.01.002 — Grignard addition to ketones
+
+#### POLAR.03.01.003 — Organolithium addition to carbonyls
+
+#### POLAR.03.01.004 — Organozinc addition to carbonyls
+
+#### POLAR.03.01.005 — Barbier reaction
+
+#### POLAR.03.01.006 — Reformatsky reaction
+
+#### POLAR.03.01.007 — Nozaki–Hiyama–Kishi addition
+
+#### POLAR.03.01.008 — Cyanohydrin formation
+
+#### POLAR.03.01.009 — Bisulfite addition to carbonyls
+
+#### POLAR.03.01.010 — Hydrate formation from aldehydes
+
+#### POLAR.03.01.011 — Hemiacetal formation
+
+#### POLAR.03.01.012 — Hemiketal formation
+
+#### POLAR.03.01.013 — Allylboration of aldehydes
+
+#### POLAR.03.01.014 — Brown allylation
+
+#### POLAR.03.01.015 — Keck allylation
+
+#### POLAR.03.01.016 — Marshall allylation
+
+#### POLAR.03.01.017 — General nucleophilic 1,2-addition to a neutral carbonyl
+
+#### POLAR.03.01.018 — Nucleophilic addition to an oxocarbenium C=O+ center
+
+### POLAR.03.02 — Nucleophilic addition to imines / iminium ions
+
+#### POLAR.03.02.001 — Iminium cyanide addition
+
+#### POLAR.03.02.002 — Organoboron imine addition
+
+#### POLAR.03.02.003 — Aza-Henry reaction
+
+#### POLAR.03.02.004 — Addition to chiral sulfinimines
+
+#### POLAR.03.02.005 — Mannich-type imine addition
+
+#### POLAR.03.02.006 — Iminium cyanation
+
+#### POLAR.03.02.007 — Iminium allylation
+
+#### POLAR.03.02.008 — Iminium arylation
+
+#### POLAR.03.02.009 — Hemiaminal formation
+
+#### POLAR.03.02.010 — Aminal formation
+
+#### POLAR.03.02.011 — Indole addition to iminium ions
+
+#### POLAR.03.02.012 — Reductive-amination iminium capture step
+
+#### POLAR.03.02.013 — General nucleophilic addition to an iminium C=N+ center
+
+#### POLAR.03.02.014 — General nucleophilic addition to a neutral imine
+
+### POLAR.03.03 — Aldol-type carbon–carbon bond-forming addition
+
+#### POLAR.03.03.001 — Aldol addition
+
+#### POLAR.03.03.002 — Mukaiyama aldol addition
+
+#### POLAR.03.03.003 — Evans aldol addition
+
+#### POLAR.03.03.004 — Boron aldol addition
+
+#### POLAR.03.03.005 — Zimmerman–Traxler aldol addition
+
+#### POLAR.03.03.006 — Mukaiyama–Mannich addition
+
+#### POLAR.03.03.007 — Vinylogous aldol addition
+
+#### POLAR.03.03.008 — Direct organocatalytic aldol addition
+
+#### POLAR.03.03.009 — Asymmetric proline aldol addition
+
+#### POLAR.03.03.010 — Nitroaldol addition
+
+#### POLAR.03.03.011 — Henry addition
+
+#### POLAR.03.03.012 — Crossed aldol addition
+
+### POLAR.03.04 — Conjugate addition
+
+#### POLAR.03.04.001 — Michael addition
+
+#### POLAR.03.04.002 — Aza-Michael addition
+
+#### POLAR.03.04.003 — Thia-Michael addition
+
+#### POLAR.03.04.004 — Oxa-Michael addition
+
+#### POLAR.03.04.005 — Organocuprate 1,4-addition
+
+#### POLAR.03.04.006 — Mukaiyama–Michael addition
+
+#### POLAR.03.04.007 — Conjugate cyanation
+
+#### POLAR.03.04.008 — Conjugate nitroalkane addition
+
+#### POLAR.03.04.009 — Conjugate enolate addition
+
+#### POLAR.03.04.010 — Conjugate hydrophosphination
+
+#### POLAR.03.04.011 — Stetter reaction
+
+#### POLAR.03.04.012 — Nazarov reagent conjugate addition
+
+#### POLAR.03.04.013 — Phospha-Michael addition
+
+#### POLAR.03.04.014 — Vinylogous Michael addition
+
+#### POLAR.03.04.015 — Conjugate addition to an iminium-activated alkene
+
+#### POLAR.03.04.016 — Conjugate addition to an electron-poor quinone
+
+#### POLAR.03.04.017 — Conjugate addition to a coumarin / α-pyrone system
+
+### POLAR.03.05 — Electrophilic addition to alkenes / alkynes
+
+#### POLAR.03.05.001 — Hydrohalogenation of alkenes
+
+#### POLAR.03.05.002 — Acid-catalyzed alkene hydration
+
+#### POLAR.03.05.003 — Alkene bromination
+
+#### POLAR.03.05.004 — Alkene chlorination
+
+#### POLAR.03.05.005 — Halohydrin formation
+
+#### POLAR.03.05.006 — Oxymercuration
+
+#### POLAR.03.05.007 — Alkoxymercuration
+
+#### POLAR.03.05.008 — Iodolactonization
+
+#### POLAR.03.05.009 — Bromolactonization
+
+#### POLAR.03.05.010 — Iodoetherification
+
+#### POLAR.03.05.011 — Bromoetherification
+
+#### POLAR.03.05.012 — Hydroboration–protonolysis addition step
+
+#### POLAR.03.05.013 — Oxocarbenium alkene addition
+
+#### POLAR.03.05.014 — Alkyne hydrohalogenation
+
+#### POLAR.03.05.015 — Alkyne hydration
+
+#### POLAR.03.05.016 — Vinyl cation capture
+
+### POLAR.03.06 — Cationic addition / cationic cyclization
+
+#### POLAR.03.06.001 — Prins cyclization
+
+#### POLAR.03.06.002 — Aza-Prins cyclization
+
+#### POLAR.03.06.003 — Pictet–Spengler cyclization
+
+#### POLAR.03.06.004 — Cationic polyene cyclization
+
+#### POLAR.03.06.005 — Oxocarbenium cyclization
+
+#### POLAR.03.06.006 — Iminium cyclization
+
+#### POLAR.03.06.007 — N-Acyliminium cyclization
+
+#### POLAR.03.06.008 — Nazarov-type cationic cyclization
+
+#### POLAR.03.06.009 — Sakurai–Prins cyclization
+
+#### POLAR.03.06.010 — Biomimetic terpene cyclization
+
+### POLAR.03.07 — Addition to nitriles and heterocumulenes
+
+#### POLAR.03.07.001 — Grignard addition to nitriles
+
+#### POLAR.03.07.002 — Organolithium addition to nitriles
+
+#### POLAR.03.07.003 — Nitrile alcohol addition step
+
+#### POLAR.03.07.004 — Addition to isocyanates
+
+#### POLAR.03.07.005 — Addition to isothiocyanates
+
+#### POLAR.03.07.006 — Addition to carbodiimides
+
+#### POLAR.03.07.007 — Addition to ketenes
+
+#### POLAR.03.07.008 — Addition to carbon dioxide
+
+#### POLAR.03.07.009 — Addition to carbon disulfide
+
+#### POLAR.03.07.010 — Addition to sulfonyl isocyanates
+
+#### POLAR.03.07.011 — Addition to nitrile imines
+
+#### POLAR.03.07.012 — Addition to nitrones
+
+### POLAR.03.08 — Lewis-acid-activated addition
+
+#### POLAR.03.08.001 — Mukaiyama-type carbonyl addition
+
+#### POLAR.03.08.002 — Silyl enol ether addition
+
+#### POLAR.03.08.003 — Sakurai allylation
+
+#### POLAR.03.08.004 — Hosomi–Sakurai reaction
+
+#### POLAR.03.08.005 — Sakurai crotylation
+
+#### POLAR.03.08.006 — Silyl ketene acetal addition
+
+#### POLAR.03.08.007 — TiCl4-mediated aldol addition
+
+#### POLAR.03.08.008 — BF3-mediated acetal addition
+
+#### POLAR.03.08.009 — SnCl4-mediated iminium addition
+
+#### POLAR.03.08.010 — Chiral Lewis-acid carbonyl addition
+
+### POLAR.03.09 — Ring-forming intramolecular addition
+
+#### POLAR.03.09.001 — Intramolecular aldol addition
+
+#### POLAR.03.09.002 — Intramolecular Mannich addition
+
+#### POLAR.03.09.003 — Intramolecular Michael addition
+
+#### POLAR.03.09.004 — Intramolecular hemiacetal formation
+
+#### POLAR.03.09.005 — Intramolecular hemiaminal formation
+
+#### POLAR.03.09.006 — Transannular carbonyl addition
+
+#### POLAR.03.09.007 — Cyclization onto iminium ion
+
+#### POLAR.03.09.008 — Cyclization onto nitrile
+
+#### POLAR.03.09.009 — Lactol formation by carbonyl addition
+
+#### POLAR.03.09.010 — Spiroketal-forming addition
+
+### POLAR.03.10 — Organoboron / organosilicon polar addition
+
+#### POLAR.03.10.001 — Allylboration
+
+#### POLAR.03.10.002 — Crotylboration
+
+#### POLAR.03.10.003 — Propargylboration
+
+#### POLAR.03.10.004 — Allenylboration
+
+#### POLAR.03.10.005 — Arylboronate 1,2-addition
+
+#### POLAR.03.10.006 — Silyl nucleophile carbonyl addition
+
+#### POLAR.03.10.007 — Cyanosilylation
+
+#### POLAR.03.10.008 — Trifluoromethyltrimethylsilane addition
+
+#### POLAR.03.10.009 — Difluoromethylsilane addition
+
+### POLAR.03.11 — Heteroatom nucleophile addition to C=X
+
+#### POLAR.03.11.001 — Alcohol addition to aldehydes
+
+#### POLAR.03.11.002 — Alcohol addition to ketones
+
+#### POLAR.03.11.003 — Amine addition to aldehydes
+
+#### POLAR.03.11.004 — Amine addition to ketones
+
+#### POLAR.03.11.005 — Thiol addition to carbonyls
+
+#### POLAR.03.11.006 — Hydroxylamine addition to carbonyls
+
+#### POLAR.03.11.007 — Hydrazine addition to carbonyls
+
+#### POLAR.03.11.008 — Water addition to imines
+
+#### POLAR.03.11.009 — Alcohol addition to imines
+
+#### POLAR.03.11.010 — Thiol addition to iminium ions
+
+### POLAR.03.12 — Addition to activated small molecules / cumulenes
+
+#### POLAR.03.12.001 — Carboxylation of organolithium reagents
+
+#### POLAR.03.12.002 — Carboxylation of Grignard reagents
+
+#### POLAR.03.12.003 — Carbonylation by carbon monoxide addition
+
+#### POLAR.03.12.004 — Isocyanide addition to iminium ions
+
+#### POLAR.03.12.005 — Ketene silyl acetal addition
+
+#### POLAR.03.12.006 — Sulfur dioxide insertion-like addition
+
+#### POLAR.03.12.007 — Formaldehyde hydroxymethylation
+
+#### POLAR.03.12.008 — Paraformaldehyde addition
+
+#### POLAR.03.12.009 — Chloral addition
+
+#### POLAR.03.12.010 — Nucleophilic addition to electrophilic azo nitrogen
+
+#### POLAR.03.12.011 — Nucleophilic addition to terminal diazo nitrogen
+
+### POLAR.03.13 — Direct capture of preformed localized carbocations
+
+#### POLAR.03.13.001 — Anionic nucleophile capture of a preformed localized carbocation
+
+#### POLAR.03.13.002 — Neutral lone-pair capture of a preformed localized carbocation
+
+#### POLAR.03.13.003 — π-Nucleophile capture of a preformed localized carbocation
+
+#### POLAR.03.13.004 — σ-Bond carbon transfer to a preformed localized carbocation
+
+### POLAR.03.14 — Dearomatizing nucleophilic addition
+
+#### POLAR.03.14.001 — Dearomatizing capture of a tropylium / arenium ion
+
+#### POLAR.03.14.002 — Dearomatizing addition to an azaarenium / acridinium ion
+
+#### POLAR.03.14.003 — Dearomatizing addition to a benzopyrylium / flavylium ion
+
+#### POLAR.03.14.004 — σ-Adduct formation on a neutral electron-poor arene / heteroarene
+
+## POLAR.04 — Addition–elimination
+
+### POLAR.04.01 — Acyl addition–elimination
+
+#### POLAR.04.01.001 — Fischer esterification
+
+#### POLAR.04.01.002 — Acid chloride alcoholysis
+
+#### POLAR.04.01.003 — Acid chloride aminolysis
+
+#### POLAR.04.01.004 — Anhydride alcoholysis
+
+#### POLAR.04.01.005 — Anhydride aminolysis
+
+#### POLAR.04.01.006 — Ester aminolysis
+
+#### POLAR.04.01.007 — Ester alcoholysis
+
+#### POLAR.04.01.008 — Transesterification
+
+#### POLAR.04.01.009 — Lactonization
+
+#### POLAR.04.01.010 — Lactamization
+
+#### POLAR.04.01.011 — Schotten–Baumann acylation
+
+#### POLAR.04.01.012 — N-Acylation of amines
+
+#### POLAR.04.01.013 — O-Acylation of alcohols
+
+#### POLAR.04.01.014 — Thioester formation
+
+### POLAR.04.02 — Activated acyl transfer / coupling
+
+#### POLAR.04.02.001 — Steglich esterification
+
+#### POLAR.04.02.002 — Yamaguchi esterification
+
+#### POLAR.04.02.003 — Mukaiyama esterification
+
+#### POLAR.04.02.004 — Shiina esterification
+
+#### POLAR.04.02.005 — Mixed anhydride coupling
+
+#### POLAR.04.02.006 — Peptide coupling
+
+#### POLAR.04.02.007 — Carbodiimide-mediated coupling
+
+#### POLAR.04.02.008 — HATU coupling
+
+#### POLAR.04.02.009 — HBTU coupling
+
+#### POLAR.04.02.010 — PyBOP coupling
+
+#### POLAR.04.02.011 — CDI-mediated acylation
+
+#### POLAR.04.02.012 — Ghosez reagent acylation
+
+#### POLAR.04.02.013 — Weinreb amide formation
+
+#### POLAR.04.02.014 — Weinreb ketone synthesis
+
+### POLAR.04.03 — Carbonyl condensation with heteroatom nucleophiles
+
+#### POLAR.04.03.001 — Imine formation
+
+#### POLAR.04.03.002 — Schiff base formation
+
+#### POLAR.04.03.003 — Oxime formation
+
+#### POLAR.04.03.004 — Hydrazone formation
+
+#### POLAR.04.03.005 — Semicarbazone formation
+
+#### POLAR.04.03.006 — Tosylhydrazone formation
+
+#### POLAR.04.03.007 — Acetal formation
+
+#### POLAR.04.03.008 — Ketal formation
+
+#### POLAR.04.03.009 — Thioacetal formation
+
+#### POLAR.04.03.010 — Dithioacetal formation
+
+#### POLAR.04.03.011 — Enamine formation
+
+#### POLAR.04.03.012 — Imidazolidine formation
+
+#### POLAR.04.03.013 — Oxazolidine formation
+
+#### POLAR.04.03.014 — Thiazolidine formation
+
+#### POLAR.04.03.015 — N,O-acetal formation
+
+### POLAR.04.04 — Carbonyl C–C condensation followed by elimination
+
+#### POLAR.04.04.001 — Aldol condensation
+
+#### POLAR.04.04.002 — Claisen–Schmidt condensation
+
+#### POLAR.04.04.003 — Knoevenagel condensation
+
+#### POLAR.04.04.004 — Doebner modification
+
+#### POLAR.04.04.005 — Perkin reaction
+
+#### POLAR.04.04.006 — Henry condensation
+
+#### POLAR.04.04.007 — Nitroalkene-forming condensation
+
+#### POLAR.04.04.008 — Benzoin condensation dehydration variant
+
+#### POLAR.04.04.009 — Crotonic condensation
+
+#### POLAR.04.04.010 — Meldrum acid alkylidene formation
+
+#### POLAR.04.04.011 — Barbituric acid alkylidene formation
+
+#### POLAR.04.04.012 — Acylmethylene formation
+
+### POLAR.04.05 — Acyl enolate / ester condensation
+
+#### POLAR.04.05.001 — Claisen condensation
+
+#### POLAR.04.05.002 — Crossed Claisen condensation
+
+#### POLAR.04.05.003 — Dieckmann condensation
+
+#### POLAR.04.05.004 — Acetoacetic ester synthesis
+
+#### POLAR.04.05.005 — Malonic ester synthesis
+
+#### POLAR.04.05.006 — Blaise reaction
+
+#### POLAR.04.05.007 — Thorpe–Ziegler reaction
+
+#### POLAR.04.05.008 — Intramolecular acyl-enolate condensation
+
+#### POLAR.04.05.009 — Darzens condensation
+
+#### POLAR.04.05.010 — Stobbe condensation
+
+#### POLAR.04.05.011 — Acyloin-type polar condensation
+
+#### POLAR.04.05.012 — Lactone-forming Claisen condensation
+
+### POLAR.04.06 — Nucleophilic aromatic addition–elimination
+
+#### POLAR.04.06.001 — SNAr addition–elimination
+
+#### POLAR.04.06.002 — Meisenheimer-complex substitution
+
+#### POLAR.04.06.003 — Chichibabin amination
+
+#### POLAR.04.06.004 — Nitro-activated aryl fluoride displacement
+
+#### POLAR.04.06.005 — Heteroaryl chloride displacement
+
+#### POLAR.04.06.006 — Pyridine SNAr substitution
+
+#### POLAR.04.06.007 — Quinoline SNAr substitution
+
+#### POLAR.04.06.008 — Sanger reagent substitution
+
+#### POLAR.04.06.009 — Activated aryl sulfone displacement
+
+### POLAR.04.07 — Phosphoryl / sulfonyl / sulfinyl addition–elimination
+
+#### POLAR.04.07.001 — Phosphorylation
+
+#### POLAR.04.07.002 — Phosphate ester formation
+
+#### POLAR.04.07.003 — Phosphoramidate formation
+
+#### POLAR.04.07.004 — Phosphonate ester formation
+
+#### POLAR.04.07.005 — Sulfonylation
+
+#### POLAR.04.07.006 — Sulfonamide formation
+
+#### POLAR.04.07.007 — Sulfonate ester formation
+
+#### POLAR.04.07.008 — Sulfinate ester formation
+
+#### POLAR.04.07.009 — Sulfinamide formation
+
+#### POLAR.04.07.010 — Tosylation
+
+#### POLAR.04.07.011 — Mesylation
+
+#### POLAR.04.07.012 — Nosylation
+
+### POLAR.04.08 — Addition–elimination at activated alkenes / conjugated systems
+
+#### POLAR.04.08.001 — Morita–Baylis–Hillman reaction
+
+#### POLAR.04.08.002 — Rauhut–Currier reaction
+
+#### POLAR.04.08.003 — Vinylic substitution by addition–elimination
+
+#### POLAR.04.08.004 — β-Elimination after conjugate addition
+
+#### POLAR.04.08.005 — Addition–elimination on vinyl sulfones
+
+#### POLAR.04.08.006 — Addition–elimination on nitroalkenes
+
+#### POLAR.04.08.007 — Addition–elimination on enones
+
+#### POLAR.04.08.008 — Addition–elimination on acrylates
+
+#### POLAR.04.08.009 — Conjugated iminium substitution
+
+#### POLAR.04.08.010 — Activated alkene amination
+
+### POLAR.04.09 — Intramolecular addition–elimination / cyclodehydration
+
+#### POLAR.04.09.001 — Intramolecular esterification
+
+#### POLAR.04.09.002 — Intramolecular amidation
+
+#### POLAR.04.09.003 — Isoquinolinium-forming cyclodehydration
+
+#### POLAR.04.09.004 — Paal–Knorr pyrrole formation
+
+#### POLAR.04.09.005 — Paal–Knorr furan formation
+
+#### POLAR.04.09.006 — Paal–Knorr thiophene formation
+
+#### POLAR.04.09.007 — Cyclodehydration to oxazole
+
+#### POLAR.04.09.008 — Cyclodehydration to thiazole
+
+#### POLAR.04.09.009 — Cyclodehydration to imidazole
+
+#### POLAR.04.09.010 — Lactone-forming cyclodehydration
+
+#### POLAR.04.09.011 — Lactam-forming cyclodehydration
+
+#### POLAR.04.09.012 — Isoquinoline-forming cyclodehydration
+
+### POLAR.04.10 — Hydrolysis / solvolysis through tetrahedral intermediate
+
+#### POLAR.04.10.001 — Ester hydrolysis
+
+#### POLAR.04.10.002 — Amide hydrolysis
+
+#### POLAR.04.10.003 — Thioester hydrolysis
+
+#### POLAR.04.10.004 — Lactone hydrolysis
+
+#### POLAR.04.10.005 — Lactam hydrolysis
+
+#### POLAR.04.10.006 — Anhydride hydrolysis
+
+#### POLAR.04.10.007 — Acid chloride hydrolysis
+
+#### POLAR.04.10.008 — Carbamate hydrolysis
+
+#### POLAR.04.10.009 — Urea hydrolysis
+
+#### POLAR.04.10.010 — Imide hydrolysis
+
+#### POLAR.04.10.011 — Carbonate hydrolysis
+
+#### POLAR.04.10.012 — Orthoester hydrolysis
+
+### POLAR.04.11 — Urea / carbamate / carbonate / thiocarbonyl transfer
+
+#### POLAR.04.11.001 — Carbamate formation
+
+#### POLAR.04.11.002 — Boc anhydride carbamate formation
+
+#### POLAR.04.11.003 — Cbz chloroformate carbamate formation
+
+#### POLAR.04.11.004 — Urea formation
+
+#### POLAR.04.11.005 — Thiourea formation
+
+#### POLAR.04.11.006 — Carbonate formation
+
+#### POLAR.04.11.007 — Isocyanate trapping by alcohol
+
+#### POLAR.04.11.008 — Isocyanate trapping by amine
+
+#### POLAR.04.11.009 — Isothiocyanate trapping by amine
+
+#### POLAR.04.11.010 — Chloroformate substitution
+
+### POLAR.04.12 — Isocyanide / nitrilium addition–elimination
+
+#### POLAR.04.12.001 — Ugi imidoyl transfer step
+
+#### POLAR.04.12.002 — Passerini acyl transfer step
+
+#### POLAR.04.12.003 — Nitrilium hydrolysis
+
+#### POLAR.04.12.004 — Isonitrile acylation
+
+#### POLAR.04.12.005 — Isonitrile hydration
+
+#### POLAR.04.12.006 — Tetrazole-forming isocyanide addition–elimination
+
+#### POLAR.04.12.007 — Imidoyl chloride substitution
+
+#### POLAR.04.12.008 — Amidine formation
+
+### POLAR.04.13 — Imine / oxime / hydrazone exchange
+
+#### POLAR.04.13.001 — Transimination
+
+#### POLAR.04.13.002 — Imine exchange
+
+#### POLAR.04.13.003 — Oxime ligation
+
+#### POLAR.04.13.004 — Hydrazone ligation
+
+#### POLAR.04.13.005 — Dynamic hydrazone exchange
+
+#### POLAR.04.13.006 — Semicarbazone exchange
+
+#### POLAR.04.13.007 — Acylhydrazone formation
+
+#### POLAR.04.13.008 — Acylhydrazone exchange
+
+#### POLAR.04.13.009 — Iminium hydrolysis
+
+#### POLAR.04.13.010 — Enamine hydrolysis
+
+## POLAR.05 — Elimination
+
+### POLAR.05.01 — Concerted β-elimination
+
+#### POLAR.05.01.001 — E2 elimination
+
+#### POLAR.05.01.002 — Dehydrohalogenation
+
+#### POLAR.05.01.003 — Tosylate elimination
+
+#### POLAR.05.01.004 — Mesylate elimination
+
+#### POLAR.05.01.005 — Triflate elimination
+
+#### POLAR.05.01.006 — Hofmann elimination
+
+#### POLAR.05.01.007 — Zaitsev-selective elimination
+
+#### POLAR.05.01.008 — Saytzeff elimination
+
+#### POLAR.05.01.009 — Anti-periplanar β-elimination
+
+#### POLAR.05.01.010 — Base-induced alcohol derivative elimination
+
+#### POLAR.05.01.011 — Dehydrosulfonylation
+
+#### POLAR.05.01.012 — Dehydroacetoxylation
+
+### POLAR.05.02 — Stepwise cationic elimination
+
+#### POLAR.05.02.001 — E1 elimination
+
+#### POLAR.05.02.002 — Acid-catalyzed alcohol dehydration
+
+#### POLAR.05.02.003 — Solvolytic elimination
+
+#### POLAR.05.02.004 — Carbocationic alkene formation
+
+#### POLAR.05.02.005 — Tertiary alcohol dehydration
+
+#### POLAR.05.02.006 — Benzylic alcohol dehydration
+
+#### POLAR.05.02.007 — Allylic alcohol dehydration
+
+#### POLAR.05.02.008 — Oxocarbenium-to-alkene elimination
+
+### POLAR.05.03 — Conjugate-base elimination
+
+#### POLAR.05.03.001 — E1cb elimination
+
+#### POLAR.05.03.002 — Aldol dehydration
+
+#### POLAR.05.03.003 — β-Hydroxy carbonyl dehydration
+
+#### POLAR.05.03.004 — Benzylidene malonate dehydration
+
+#### POLAR.05.03.005 — Nitroalkene formation from nitroalcohols
+
+#### POLAR.05.03.006 — Sulfone-stabilized elimination
+
+#### POLAR.05.03.007 — β-Halo carbonyl elimination
+
+#### POLAR.05.03.008 — β-Amino carbonyl elimination
+
+#### POLAR.05.03.009 — β-Alkoxy carbonyl elimination
+
+#### POLAR.05.03.010 — β-Acyloxy carbonyl elimination
+
+#### POLAR.05.03.011 — Elimination from Michael adducts
+
+#### POLAR.05.03.012 — Vinylogous E1cb elimination
+
+### POLAR.05.04 — α-Elimination / carbene generation
+
+#### POLAR.05.04.001 — Dichlorocarbene formation from chloroform
+
+#### POLAR.05.04.002 — α-Elimination from haloforms
+
+#### POLAR.05.04.003 — Reimer–Tiemann carbene generation
+
+#### POLAR.05.04.004 — Carbene generation from trihalomethyl anions
+
+#### POLAR.05.04.005 — Simmons–Smith carbenoid formation step
+
+#### POLAR.05.04.006 — Isocyanide carbene-like α-elimination
+
+#### POLAR.05.04.007 — α-Elimination from diazo precursors under base
+
+#### POLAR.05.04.008 — Haloalkene carbene generation
+
+### POLAR.05.05 — Syn elimination
+
+#### POLAR.05.05.001 — Cope elimination
+
+#### POLAR.05.05.002 — Chugaev elimination
+
+#### POLAR.05.05.003 — Ester pyrolysis
+
+#### POLAR.05.05.004 — Amine oxide elimination
+
+#### POLAR.05.05.005 — Xanthate pyrolysis
+
+#### POLAR.05.05.006 — Selenoxide elimination
+
+#### POLAR.05.05.007 — Sulfoxide elimination
+
+#### POLAR.05.05.008 — Burgess dehydration
+
+#### POLAR.05.05.009 — Martin sulfurane dehydration
+
+#### POLAR.05.05.010 — Grieco elimination
+
+### POLAR.05.06 — Fragmentation / retro-addition
+
+#### POLAR.05.06.001 — Retro-aldol reaction
+
+#### POLAR.05.06.002 — Retro-Michael reaction
+
+#### POLAR.05.06.003 — Grob fragmentation
+
+#### POLAR.05.06.004 — Eschenmoser fragmentation
+
+#### POLAR.05.06.005 — Wharton fragmentation
+
+#### POLAR.05.06.006 — β-Fragmentation of alkoxides
+
+#### POLAR.05.06.007 — Oxy-Cope fragmentation polar variant
+
+#### POLAR.05.06.008 — Cyclopropylcarbinyl fragmentation
+
+#### POLAR.05.06.009 — Fragmentation of tetrahedral intermediates
+
+#### POLAR.05.06.010 — Retro-Prins fragmentation
+
+### POLAR.05.07 — Decarboxylative / decarbonylative elimination
+
+#### POLAR.05.07.001 — β-Keto acid decarboxylation
+
+#### POLAR.05.07.002 — Malonic acid decarboxylation
+
+#### POLAR.05.07.003 — Krapcho decarboxylation
+
+#### POLAR.05.07.004 — Decarboxylative alkene formation
+
+#### POLAR.05.07.005 — Hunsdiecker decarboxylation polar step
+
+#### POLAR.05.07.006 — Barton decarboxylation polar step
+
+#### POLAR.05.07.007 — Decarbonylation of aldehydes under ionic conditions
+
+#### POLAR.05.07.008 — Decarboxylative dehydration
+
+#### POLAR.05.07.009 — Oxalate decarboxylation
+
+#### POLAR.05.07.010 — Amino acid decarboxylation
+
+### POLAR.05.08 — Elimination-driven deprotection / activation
+
+#### POLAR.05.08.001 — Fmoc deprotection
+
+#### POLAR.05.08.002 — β-Silyl elimination
+
+#### POLAR.05.08.003 — β-Hydroxysilane elimination
+
+#### POLAR.05.08.004 — Sulfone elimination
+
+#### POLAR.05.08.005 — Sulfoxide elimination deprotection
+
+#### POLAR.05.08.006 — Nosyl deprotection by elimination
+
+#### POLAR.05.08.007 — Sulfonylethyl deprotection
+
+#### POLAR.05.08.008 — Cyanoethyl deprotection
+
+### POLAR.05.09 — Elimination to heteroatom multiple bonds
+
+#### POLAR.05.09.001 — Oxime dehydration to nitrile
+
+#### POLAR.05.09.002 — Amide dehydration to nitrile
+
+#### POLAR.05.09.003 — Aldoxime dehydration
+
+#### POLAR.05.09.004 — Primary amide dehydration
+
+#### POLAR.05.09.005 — Nitrile oxide formation
+
+#### POLAR.05.09.006 — Isocyanide formation
+
+#### POLAR.05.09.007 — Carbodiimide formation
+
+### POLAR.05.10 — Elimination–addition precursor formation
+
+#### POLAR.05.10.001 — Benzyne generation from aryl halides
+
+#### POLAR.05.10.002 — Aryne generation from silyl aryl triflates
+
+#### POLAR.05.10.003 — Dehydrobenzene formation
+
+#### POLAR.05.10.004 — Hetaryne generation
+
+#### POLAR.05.10.005 — Alkyne formation by double dehydrohalogenation
+
+## POLAR.06 — Polar two-electron redox / hydride and ionic atom transfer
+
+### POLAR.06.01 — Hydride transfer to substrate
+
+#### POLAR.06.01.001 — Sodium borohydride reduction
+
+#### POLAR.06.01.002 — Lithium aluminium hydride reduction
+
+#### POLAR.06.01.003 — DIBAL-H reduction
+
+#### POLAR.06.01.004 — Luche reduction
+
+#### POLAR.06.01.005 — Meerwein–Ponndorf–Verley reduction
+
+#### POLAR.06.01.006 — CBS reduction
+
+#### POLAR.06.01.007 — K-selectride reduction
+
+#### POLAR.06.01.008 — L-selectride reduction
+
+#### POLAR.06.01.009 — Superhydride reduction
+
+#### POLAR.06.01.010 — Red-Al reduction
+
+#### POLAR.06.01.011 — Borane reduction
+
+#### POLAR.06.01.012 — Diisobutylaluminium hydride aldehyde synthesis
+
+#### POLAR.06.01.013 — Ionic transfer hydrogenation / hydride delivery
+
+#### POLAR.06.01.014 — Hantzsch ester hydride transfer
+
+#### POLAR.06.01.015 — Reductive amination hydride step
+
+### POLAR.06.02 — Hydride abstraction / oxidation
+
+#### POLAR.06.02.001 — Oppenauer oxidation
+
+#### POLAR.06.02.002 — Swern oxidation
+
+#### POLAR.06.02.003 — Dess–Martin oxidation
+
+#### POLAR.06.02.004 — PCC oxidation
+
+#### POLAR.06.02.005 — PDC oxidation
+
+#### POLAR.06.02.006 — Jones oxidation
+
+#### POLAR.06.02.007 — Collins oxidation
+
+#### POLAR.06.02.008 — Corey–Kim oxidation
+
+#### POLAR.06.02.009 — Moffatt oxidation
+
+#### POLAR.06.02.010 — Parikh–Doering oxidation
+
+#### POLAR.06.02.011 — Ley–Griffith TPAP oxidation
+
+#### POLAR.06.02.012 — Pfitzner–Moffatt oxidation
+
+#### POLAR.06.02.013 — Albright–Goldman oxidation
+
+#### POLAR.06.02.014 — Sommelet oxidation
+
+### POLAR.06.03 — Oxygen-atom transfer redox
+
+#### POLAR.06.03.001 — Prilezhaev epoxidation
+
+#### POLAR.06.03.002 — Baeyer–Villiger oxidation
+
+#### POLAR.06.03.003 — Rubottom oxidation
+
+#### POLAR.06.03.004 — Sulfide-to-sulfoxide oxidation
+
+#### POLAR.06.03.005 — Sulfoxide-to-sulfone oxidation
+
+#### POLAR.06.03.006 — Alkene dihydroxylation by osmium tetroxide
+
+#### POLAR.06.03.007 — Sharpless asymmetric dihydroxylation
+
+#### POLAR.06.03.008 — Jacobsen epoxidation
+
+#### POLAR.06.03.009 — Shi epoxidation
+
+#### POLAR.06.03.010 — Dakin oxidation
+
+#### POLAR.06.03.011 — Elbs persulfate oxidation
+
+#### POLAR.06.03.012 — Riley oxidation
+
+### POLAR.06.04 — Reductive functional-group conversion
+
+#### POLAR.06.04.001 — Carbonyl-to-alcohol reduction
+
+#### POLAR.06.04.002 — Imine-to-amine reduction
+
+#### POLAR.06.04.003 — Nitrile-to-amine reduction
+
+#### POLAR.06.04.004 — Ester-to-alcohol reduction
+
+#### POLAR.06.04.005 — Amide-to-amine reduction
+
+#### POLAR.06.04.006 — Carboxylic-acid-to-alcohol reduction
+
+#### POLAR.06.04.007 — Nitro-to-amine reduction
+
+#### POLAR.06.04.008 — Azo-to-amine reduction
+
+#### POLAR.06.04.009 — Azide-to-amine reduction
+
+#### POLAR.06.04.010 — Oxime-to-amine reduction
+
+#### POLAR.06.04.011 — Wolff–Kishner reduction
+
+#### POLAR.06.04.012 — Clemmensen reduction
+
+#### POLAR.06.04.013 — Mozingo reduction
+
+### POLAR.06.05 — Oxidative functional-group conversion
+
+#### POLAR.06.05.001 — Alcohol-to-aldehyde oxidation
+
+#### POLAR.06.05.002 — Alcohol-to-ketone oxidation
+
+#### POLAR.06.05.003 — Aldehyde-to-carboxylic-acid oxidation
+
+#### POLAR.06.05.004 — Alkene-to-diol oxidation
+
+#### POLAR.06.05.005 — Amine-to-imine oxidation
+
+#### POLAR.06.05.006 — Amine N-oxidation
+
+#### POLAR.06.05.007 — Sulfide oxidation
+
+#### POLAR.06.05.008 — Thiol-to-disulfide oxidation
+
+#### POLAR.06.05.009 — Phenol oxidative dearomatization
+
+#### POLAR.06.05.010 — Benzylic oxidation
+
+#### POLAR.06.05.011 — Allylic oxidation
+
+#### POLAR.06.05.012 — Pinnick oxidation
+
+#### POLAR.06.05.013 — Tamao–Fleming oxidation
+
+### POLAR.06.06 — Disproportionation / internal redox
+
+#### POLAR.06.06.001 — Cannizzaro reaction
+
+#### POLAR.06.06.002 — Crossed Cannizzaro reaction
+
+#### POLAR.06.06.003 — Tishchenko reaction
+
+#### POLAR.06.06.004 — Meerwein–Ponndorf–Verley / Oppenauer redox pair
+
+#### POLAR.06.06.005 — Internal redox of α-hydroxy aldehydes
+
+#### POLAR.06.06.006 — Redox-neutral hydride shift
+
+#### POLAR.06.06.007 — Formose-type disproportionation
+
+#### POLAR.06.06.008 — Benzil–benzilic acid redox balance
+
+### POLAR.06.07 — Halogen / pseudohalogen transfer redox
+
+#### POLAR.06.07.001 — Electrophilic fluorination
+
+#### POLAR.06.07.002 — Electrophilic chlorination
+
+#### POLAR.06.07.003 — Electrophilic bromination
+
+#### POLAR.06.07.004 — Electrophilic iodination
+
+#### POLAR.06.07.005 — NBS allylic bromination polar step
+
+#### POLAR.06.07.006 — Phosphine-mediated alcohol halogenation
+
+#### POLAR.06.07.007 — Corey–Fuchs dibromination step
+
+#### POLAR.06.07.008 — Iodine-mediated oxidation
+
+#### POLAR.06.07.009 — NCS chlorination
+
+#### POLAR.06.07.010 — Selectfluor fluorination
+
+### POLAR.06.08 — Oxidative cleavage
+
+#### POLAR.06.08.001 — Ozonolysis
+
+#### POLAR.06.08.002 — Lemieux–Johnson oxidation
+
+#### POLAR.06.08.003 — Malaprade periodate cleavage
+
+#### POLAR.06.08.004 — Glycol cleavage
+
+#### POLAR.06.08.005 — Oxidative cleavage of alkenes
+
+#### POLAR.06.08.006 — Oxidative cleavage of vicinal diols
+
+#### POLAR.06.08.007 — Osmate-periodate cleavage
+
+#### POLAR.06.08.008 — Lead tetraacetate glycol cleavage
+
+#### POLAR.06.08.009 — Baeyer–Villiger cleavage variant
+
+#### POLAR.06.08.010 — Oxidative C–C bond cleavage
+
+### POLAR.06.09 — Reductive cleavage / deprotection
+
+#### POLAR.06.09.001 — Polar reductive cleavage of benzyl ethers
+
+#### POLAR.06.09.002 — Polar reductive cleavage of benzyl esters
+
+#### POLAR.06.09.003 — Polar reductive debenzylation surrogate
+
+#### POLAR.06.09.004 — Reductive dehalogenation
+
+#### POLAR.06.09.005 — Reductive desulfonylation
+
+#### POLAR.06.09.006 — Reductive N–O bond cleavage
+
+#### POLAR.06.09.007 — Reductive S–S bond cleavage
+
+#### POLAR.06.09.008 — Birch reduction ionic protonation step
+
+#### POLAR.06.09.009 — Dissolving-metal carbonyl reduction polar workup
+
+#### POLAR.06.09.010 — Cleavage of azo compounds
+
+### POLAR.06.10 — Deoxygenation / desulfurization
+
+#### POLAR.06.10.001 — Barton–McCombie deoxygenation polar step
+
+#### POLAR.06.10.002 — Markó–Lam deoxygenation
+
+#### POLAR.06.10.003 — Ionic deoxyfluorination
+
+#### POLAR.06.10.004 — Deoxyhalogenation of alcohols
+
+#### POLAR.06.10.005 — Thioacetal desulfurization
+
+#### POLAR.06.10.006 — Raney nickel desulfurization
+
+#### POLAR.06.10.007 — Carbonyl deoxygenation via hydrazone
+
+#### POLAR.06.10.008 — Sulfone reduction
+
+#### POLAR.06.10.009 — Sulfoxide reduction
+
+#### POLAR.06.10.010 — Phosphine-mediated deoxygenation
+
+### POLAR.06.11 — Hypervalent iodine / organosulfur redox
+
+#### POLAR.06.11.001 — IBX oxidation
+
+#### POLAR.06.11.002 — Dess–Martin periodinane oxidation
+
+#### POLAR.06.11.003 — PIDA-mediated oxidation
+
+#### POLAR.06.11.004 — PIFA-mediated oxidation
+
+#### POLAR.06.11.005 — Koser reagent oxidation
+
+#### POLAR.06.11.006 — Hypervalent iodine dearomatization
+
+#### POLAR.06.11.007 — Sulfurane oxidation
+
+#### POLAR.06.11.008 — Martin sulfurane dehydration redox step
+
+#### POLAR.06.11.009 — Alkoxybenziodoxole oxidation
+
+#### POLAR.06.11.010 — Iodoxybenzene oxidation
+
+### POLAR.06.12 — Organocatalytic hydride / electron-pair transfer
+
+#### POLAR.06.12.001 — Hantzsch ester transfer reduction
+
+#### POLAR.06.12.002 — NADH-model reduction
+
+#### POLAR.06.12.003 — Iminium-ion transfer hydrogenation
+
+#### POLAR.06.12.004 — Enamine-mediated redox-neutral aldehyde reaction
+
+#### POLAR.06.12.005 — NHC redox esterification
+
+#### POLAR.06.12.006 — NHC redox amidation
+
+#### POLAR.06.12.007 — Breslow-intermediate oxidation
+
+#### POLAR.06.12.008 — NHC internal redox reaction
+
+#### POLAR.06.12.009 — Hydride shift in oxocarbenium chemistry
+
+#### POLAR.06.12.010 — Ionic hydride relay reaction
+
+## POLAR.07 — Rearrangement / migration
+
+### POLAR.07.01 — Carbocationic rearrangement
+
+#### POLAR.07.01.001 — Wagner–Meerwein rearrangement
+
+#### POLAR.07.01.002 — Pinacol rearrangement
+
+#### POLAR.07.01.003 — Semipinacol rearrangement
+
+#### POLAR.07.01.004 — Dienone–phenol rearrangement
+
+#### POLAR.07.01.005 — Nametkin rearrangement
+
+#### POLAR.07.01.006 — Meyer–Schuster rearrangement
+
+#### POLAR.07.01.007 — Rupe rearrangement
+
+#### POLAR.07.01.008 — Tiffeneau rearrangement
+
+#### POLAR.07.01.009 — Cyclopropylcarbinyl rearrangement
+
+#### POLAR.07.01.010 — Terpinyl cation rearrangement
+
+#### POLAR.07.01.011 — Camphene rearrangement
+
+#### POLAR.07.01.012 — Meinwald rearrangement
+
+#### POLAR.07.01.013 — Acid-catalyzed epoxide rearrangement
+
+### POLAR.07.02 — Hydride / alkyl migration
+
+#### POLAR.07.02.001 — 1,2-Hydride shift
+
+#### POLAR.07.02.002 — 1,2-Methyl shift
+
+#### POLAR.07.02.003 — 1,2-Alkyl shift
+
+#### POLAR.07.02.004 — 1,2-Aryl shift
+
+#### POLAR.07.02.005 — Ring-expansion migration
+
+#### POLAR.07.02.006 — Neopentyl rearrangement
+
+#### POLAR.07.02.007 — Hydride migration in oxocarbenium ions
+
+#### POLAR.07.02.008 — Alkyl migration in iminium ions
+
+### POLAR.07.03 — Acyl / aryl / silyl migration
+
+#### POLAR.07.03.001 — Fries rearrangement
+
+#### POLAR.07.03.002 — Photo-Fries polar product rearrangement
+
+#### POLAR.07.03.003 — Baker–Venkataraman rearrangement primary placement
+
+#### POLAR.07.03.004 — Benzilic acid rearrangement acyl-migration view
+
+#### POLAR.07.03.005 — Brook rearrangement
+
+#### POLAR.07.03.006 — Anionic oxy-Cope acyl-migration tag
+
+#### POLAR.07.03.007 — Smiles rearrangement
+
+#### POLAR.07.03.008 — Truce–Smiles rearrangement
+
+#### POLAR.07.03.009 — Chapman rearrangement
+
+#### POLAR.07.03.010 — Mumm rearrangement
+
+#### POLAR.07.03.011 — Acyl transfer O-to-N migration
+
+#### POLAR.07.03.012 — Silyl O-to-C migration
+
+### POLAR.07.04 — Nitrogen-centered / heteroatom migration
+
+#### POLAR.07.04.001 — Beckmann rearrangement
+
+#### POLAR.07.04.002 — Hofmann rearrangement
+
+#### POLAR.07.04.003 — Curtius rearrangement
+
+#### POLAR.07.04.004 — Lossen rearrangement
+
+#### POLAR.07.04.005 — Schmidt rearrangement
+
+#### POLAR.07.04.006 — Baeyer–Villiger rearrangement migration step
+
+#### POLAR.07.04.007 — Neber rearrangement
+
+#### POLAR.07.04.008 — Stieglitz rearrangement
+
+#### POLAR.07.04.009 — Wolff rearrangement polar precursor step
+
+#### POLAR.07.04.010 — Aza-Baeyer–Villiger rearrangement
+
+#### POLAR.07.04.011 — Boulton–Katritzky rearrangement
+
+#### POLAR.07.04.012 — Dimroth rearrangement
+
+#### POLAR.07.04.013 — Heteroatom-to-carbon migration
+
+### POLAR.07.05 — Anionic rearrangement
+
+#### POLAR.07.05.001 — Favorskii rearrangement
+
+#### POLAR.07.05.002 — Payne rearrangement
+
+#### POLAR.07.05.003 — Anionic epoxide rearrangement
+
+#### POLAR.07.05.004 — Anionic ammonium ylide shift
+
+#### POLAR.07.05.005 — Wittig rearrangement
+
+#### POLAR.07.05.006 — [1,2]-Wittig rearrangement
+
+#### POLAR.07.05.007 — [2,3]-Wittig rearrangement
+
+#### POLAR.07.05.008 — Anionic silyl migration
+
+#### POLAR.07.05.009 — α-Halosulfone ring-contraction rearrangement
+
+#### POLAR.07.05.010 — Anionic Fries rearrangement
+
+#### POLAR.07.05.011 — Anionic oxy-Cope rearrangement
+
+#### POLAR.07.05.012 — Base-promoted acyl migration
+
+### POLAR.07.06 — Ring expansion / contraction
+
+#### POLAR.07.06.001 — Demjanov rearrangement
+
+#### POLAR.07.06.002 — Tiffeneau–Demjanov rearrangement
+
+#### POLAR.07.06.003 — Beckmann ring expansion
+
+#### POLAR.07.06.004 — Favorskii ring contraction
+
+#### POLAR.07.06.005 — Semipinacol ring expansion
+
+#### POLAR.07.06.006 — Baeyer–Villiger ring expansion
+
+#### POLAR.07.06.007 — Dowd–Beckwith polar analogue
+
+#### POLAR.07.06.008 — Cyclobutanone ring contraction
+
+#### POLAR.07.06.009 — Azetidine ring expansion
+
+#### POLAR.07.06.010 — Epoxide ring expansion
+
+### POLAR.07.07 — Fragmentation rearrangement
+
+#### POLAR.07.07.001 — Grob fragmentation rearrangement
+
+#### POLAR.07.07.002 — Eschenmoser fragmentation rearrangement
+
+#### POLAR.07.07.003 — Wharton rearrangement
+
+#### POLAR.07.07.004 — Ramberg–Bäcklund fragmentation
+
+#### POLAR.07.07.005 — Haller–Bauer cleavage
+
+#### POLAR.07.07.006 — Cieplak-type fragmentation
+
+#### POLAR.07.07.007 — α-Hydroxy ketone fragmentation
+
+#### POLAR.07.07.008 — β-Amino alcohol fragmentation
+
+#### POLAR.07.07.009 — Oxyanion-accelerated fragmentation
+
+#### POLAR.07.07.010 — Aza-Grob fragmentation
+
+### POLAR.07.08 — Neighboring-group-participation rearrangement
+
+#### POLAR.07.08.001 — Anchimeric-assistance rearrangement
+
+#### POLAR.07.08.002 — Phenonium-ion rearrangement
+
+#### POLAR.07.08.003 — Acyloxonium rearrangement
+
+#### POLAR.07.08.004 — Episulfonium rearrangement
+
+#### POLAR.07.08.005 — Epoxonium rearrangement
+
+#### POLAR.07.08.006 — Iodonium-promoted rearrangement
+
+#### POLAR.07.08.007 — Thionium-promoted rearrangement
+
+#### POLAR.07.08.008 — Neighboring acetal rearrangement
+
+### POLAR.07.09 — Oxonium / iminium / acetal rearrangement
+
+#### POLAR.07.09.001 — Ferrier rearrangement
+
+#### POLAR.07.09.002 — Overman-like imidate rearrangement polar variant
+
+#### POLAR.07.09.003 — Amadori rearrangement
+
+#### POLAR.07.09.004 — Heyns rearrangement
+
+#### POLAR.07.09.005 — Lobry de Bruyn–Alberda van Ekenstein rearrangement
+
+#### POLAR.07.09.006 — Anomerization through oxocarbenium ion
+
+#### POLAR.07.09.007 — Glycal rearrangement
+
+#### POLAR.07.09.008 — Iminium-enamine rearrangement
+
+#### POLAR.07.09.009 — Aza-Cope–Mannich polar sequence
+
+#### POLAR.07.09.010 — N-Acyliminium rearrangement
+
+### POLAR.07.10 — Sulfur / selenium / phosphorus rearrangement
+
+#### POLAR.07.10.001 — Pummerer rearrangement
+
+#### POLAR.07.10.002 — Mislow–Evans rearrangement
+
+#### POLAR.07.10.003 — [2,3]-Sigmatropic sulfoxide rearrangement polar tag
+
+#### POLAR.07.10.004 — Selenoxide rearrangement
+
+#### POLAR.07.10.005 — Phosphorane rearrangement
+
+#### POLAR.07.10.006 — Arbuzov rearrangement
+
+#### POLAR.07.10.007 — Perkow rearrangement
+
+#### POLAR.07.10.008 — Atherton–Todd rearrangement
+
+#### POLAR.07.10.009 — Sulfenate–sulfoxide rearrangement
+
+### POLAR.07.11 — Onium ylide rearrangement
+
+#### POLAR.07.11.001 — Stevens rearrangement of ammonium ylides
+
+#### POLAR.07.11.002 — Stevens rearrangement of sulfonium ylides
+
+#### POLAR.07.11.003 — Doyle–Kirmse rearrangement polar tag
+
+#### POLAR.07.11.004 — Sommelet–Hauser rearrangement of ammonium ylides
+
+#### POLAR.07.11.005 — [2,3]-Sulfonium ylide rearrangement
+
+#### POLAR.07.11.006 — [1,2]-Sulfonium ylide rearrangement
+
+#### POLAR.07.11.007 — [2,3]-Oxonium ylide rearrangement
+
+#### POLAR.07.11.008 — [1,2]-Oxonium ylide rearrangement
+
+### POLAR.07.12 — Acetal / anomeric / carbohydrate rearrangement
+
+#### POLAR.07.12.001 — Glycal oxocarbenium rearrangement
+
+#### POLAR.07.12.002 — Anomeric rearrangement
+
+#### POLAR.07.12.003 — Glycosyl orthoester rearrangement
+
+#### POLAR.07.12.004 — Acetal migration
+
+#### POLAR.07.12.005 — Benzylidene acetal rearrangement
+
+#### POLAR.07.12.006 — Acyl migration in carbohydrates
+
+#### POLAR.07.12.007 — Silyl migration in carbohydrates
+
+#### POLAR.07.12.008 — Glycal allylic rearrangement
+
+### POLAR.07.13 — Acid/base-induced skeletal rearrangement
+
+#### POLAR.07.13.001 — Retropinacol rearrangement
+
+#### POLAR.07.13.002 — Epoxide Meinwald rearrangement
+
+#### POLAR.07.13.003 — Allylic alcohol rearrangement under acid
+
+#### POLAR.07.13.004 — Tertiary alcohol skeletal rearrangement
+
+#### POLAR.07.13.005 — Terpene skeletal rearrangement
+
+#### POLAR.07.13.006 — Steroidal cation rearrangement
+
+#### POLAR.07.13.007 — Cationic ring-contraction rearrangement
+
+#### POLAR.07.13.008 — Cationic ring-expansion rearrangement
+
+#### POLAR.07.13.009 — Oxaspiropentane rearrangement
+
+## POLAR.08 — Composite polar transformation
+
+### POLAR.08.01 — Condensation sequence
+
+#### POLAR.08.01.001 — Robinson annulation
+
+#### POLAR.08.01.002 — Mannich reaction
+
+#### POLAR.08.01.003 — Benzoin condensation
+
+#### POLAR.08.01.004 — Acyloin condensation polar workup sequence
+
+#### POLAR.08.01.005 — Darzens reaction
+
+#### POLAR.08.01.006 — Horner–Wadsworth condensation sequence
+
+#### POLAR.08.01.007 — Japp–Klingemann reaction
+
+#### POLAR.08.01.008 — β-Dicarbonyl aldehyde condensation sequence
+
+#### POLAR.08.01.009 — Cinnamic-acid-forming condensation sequence
+
+#### POLAR.08.01.010 — Alkylidene active-methylene condensation sequence
+
+#### POLAR.08.01.011 — Doebner net condensation
+
+#### POLAR.08.01.012 — Pictet–Spengler net condensation
+
+#### POLAR.08.01.013 — Pyrrole-forming dicarbonyl condensation sequence
+
+#### POLAR.08.01.014 — Dihydropyrimidinone condensation sequence
+
+### POLAR.08.02 — Protection / deprotection sequence
+
+#### POLAR.08.02.001 — Boc protection
+
+#### POLAR.08.02.002 — Boc deprotection
+
+#### POLAR.08.02.003 — Cbz protection
+
+#### POLAR.08.02.004 — Cbz deprotection
+
+#### POLAR.08.02.005 — Fmoc protection
+
+#### POLAR.08.02.006 — Fmoc carbonate protection
+
+#### POLAR.08.02.007 — Silyl ether protection
+
+#### POLAR.08.02.008 — Silyl ether deprotection
+
+#### POLAR.08.02.009 — Acetal protection
+
+#### POLAR.08.02.010 — Acetal deprotection
+
+#### POLAR.08.02.011 — Ketal protection
+
+#### POLAR.08.02.012 — Ketal deprotection
+
+#### POLAR.08.02.013 — Thioacetal protection
+
+#### POLAR.08.02.014 — Thioacetal deprotection
+
+#### POLAR.08.02.015 — Benzyl protection
+
+#### POLAR.08.02.016 — Alloc deprotection
+
+### POLAR.08.03 — Functional-group activation / derivatization
+
+#### POLAR.08.03.001 — Tosylation activation
+
+#### POLAR.08.03.002 — Mesylation activation
+
+#### POLAR.08.03.003 — Triflation activation
+
+#### POLAR.08.03.004 — Nosylation activation
+
+#### POLAR.08.03.005 — Acid chloride formation
+
+#### POLAR.08.03.006 — Mixed anhydride formation
+
+#### POLAR.08.03.007 — Imidazolide formation
+
+#### POLAR.08.03.008 — Diazotization
+
+#### POLAR.08.03.009 — Azo-dicarboxylate alcohol activation
+
+#### POLAR.08.03.010 — Phosphine/tetrahalomethane alcohol activation
+
+#### POLAR.08.03.011 — Carbonyldiimidazole activation
+
+#### POLAR.08.03.012 — Boc anhydride activation
+
+#### POLAR.08.03.013 — Chloroformate activation
+
+#### POLAR.08.03.014 — Phosphonium-salt activation
+
+### POLAR.08.04 — Multicomponent polar transformation
+
+#### POLAR.08.04.001 — Ugi reaction
+
+#### POLAR.08.04.002 — Passerini reaction
+
+#### POLAR.08.04.003 — Biginelli reaction
+
+#### POLAR.08.04.004 — Hantzsch dihydropyridine synthesis
+
+#### POLAR.08.04.005 — Gewald reaction
+
+#### POLAR.08.04.006 — Kabachnik–Fields reaction
+
+#### POLAR.08.04.007 — Groebke–Blackburn–Bienaymé reaction
+
+#### POLAR.08.04.008 — Petasis borono-Mannich reaction
+
+#### POLAR.08.04.009 — Asinger reaction
+
+#### POLAR.08.04.010 — Strecker multicomponent synthesis
+
+#### POLAR.08.04.011 — Mannich multicomponent variant
+
+#### POLAR.08.04.012 — Bucherer–Bergs reaction
+
+#### POLAR.08.04.013 — Betti reaction
+
+#### POLAR.08.04.014 — Hantzsch thiazole synthesis
+
+### POLAR.08.05 — Polar cascade / tandem sequence
+
+#### POLAR.08.05.001 — Michael–aldol sequence
+
+#### POLAR.08.05.002 — Michael–Dieckmann sequence
+
+#### POLAR.08.05.003 — Knoevenagel–Michael sequence
+
+#### POLAR.08.05.004 — Knoevenagel–Michael–cyclization sequence
+
+#### POLAR.08.05.005 — Prins cascade
+
+#### POLAR.08.05.006 — Pictet–Spengler cascade
+
+#### POLAR.08.05.007 — Cationic polycyclization cascade
+
+#### POLAR.08.05.008 — Oxa-Michael–aldol sequence
+
+#### POLAR.08.05.009 — Aza-Michael–cyclization sequence
+
+#### POLAR.08.05.010 — Mannich–cyclization sequence
+
+#### POLAR.08.05.011 — Aldol–Michael cascade
+
+#### POLAR.08.05.012 — Enamine–iminium cascade
+
+### POLAR.08.06 — Ionic polymerization / chain-growth sequence
+
+#### POLAR.08.06.001 — Cationic alkene polymerization
+
+#### POLAR.08.06.002 — Anionic alkene polymerization
+
+#### POLAR.08.06.003 — Cationic ring-opening polymerization
+
+#### POLAR.08.06.004 — Anionic ring-opening polymerization
+
+#### POLAR.08.06.005 — Epoxide polymerization
+
+#### POLAR.08.06.006 — Lactone ring-opening polymerization
+
+#### POLAR.08.06.007 — Lactam ring-opening polymerization
+
+#### POLAR.08.06.008 — Polyurethane formation
+
+#### POLAR.08.06.009 — Epoxy curing
+
+#### POLAR.08.06.010 — Polycarbonate formation
+
+### POLAR.08.07 — Net functional-group interconversion
+
+#### POLAR.08.07.001 — Alcohol-to-halide conversion
+
+#### POLAR.08.07.002 — Alcohol-to-amine conversion
+
+#### POLAR.08.07.003 — Aldehyde-to-alkene conversion
+
+#### POLAR.08.07.004 — Carboxylic-acid-to-amine conversion
+
+#### POLAR.08.07.005 — Carboxylic-acid homologation sequence
+
+#### POLAR.08.07.006 — Amide-to-amine one-carbon degradation sequence
+
+#### POLAR.08.07.007 — Acyl azide degradation sequence
+
+#### POLAR.08.07.008 — Nitrile-to-carboxylic-acid conversion
+
+#### POLAR.08.07.009 — Aldehyde-to-alkyne homologation
+
+#### POLAR.08.07.010 — Ketone-to-alkene conversion
+
+### POLAR.08.08 — Polar olefination / C=C-forming sequence
+
+#### POLAR.08.08.001 — Wittig reaction
+
+#### POLAR.08.08.002 — Horner–Wadsworth–Emmons reaction
+
+#### POLAR.08.08.003 — Horner–Wittig reaction
+
+#### POLAR.08.08.004 — Still–Gennari olefination
+
+#### POLAR.08.08.005 — Julia olefination
+
+#### POLAR.08.08.006 — Julia–Kocienski olefination
+
+#### POLAR.08.08.007 — Peterson olefination sequence
+
+#### POLAR.08.08.008 — Corey–Fuchs reaction
+
+#### POLAR.08.08.009 — Seyferth–Gilbert homologation
+
+#### POLAR.08.08.010 — Ohira–Bestmann homologation
+
+#### POLAR.08.08.011 — Tebbe-type polar carbonyl olefination tag
+
+#### POLAR.08.08.012 — Lombardo methylenation
+
+### POLAR.08.09 — Heterocycle-forming polar sequence
+
+#### POLAR.08.09.001 — Fischer indole synthesis
+
+#### POLAR.08.09.002 — Bischler–Napieralski reaction
+
+#### POLAR.08.09.003 — Skraup synthesis
+
+#### POLAR.08.09.004 — Friedländer quinoline synthesis
+
+#### POLAR.08.09.005 — Doebner–Miller quinoline synthesis
+
+#### POLAR.08.09.006 — Pomeranz–Fritsch reaction
+
+#### POLAR.08.09.007 — Knorr pyrazole synthesis
+
+#### POLAR.08.09.008 — Debus–Radziszewski imidazole synthesis
+
+#### POLAR.08.09.009 — Hantzsch pyridine synthesis
+
+#### POLAR.08.09.010 — Pinner synthesis
+
+#### POLAR.08.09.011 — Niementowski quinazoline synthesis
+
+#### POLAR.08.09.012 — Leimgruber–Batcho indole synthesis
+
+#### POLAR.08.09.013 — Bischler–Möhlau indole synthesis
+
+#### POLAR.08.09.014 — Combes quinoline synthesis
+
+### POLAR.08.10 — Carbohydrate / nucleotide conjugation sequence
+
+#### POLAR.08.10.001 — Glycoside formation sequence
+
+#### POLAR.08.10.002 — N-Glycosylation sequence
+
+#### POLAR.08.10.003 — O-Glycosylation sequence
+
+#### POLAR.08.10.004 — S-Glycosylation sequence
+
+#### POLAR.08.10.005 — Nucleotide phosphoramidite coupling
+
+#### POLAR.08.10.006 — Nucleotide deprotection sequence
+
+### POLAR.08.11 — Peptide / bioconjugation polar sequence
+
+#### POLAR.08.11.001 — Solid-phase peptide coupling cycle
+
+#### POLAR.08.11.002 — Native chemical ligation polar step
+
+#### POLAR.08.11.003 — Oxime bioconjugation sequence
+
+#### POLAR.08.11.004 — Hydrazone bioconjugation sequence
+
+### POLAR.08.12 — Dearomatization / rearomatization polar sequence
+
+#### POLAR.08.12.001 — Phenolic oxidative dearomatization sequence
+
+#### POLAR.08.12.002 — Arenium-ion dearomatization sequence
+
+#### POLAR.08.12.003 — Dearomatizing spirocyclization sequence
+
+#### POLAR.08.12.004 — Rearomatizing elimination sequence
+

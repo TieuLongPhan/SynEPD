@@ -1,5 +1,6 @@
 import json
 import re
+import gzip
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -8,6 +9,10 @@ from synkit.IO import rsmi_to_graph
 from synkit.Graph.ITS.its_construction import ITSConstruction
 from synkit.Graph.ITS.rc_extractor import RCExtractor
 from synkit.Graph.Feature.wl_hash import WLHash
+
+HEADING_RE = re.compile(
+    r"^#{1,4}\s+((?:POLAR\.)?\d{2}(?:\.\d{2})?(?:\.\d{3})?|POLAR)\s+[—–-]\s+(.+?)\s*$"
+)
 
 
 def clean_taxon_name(name: str) -> str:
@@ -19,33 +24,91 @@ def clean_taxon_name(name: str) -> str:
     return name.strip()
 
 
+def normalize_taxon_code(code: str) -> str:
+    return code if code.startswith("POLAR") else f"POLAR.{code}"
+
+
 def parse_hierarchy(path: Path) -> dict[str, str]:
+    path = Path(path)
+    if path.suffix == ".json" or path.suffixes[-2:] == [".json", ".gz"]:
+        return {
+            t["code"]: clean_taxon_name(t["name"]) for t in load_hierarchy_taxons(path)
+        }
+
     hierarchy = {}
     with open(path, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
+            heading = HEADING_RE.match(line)
+            if heading:
+                code, name = heading.groups()
+                code = normalize_taxon_code(code.strip())
+                if code != "POLAR.99" and not code.startswith("POLAR.99."):
+                    hierarchy[code] = clean_taxon_name(name)
+                continue
             if line.startswith("## "):
                 parts = re.split(r" [—–-] ", line[3:], maxsplit=1)
                 if len(parts) == 2:
-                    hierarchy[parts[0].strip()] = clean_taxon_name(parts[1])
+                    code = normalize_taxon_code(parts[0].strip())
+                    if code != "POLAR.99" and not code.startswith("POLAR.99."):
+                        hierarchy[code] = clean_taxon_name(parts[1])
             elif line.startswith("### "):
                 parts = re.split(r" [—–-] ", line[4:], maxsplit=1)
                 if len(parts) == 2:
-                    hierarchy[parts[0].strip()] = clean_taxon_name(parts[1])
+                    code = normalize_taxon_code(parts[0].strip())
+                    if code != "POLAR.99" and not code.startswith("POLAR.99."):
+                        hierarchy[code] = clean_taxon_name(parts[1])
             elif line.startswith("- **"):
                 content = line[4:].split("**", 1)
                 if len(content) == 2:
                     parts = re.split(r" [—–-] ", content[0], maxsplit=1)
                     if len(parts) == 2:
-                        hierarchy[parts[0].strip()] = clean_taxon_name(parts[1])
+                        code = normalize_taxon_code(parts[0].strip())
+                        if code != "POLAR.99" and not code.startswith("POLAR.99."):
+                            hierarchy[code] = clean_taxon_name(parts[1])
             elif "  - `" in line or line.strip().startswith("- `"):
                 cleaned = line.replace("  - `", "").replace("- `", "").replace("`", "")
                 parts = re.split(r" [—–-] ", cleaned, maxsplit=1)
                 if len(parts) == 2:
-                    code = parts[0].strip()
+                    code = normalize_taxon_code(parts[0].strip())
                     name = parts[1].split(" (", 1)[0].strip()
-                    hierarchy[code] = clean_taxon_name(name)
+                    if code != "POLAR.99" and not code.startswith("POLAR.99."):
+                        hierarchy[code] = clean_taxon_name(name)
     return hierarchy
+
+
+def load_hierarchy_taxons(path: Path) -> list[dict[str, Any]]:
+    path = Path(path)
+    if path.suffix == ".json" or path.suffixes[-2:] == [".json", ".gz"]:
+        opener = gzip.open if path.suffix == ".gz" else open
+        with opener(path, "rt", encoding="utf-8") as f:
+            data = json.load(f)
+        raw_taxons = data.get("taxons", data) if isinstance(data, dict) else data
+        taxons = []
+        for item in raw_taxons:
+            code = item["code"]
+            taxons.append(
+                {
+                    "code": code,
+                    "parent_code": item.get("parent_code"),
+                    "level": int(item.get("level", len(code.split(".")))),
+                    "name": clean_taxon_name(item["name"]),
+                }
+            )
+        return taxons
+
+    hierarchy = parse_hierarchy(path)
+    taxons = []
+    for code, name in hierarchy.items():
+        taxons.append(
+            {
+                "code": code,
+                "parent_code": ".".join(code.split(".")[:-1]) if "." in code else None,
+                "level": len(code.split(".")),
+                "name": name,
+            }
+        )
+    return sorted(taxons, key=lambda t: (t["level"], t["code"]))
 
 
 def strip_atom_map(smiles: str) -> str:

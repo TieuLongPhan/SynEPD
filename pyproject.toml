@@ -10,7 +10,16 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
 dependencies = [
+    "fastapi",
+    "pydantic",
     "synkit>=1.1.2",
+    "uvicorn",
+]
+
+[project.optional-dependencies]
+dev = [
+    "flake8",
+    "pytest",
 ]
 
 [tool.setuptools.packages.find]

@@ -219,5 +219,8 @@ __marimo__/
 
 
 plan/*
-data/raw.json
+scripts/*
+data/raw/*
+data/old/*
 test.ipynb
+synepd.egg-info/*

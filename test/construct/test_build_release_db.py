@@ -1,56 +1,142 @@
 import sqlite3
 import tempfile
+import json
 from pathlib import Path
+from types import SimpleNamespace
+
+import networkx as nx
+import synepd.construct.build_release_db as build_mod
 
 from synepd.construct.build_release_db import (
     build_release_database,
-    generate_aam_key,
     extract_reaction_name,
 )
 
 
-def test_build_release_database():
+def test_build_release_database_with_clean_records(monkeypatch):
+    class FakeStandardize:
+        def fit(self, rsmi):
+            return rsmi
+
+    class FakeCanon:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def canonicalise(self, rsmi):
+            return SimpleNamespace(canonical_rsmi=rsmi)
+
+    def ok_balance(*args, **kwargs):
+        return SimpleNamespace(balanced=True)
+
+    def ok_atom_map_balance(*args, **kwargs):
+        return SimpleNamespace(is_balanced=True)
+
+    def ok_h_completion(*args, **kwargs):
+        return True, None
+
+    def fake_extract_graphs(*args, **kwargs):
+        graph = nx.Graph()
+        graph.add_node(1, element="C", charge=0, atom_map=1)
+        return graph, graph.copy(), "fake-wlhash"
+
+    monkeypatch.setattr(build_mod, "Standardize", FakeStandardize)
+    monkeypatch.setattr(build_mod, "CanonRSMI", FakeCanon)
+    monkeypatch.setattr(build_mod, "check_reaction_balance", ok_balance)
+    monkeypatch.setattr(build_mod, "check_atom_map_balance", ok_atom_map_balance)
+    monkeypatch.setattr(build_mod, "check_single_h_completion", ok_h_completion)
+    monkeypatch.setattr(build_mod, "extract_graphs", fake_extract_graphs)
+
     with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = Path(tmpdir)
+        json_path = tmp / "polar_clean.json"
+        hierarchy_path = tmp / "polar_hierarchy.json"
         db_path = Path(tmpdir) / "test_release.sqlite"
+        json_path.write_text(
+            json.dumps(
+                {
+                    "records": [
+                        {
+                            "id": 1,
+                            "family": "polar",
+                            "tax_code": "POLAR.01.01.001",
+                            "tax_codes": ["POLAR.01.01.001", "POLAR.01.01.002"],
+                            "reaction_name": "Example",
+                            "reaction_names": ["Example", "Alias example"],
+                            "rsmi": "CCO>>CCO",
+                            "epd": [],
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        hierarchy_path.write_text(
+            json.dumps(
+                {
+                    "taxons": [
+                        {
+                            "code": "POLAR",
+                            "parent_code": None,
+                            "level": 1,
+                            "name": "Polar",
+                        },
+                        {
+                            "code": "POLAR.01",
+                            "parent_code": "POLAR",
+                            "level": 2,
+                            "name": "Class",
+                        },
+                        {
+                            "code": "POLAR.01.01",
+                            "parent_code": "POLAR.01",
+                            "level": 3,
+                            "name": "Subclass",
+                        },
+                        {
+                            "code": "POLAR.01.01.001",
+                            "parent_code": "POLAR.01.01",
+                            "level": 4,
+                            "name": "Example",
+                        },
+                        {
+                            "code": "POLAR.01.01.002",
+                            "parent_code": "POLAR.01.01",
+                            "level": 4,
+                            "name": "Alias example",
+                        },
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+
         build_release_database(
-            json_path=Path("data/polar.json"),
-            hierarchy_path=Path("data/hierarchy.md"),
+            json_path=json_path,
+            hierarchy_path=hierarchy_path,
             db_path=db_path,
         )
 
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
-        # Check Taxon
         cursor.execute("SELECT COUNT(*) FROM taxon;")
-        assert cursor.fetchone()[0] > 0
+        assert cursor.fetchone()[0] == 5
 
-        # Check Reaction
         cursor.execute("SELECT COUNT(*) FROM reaction;")
-        rxn_count = cursor.fetchone()[0]
-        assert rxn_count > 0
+        assert cursor.fetchone()[0] == 1
 
-        # Check specific reaction name
         cursor.execute(
-            "SELECT name FROM reaction WHERE case_id = 'polar01_001_alcohol_protonation_deprotonation';"
+            "SELECT case_id, name FROM reaction WHERE case_id = 'polar_000001';"
         )
         row = cursor.fetchone()
         assert row is not None
-        assert row[0] == "Alcohol protonation deprotonation"
+        assert row[1] == "Example"
 
-        # Check Molecule
-        cursor.execute("SELECT COUNT(*) FROM molecule;")
-        assert cursor.fetchone()[0] > 0
-
-        # Check EPD
-        cursor.execute("SELECT COUNT(*) FROM epd;")
-        assert cursor.fetchone()[0] > 0
-
-        # Check specific Arrow
-        cursor.execute(
-            "SELECT COUNT(*) FROM epd_arrow WHERE arrow_type_code = 'LP-/Sigma+';"
-        )
-        assert cursor.fetchone()[0] > 0
+        cursor.execute("SELECT taxon_code FROM reaction_taxonomy ORDER BY taxon_code;")
+        assert [r[0] for r in cursor.fetchall()] == [
+            "POLAR.01.01.001",
+            "POLAR.01.01.002",
+        ]
 
         conn.close()
 

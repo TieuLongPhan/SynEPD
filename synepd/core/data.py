@@ -5,7 +5,7 @@ from pathlib import Path
 # Default Zenodo URL and cache paths
 # The user will replace this Zenodo Record ID once they upload to Zenodo.
 DEFAULT_ZENODO_RECORD_ID = "XXXXXXXX"  # Placeholder for the Zenodo Record ID
-DEFAULT_DB_FILENAME = "release_v1.sqlite"
+DEFAULT_DB_FILENAME = "epdb.sqlite"
 DEFAULT_DOWNLOAD_URL = f"https://zenodo.org/records/{DEFAULT_ZENODO_RECORD_ID}/files/{DEFAULT_DB_FILENAME}?download=1"
 
 
