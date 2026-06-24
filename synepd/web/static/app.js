@@ -158,7 +158,44 @@ function switchTab(tabId) {
         renderHistory();
     } else if (tabId === 'sketch') {
         openSketchModal();
+    } else if (tabId === 'kg') {
+        if (typeof kgOnEnterTab === 'function') kgOnEnterTab();
     }
+
+    // Leaving the knowledge-graph tab restores the ITS / welcome viewport.
+    if (tabId !== 'kg' && typeof kgExitMode === 'function') {
+        kgExitMode();
+    }
+    // Leaving the taxonomy tab closes the TMAP viewport.
+    if (tabId !== 'taxonomy') {
+        tmapExitMode();
+    }
+}
+
+function tmapEnterMode() {
+    const vp = document.getElementById('tmap-viewport');
+    if (!vp) return;
+    vp.style.display = 'flex';
+    // Lazy-load: only set src the first time
+    const frame = document.getElementById('tmap-frame');
+    if (frame && frame.src !== window.location.origin + '/static/tmap.html') {
+        const loading = document.getElementById('tmap-loading');
+        if (loading) loading.style.display = 'flex';
+        frame.src = '/static/tmap.html';
+    }
+    switchTab('taxonomy');
+}
+
+function tmapOnFrameLoad() {
+    const frame = document.getElementById('tmap-frame');
+    if (!frame || frame.src === 'about:blank') return;
+    const loading = document.getElementById('tmap-loading');
+    if (loading) loading.style.display = 'none';
+}
+
+function tmapExitMode() {
+    const vp = document.getElementById('tmap-viewport');
+    if (vp) vp.style.display = 'none';
 }
 
 // Search Reactions
@@ -766,69 +803,21 @@ function toggleLegend() {
     document.getElementById('legend-chevron').innerText = legendCollapsed ? '▸' : '▾';
 }
 
-function renderStructurePreviews(canonicalRsmi) {
-    const parts = canonicalRsmi.split('>>');
-    if (parts.length < 2) return;
-    const [reactants, products] = parts;
-    const theme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
-
-    const drawSide = (containerId, sideSmiles, prefix) => {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        container.innerHTML = '';
-
-        sideSmiles.split('.').filter(Boolean).forEach((smiles, index) => {
-            const card = document.createElement('div');
-            card.className = 'structure-fragment';
-
-            const canvas = document.createElement('canvas');
-            canvas.width = 132;
-            canvas.height = 96;
-            canvas.id = `${prefix}-${index}`;
-            canvas.className = 'structure-canvas';
-
-            const caption = document.createElement('div');
-            caption.className = 'structure-smiles';
-            caption.innerText = smiles;
-
-            const molButton = document.createElement('button');
-            molButton.className = 'structure-mol-btn';
-            molButton.type = 'button';
-            molButton.title = 'Find reactions containing this molecule';
-            molButton.setAttribute('aria-label', `Find reactions containing ${smiles}`);
-            molButton.innerText = 'All reactions';
-            molButton.onclick = () => fetchMoleculeReactions(smiles);
-
-            card.appendChild(canvas);
-            card.appendChild(caption);
-            card.appendChild(molButton);
-            container.appendChild(card);
-
-            const drawer = new SmilesDrawer.Drawer({
-                width: 132,
-                height: 96,
-                bondThickness: 1.3,
-                compactDrawing: false
-            });
-            SmilesDrawer.parse(smiles, tree => {
-                drawer.draw(tree, canvas.id, theme, false);
-            }, () => {
-                caption.style.color = 'var(--accent-orange)';
-            });
-        });
-    };
-
-    drawSide('structure-reactants', reactants, 'canvas-reactant');
-    drawSide('structure-products', products, 'canvas-product');
-}
+let _cdkGen = 0; // generation counter to drop stale onerror callbacks
 
 function renderCDKDepict() {
     if (!activeReaction) return;
     const container = document.getElementById('cdk-depict-container');
     if (!container) return;
 
+    // Skip render when the section is collapsed
+    const body = document.getElementById('cdk-depict-body');
+    if (body && body.style.display === 'none') return;
+
     const showAAM = document.getElementById('cdk-aam-toggle')?.checked ?? false;
     const smiles = showAAM && activeReaction.aam_key ? activeReaction.aam_key : activeReaction.canonical_rsmi;
+    // Derive annotate after the smiles ternary so mapidx isn't sent for unmapped SMILES
+    const annotate = (showAAM && smiles === activeReaction.aam_key) ? 'mapidx' : 'none';
 
     if (!smiles) {
         container.innerHTML = '<p style="color:var(--text-secondary); font-size:0.8rem; text-align:center;">No SMILES available</p>';
@@ -837,17 +826,18 @@ function renderCDKDepict() {
 
     const isDark = !document.body.classList.contains('light-theme');
     const style = isDark ? 'cod' : 'cow';
-    const annotate = showAAM ? 'mapidx' : 'none';
     const abbr = document.getElementById('cdk-abbr-toggle')?.checked ? 'on' : 'off';
     const hdisp = document.getElementById('cdk-hdisp')?.value || 'bridgehead';
     const url = `https://www.simolecule.com/cdkdepict/depict/${style}/svg?smi=${encodeURIComponent(smiles)}&zoom=2&abbr=${abbr}&hdisp=${hdisp}&showtitle=false&annotate=${annotate}`;
 
     container.innerHTML = '';
+    const gen = ++_cdkGen;
 
     const img = document.createElement('img');
     img.alt = '2D reaction diagram';
     img.style.cssText = 'max-width:100%; border-radius:4px; display:block; margin:0 auto;';
     img.onerror = () => {
+        if (gen !== _cdkGen) return; // stale — a newer render has already taken over
         container.innerHTML = '<p style="color:var(--accent-orange); font-size:0.8rem; text-align:center; padding:0.5rem 0;">CDK Depict unavailable</p>';
     };
     img.src = url;
@@ -919,7 +909,8 @@ function goHome() {
     const viewport = document.getElementById('graph-viewport');
     const svgEl = viewport.querySelector('svg');
     if (svgEl) svgEl.remove();
-    
+
+    if (typeof kgExitMode === 'function') kgExitMode();
     document.getElementById('welcome-panel').style.display = "block";
     document.getElementById('detail-panel').style.display = "none";
     document.getElementById('detail-fallback').style.display = "block";

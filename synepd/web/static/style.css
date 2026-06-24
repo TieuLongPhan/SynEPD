@@ -1864,9 +1864,6 @@
             .brand-home {
                 width: 100%;
             }
-            .structure-preview-grid {
-                grid-template-columns: 1fr;
-            }
             .dashboard-grid,
             .insight-kpi-grid {
                 grid-template-columns: 1fr;
@@ -1884,7 +1881,6 @@
                 text-align: center;
             }
         }
-        /* Structure preview section */
         .section-collapsible { margin-bottom: 1.25rem; }
         .section-toggle {
             background: none;
@@ -1903,69 +1899,6 @@
             margin-bottom: 0.5rem;
         }
         .section-toggle-body { overflow: hidden; }
-        .structure-preview-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-            gap: 0.75rem;
-            align-items: start;
-            margin-bottom: 0.75rem;
-        }
-        .structure-label {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.4rem;
-        }
-        .structure-arrow {
-            color: var(--accent-cyan);
-            font-size: 1.2rem;
-            line-height: 96px;
-            padding-top: 1.1rem;
-        }
-        .structure-fragments {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            min-width: 0;
-        }
-        .structure-fragment {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.35rem;
-            min-width: 0;
-        }
-        .structure-canvas {
-            width: 100%;
-            height: auto;
-            display: block;
-            border-radius: 6px;
-            background: var(--bg-tertiary);
-        }
-        .structure-smiles {
-            margin-top: 0.25rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.62rem;
-            line-height: 1.25;
-            color: var(--text-secondary);
-            overflow-wrap: anywhere;
-        }
-        .structure-mol-btn {
-            width: 100%;
-            margin-top: 0.35rem;
-            border: 1px solid var(--border);
-            background: var(--bg-secondary);
-            color: var(--accent-cyan);
-            border-radius: 6px;
-            padding: 0.25rem 0.4rem;
-            font-family: inherit;
-            font-size: 0.7rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .structure-mol-btn:hover {
-            border-color: var(--accent-cyan);
-            background: rgba(0, 242, 255, 0.08);
-        }
         /* v2 enhancements styling */
         .change-badge {
             font-size: 0.72rem;

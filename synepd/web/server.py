@@ -23,6 +23,9 @@ from synepd.core.query import (
     extract_graphs,
 )
 
+# --- Knowledge Graph router ---
+from synepd.web.knowledge_graph import router as kg_router
+
 app = FastAPI(
     title="SynEPD Mechanistic Web Service",
     description="REST backend and interactive explorer for reaction EPD mechanisms",
@@ -37,6 +40,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(kg_router)
 
 
 def get_db_path_or_url() -> str:
@@ -198,6 +204,44 @@ def compute_rdkit_coords(aam_key: str) -> dict:
     except Exception:
         pass
     return coords
+
+
+def _check_balanced(canonical_rsmi: str) -> bool | None:
+    """Return True if atom counts balance across the reaction arrow, False if not,
+    or None if the RSMI is missing or unparseable."""
+    if not canonical_rsmi:
+        return None
+    try:
+        from rdkit import Chem
+        from collections import Counter
+
+        parts = canonical_rsmi.split(">>")
+        # Support both "R>>P" (2-part) and "R>>reagent>>P" (3-part); ignore middle.
+        if len(parts) == 2:
+            lhs, rhs = parts[0], parts[1]
+        elif len(parts) == 3:
+            lhs, rhs = parts[0], parts[2]
+        else:
+            return None
+
+        def atom_counts(frag: str) -> Counter | None:
+            counts: Counter = Counter()
+            for smi in frag.split("."):
+                mol = Chem.MolFromSmiles(smi)
+                if mol is None:
+                    return None
+                mol = Chem.AddHs(mol)
+                for a in mol.GetAtoms():
+                    counts[a.GetAtomicNum()] += 1
+            return counts
+
+        r_counts = atom_counts(lhs)
+        p_counts = atom_counts(rhs)
+        if r_counts is None or p_counts is None:
+            return None
+        return r_counts == p_counts
+    except Exception:
+        return None
 
 
 @app.get("/api/db-info")
@@ -570,6 +614,7 @@ def get_reaction_detail(reaction_id: int):
 
         rxn_data["its_graph"] = its_json
         rxn_data["rdkit_coords"] = compute_rdkit_coords(rxn_data["aam_key"])
+        rxn_data["balanced"] = _check_balanced(rxn_data.get("canonical_rsmi"))
 
         return rxn_data
     finally:

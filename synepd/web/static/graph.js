@@ -30,6 +30,7 @@ var nodeGroup = null;
 var arrowGroup = null;
 var zoomBehavior = null;
 var svgRoot = null;
+var fitTimer = null;
 
 // Colors for chemical elements
 const elementColors = {
@@ -52,11 +53,21 @@ const elementRadius = (element) => {
 // Draw Interactive D3 Graph
 function drawGraph() {
     const viewport = document.getElementById('graph-viewport');
-    
+
+    // Stop old simulation and clear its scheduled callbacks before drawing
+    if (simulation) {
+        simulation.on('tick', null);
+        simulation.on('end.fit', null);
+        simulation.stop();
+        simulation = null;
+    }
+    if (fitTimer) { clearTimeout(fitTimer); fitTimer = null; }
+    if (svgRoot) { try { svgRoot.interrupt(); } catch (e) {} }
+
     // Remove existing SVG if any
     const existingSvg = viewport.querySelector('svg');
-    if (existingSvg) existingSvg.remove();
-    
+    if (existingSvg) { try { d3.select(existingSvg).interrupt(); } catch (e) {} existingSvg.remove(); }
+
     // Hide welcome panel
     document.getElementById('welcome-panel').style.display = "none";
     
@@ -241,7 +252,7 @@ function drawGraph() {
     });
     svg.call(zoomBehavior);
 
-    let fitTimer = setTimeout(() => zoomToFit(), 1200);
+    fitTimer = setTimeout(() => zoomToFit(), 1200);
     simulation.on('end.fit', () => { clearTimeout(fitTimer); zoomToFit(); });
 }
 

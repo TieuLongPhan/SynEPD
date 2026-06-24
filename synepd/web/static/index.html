@@ -11,8 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/kg.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://unpkg.com/smiles-drawer@2.0.1/dist/smiles-drawer.min.js"></script>
 </head>
 <body>
     <header class="app-header" role="banner">
@@ -43,6 +43,7 @@
                 <button class="tab-btn" onclick="switchTab('taxonomy')" role="tab" aria-selected="false" aria-controls="tab-taxonomy">Taxonomy</button>
                 <button class="tab-btn" onclick="switchTab('history')" role="tab" aria-selected="false" aria-controls="tab-history">History</button>
                 <button class="tab-btn" onclick="switchTab('sketch')" role="tab" aria-selected="false" aria-controls="tab-sketch">Sketch</button>
+                <button class="tab-btn" onclick="switchTab('kg')" role="tab" aria-selected="false" aria-controls="tab-kg">Graph</button>
             </div>
             
             <div class="tab-content-container">
@@ -63,6 +64,7 @@
 
                 <!-- Taxonomy Tab Pane -->
                 <div id="tab-taxonomy" class="tab-pane" role="tabpanel" aria-labelledby="tab-taxonomy">
+                    <button id="tmap-open-btn" class="search-btn" style="width:100%; margin-bottom:0.75rem; font-size:0.82rem;" onclick="tmapEnterMode()">🗺 Chemical Space Map</button>
                     <input id="tax-filter" class="search-input" placeholder="Filter taxonomy..."
                            style="margin-bottom: 0.75rem; font-size: 0.85rem;"
                            oninput="filterTaxonomyTree(this.value)" aria-label="Filter taxonomy tree">
@@ -84,6 +86,94 @@
                     <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.75rem;">Draw a reaction and search for matching EPD projections.</p>
                     <div id="sketch-status" style="font-size:0.78rem; min-height:1.1rem; margin-bottom:0.5rem; color:var(--text-secondary);">Sketcher loading. No API key is required.</div>
                     <button class="search-btn" style="width: 100%;" onclick="openSketchModal()">Open full sketcher</button>
+                </div>
+
+                <!-- Knowledge Graph Tab Pane -->
+                <div id="tab-kg" class="tab-pane" role="tabpanel" aria-labelledby="tab-kg">
+                    <div style="display:flex; align-items:flex-start; gap:0.45rem; background:color-mix(in srgb, var(--accent-orange) 12%, transparent); border:1px solid var(--accent-orange); border-radius:6px; padding:0.45rem 0.6rem; margin-bottom:0.6rem; font-size:0.75rem; color:var(--accent-orange);">
+                        <span style="font-size:0.85rem; line-height:1.2; flex-shrink:0;">⚠</span>
+                        <span><strong>Under development</strong> — results and interactions may be incomplete or unstable.</span>
+                    </div>
+                    <p class="kg-hint" style="text-align:left;">Seed the graph with a molecule (SMILES / InChIKey) or a reaction (case id / name), then click nodes to expand directed relations.</p>
+                    <div class="kg-controls">
+                        <div class="kg-row">
+                            <select id="kg-search-mode" onchange="kgOnSearchModeChange()" style="flex-shrink:0;">
+                                <option value="text">Name / SMILES</option>
+                                <option value="rsmi">Similar reaction (RSMI)</option>
+                                <option value="smarts">Substructure (SMARTS)</option>
+                                <option value="route">Route (A → B)</option>
+                            </select>
+                        </div>
+                        <div class="kg-row">
+                            <input id="kg-search-input" class="kg-search-input" placeholder="e.g. CC(=O)Cl or a case id"
+                                   onkeydown="if(event.key==='Enter') kgSearchSeed()" aria-label="Knowledge graph seed search">
+                            <button id="kg-search-btn" class="search-btn" onclick="kgSearchSeed()">Find</button>
+                        </div>
+                        <!-- Route mode extras (hidden unless mode=route) -->
+                        <div id="kg-route-extras" style="display:none; flex-direction:column; gap:0.45rem;">
+                            <div class="kg-row" style="font-size:0.72rem; color:var(--text-secondary);">
+                                <span style="flex-shrink:0; width:3.2rem;">To:</span>
+                                <input id="kg-route-target" class="kg-search-input" placeholder="Target molecule SMILES / InChIKey"
+                                       onkeydown="if(event.key==='Enter') kgFindRoute()" aria-label="Route target molecule">
+                            </div>
+                            <div class="kg-row">
+                                <label style="font-size:0.72rem; color:var(--text-secondary); white-space:nowrap;">Direction</label>
+                                <select id="kg-route-mode" style="flex:1; font-size:0.8rem;">
+                                    <option value="both" selected>↔ Both (shortest)</option>
+                                    <option value="forward">→ Forward synthesis</option>
+                                    <option value="retro">← Retrosynthesis</option>
+                                </select>
+                            </div>
+                            <div class="kg-row">
+                                <label style="font-size:0.72rem; color:var(--text-secondary); white-space:nowrap;">Max steps</label>
+                                <select id="kg-route-depth" style="flex:1; font-size:0.8rem;">
+                                    <option value="4">4</option>
+                                    <option value="6">6</option>
+                                    <option value="8" selected>8</option>
+                                    <option value="12">12</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="kg-row">
+                            <label for="kg-maxrxn">Max reactions / node</label>
+                            <select id="kg-maxrxn">
+                                <option value="10">10</option>
+                                <option value="20" selected>20</option>
+                                <option value="40">40</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                        <div class="kg-row">
+                            <label class="kg-toggle"><input type="checkbox" id="kg-show-taxonomy"> Show taxonomy nodes</label>
+                        </div>
+                        <div class="kg-row">
+                            <label class="kg-toggle"><input type="checkbox" id="kg-hide-reagents" onchange="kgToggleReagents()"> Hide common reagents</label>
+                        </div>
+                        <div class="kg-row">
+                            <label for="kg-taxon-filter" class="kg-row" style="font-size:0.78rem;color:var(--text-secondary);white-space:nowrap;">POLAR class</label>
+                            <select id="kg-taxon-filter" onchange="kgSetTaxonFilter()" style="flex:1;">
+                                <option value="">All classes</option>
+                                <option value="POLAR.01">POLAR.01 — Proton / LA–LB transfer</option>
+                                <option value="POLAR.02">POLAR.02 — Substitution</option>
+                                <option value="POLAR.03">POLAR.03 — Addition</option>
+                                <option value="POLAR.04">POLAR.04 — Addition–elimination</option>
+                                <option value="POLAR.05">POLAR.05 — Elimination</option>
+                                <option value="POLAR.06">POLAR.06 — Redox / hydride transfer</option>
+                                <option value="POLAR.07">POLAR.07 — Rearrangement / migration</option>
+                                <option value="POLAR.08">POLAR.08 — Composite polar</option>
+                            </select>
+                        </div>
+                        <div class="kg-row">
+                            <button class="kg-mini-btn" onclick="kgZoomToFit()">Fit</button>
+                            <button class="kg-mini-btn" onclick="kgClear()">Clear graph</button>
+                            <button class="kg-mini-btn" onclick="kgExportJSON()">Export</button>
+                        </div>
+                    </div>
+                    <div id="kg-seed-results"><p class="kg-hint">Search to find a starting node.</p></div>
+                    <div style="border-top:1px solid var(--border); margin:0.6rem 0; padding-top:0.6rem;">
+                        <p style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-secondary); margin-bottom:0.4rem;">Selection</p>
+                        <div id="kg-selection"><p class="kg-hint">Click a node to inspect it.</p></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -223,6 +313,55 @@
 
                 <button class="control-btn" onclick="zoomToFit()" title="Fit viewport (F)" style="margin-left: auto;" aria-label="Fit graph viewport">⛶</button>
             </div>
+
+            <!-- Knowledge Graph Viewport (overlays the ITS viewport when active) -->
+            <div class="kg-viewport" id="kg-viewport" style="display:none;">
+                <div class="kg-toolbar">
+                    <strong style="font-size:0.85rem; color:var(--text-primary);">Knowledge Graph</strong>
+                    <span style="font-size:0.68rem; background:color-mix(in srgb, var(--accent-orange) 18%, transparent); color:var(--accent-orange); border:1px solid var(--accent-orange); border-radius:999px; padding:0.1rem 0.5rem; font-weight:600; letter-spacing:0.03em;">⚠ BETA</span>
+                    <button class="kg-mini-btn" onclick="kgZoomToFit()" title="Fit to view">⛶ Fit</button>
+                    <button class="kg-mini-btn" onclick="kgUndo()" title="Undo last expansion">↩ Undo</button>
+                    <button class="kg-mini-btn" id="kg-hub-toggle" onclick="kgToggleTemplateView()" title="Collapse reactions into template-hub nodes">⬡ Hubs</button>
+                    <button class="kg-mini-btn" id="kg-share-btn" onclick="kgShare()" title="Copy shareable link to this graph">🔗 Share</button>
+                    <button class="kg-mini-btn" onclick="kgClear()">Clear</button>
+                    <span id="kg-status">Seed a node from the Graph tab.</span>
+                </div>
+                <div id="kg-canvas">
+                    <div class="kg-legend">
+                        <div class="kg-legend-row"><span class="kg-legend-dot" style="background:var(--accent-cyan);"></span> Molecule</div>
+                        <div class="kg-legend-row"><span class="kg-legend-dot" style="background:var(--accent-orange);"></span> Template (reaction)</div>
+                        <div class="kg-legend-row"><span class="kg-legend-line" style="border-color:var(--accent-cyan);"></span> reactant → template</div>
+                        <div class="kg-legend-row"><span class="kg-legend-line" style="border-color:var(--accent-green);"></span> template → product</div>
+                    </div>
+                </div>
+                <!-- Click-to-inspect info card -->
+                <div id="kg-info">
+                    <div class="kg-info-header">
+                        <span id="kg-info-title">Details</span>
+                        <button class="kg-info-close" onclick="kgCloseInfo()" aria-label="Close details">×</button>
+                    </div>
+                    <div id="kg-info-body"></div>
+                </div>
+            </div>
+
+            <!-- TMAP Chemical-Space Viewport (overlays when active) -->
+            <div id="tmap-viewport" style="display:none; position:absolute; inset:0; z-index:10; flex-direction:column; background:var(--bg-primary);">
+                <div class="kg-toolbar">
+                    <strong style="font-size:0.85rem; color:var(--text-primary);">Chemical Space Map</strong>
+                    <span style="font-size:0.68rem; background:color-mix(in srgb, var(--accent-cyan) 14%, transparent); color:var(--accent-cyan); border:1px solid var(--accent-cyan); border-radius:999px; padding:0.1rem 0.5rem; font-weight:600; letter-spacing:0.03em;">TMAP</span>
+                    <span style="font-size:0.68rem; background:color-mix(in srgb, var(--accent-orange) 18%, transparent); color:var(--accent-orange); border:1px solid var(--accent-orange); border-radius:999px; padding:0.1rem 0.5rem; font-weight:600; letter-spacing:0.03em;">⚠ Under development</span>
+                    <span style="font-size:0.73rem; color:var(--text-secondary); margin-left:0.25rem;">1 887 reactions · colored by POLAR class</span>
+                    <button class="kg-mini-btn" style="margin-left:auto;" onclick="tmapExitMode()">← Back</button>
+                </div>
+                <div id="tmap-loading" style="position:absolute; inset:0; top:42px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.2rem; background:var(--bg-primary); z-index:1;">
+                    <span style="font-size:0.9rem; color:var(--text-secondary);">Building chemical space map…</span>
+                    <div style="width:260px; height:4px; border-radius:99px; background:var(--bg-tertiary); overflow:hidden;">
+                        <div id="tmap-progress-bar" style="height:100%; width:30%; border-radius:99px; background:var(--accent-cyan); animation:tmap-slide 1.4s ease-in-out infinite;"></div>
+                    </div>
+                    <span style="font-size:0.75rem; color:var(--text-secondary);">1 887 reactions · POLAR taxonomy colours</span>
+                </div>
+                <iframe id="tmap-frame" src="about:blank" style="flex:1; border:none; width:100%; height:100%;" onload="tmapOnFrameLoad()" title="TMAP chemical space map"></iframe>
+            </div>
         </div>
 
         <!-- Right Panel: Metadata & Reaction Details -->
@@ -352,6 +491,7 @@
 
     <!-- Script references (FE-16 Modularisation) -->
     <script src="/static/graph.js"></script>
+    <script src="/static/kg.js"></script>
     <script src="/static/app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsme-editor@2024.4.29/jsme.nocache.js" onerror="if (typeof setSketchStatus === 'function') setSketchStatus('Sketcher library could not load from the JSME CDN.', 'error')"></script>
 
