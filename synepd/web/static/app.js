@@ -581,21 +581,30 @@ function renderReactionDetails() {
                 <div id="detail-aam">AAM Key</div>
             </div>
 
-            <!-- Structure Preview (collapsible) -->
-            <div class="section-collapsible" id="structure-preview-section" style="display:none;">
-                <button class="section-toggle" onclick="toggleSection('structure-preview-body')">Structures ▾</button>
-                <div id="structure-preview-body" class="section-toggle-body">
-                    <div class="structure-preview-grid">
-                        <div class="structure-side">
-                            <p class="structure-label">Reactants</p>
-                            <div id="structure-reactants" class="structure-fragments"></div>
-                        </div>
-                        <div class="structure-arrow">→</div>
-                        <div class="structure-side">
-                            <p class="structure-label">Products</p>
-                            <div id="structure-products" class="structure-fragments"></div>
+            <!-- CDK Depict 2D Reaction Diagram -->
+            <div class="section-collapsible" id="cdk-depict-section">
+                <button class="section-toggle" onclick="toggleSection('cdk-depict-body')">2D Reaction Diagram ▾</button>
+                <div id="cdk-depict-body" class="section-toggle-body">
+                    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.75rem; margin-bottom:0.5rem;">
+                        <label style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:var(--text-secondary); cursor:pointer; user-select:none;">
+                            <input type="checkbox" id="cdk-aam-toggle" onchange="renderCDKDepict()" style="cursor:pointer; accent-color:var(--accent-cyan);">
+                            <span>Atom mapping</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:var(--text-secondary); cursor:pointer; user-select:none;">
+                            <input type="checkbox" id="cdk-abbr-toggle" onchange="renderCDKDepict()" style="cursor:pointer; accent-color:var(--accent-cyan);">
+                            <span>Abbreviations</span>
+                        </label>
+                        <div style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:var(--text-secondary);">
+                            <span>H:</span>
+                            <select id="cdk-hdisp" onchange="renderCDKDepict()" style="background:var(--bg-tertiary); border:1px solid var(--border); color:var(--text-primary); border-radius:4px; padding:0.1rem 0.3rem; font-size:0.72rem; cursor:pointer;">
+                                <option value="bridgehead">Bridgehead</option>
+                                <option value="stereo">Stereo</option>
+                                <option value="implicit">Implicit</option>
+                                <option value="all">All</option>
+                            </select>
                         </div>
                     </div>
+                    <div id="cdk-depict-container"></div>
                 </div>
             </div>
 
@@ -720,16 +729,17 @@ function renderReactionDetails() {
     });
     document.getElementById('graph-legend').style.display = 'block';
 
-    // Structure preview
-    const structSec = document.getElementById('structure-preview-section');
-    if (structSec && activeReaction.canonical_rsmi && typeof SmilesDrawer !== 'undefined') {
-        structSec.style.display = '';
-        try { renderStructurePreviews(activeReaction.canonical_rsmi); } catch(e) {}
-    }
-
     activeStepIndex = 1;
     updateStepNavigation();
     drawGraph();
+
+    const cdkToggle = document.getElementById('cdk-aam-toggle');
+    if (cdkToggle) cdkToggle.checked = false;
+    const cdkAbbrToggle = document.getElementById('cdk-abbr-toggle');
+    if (cdkAbbrToggle) cdkAbbrToggle.checked = false;
+    const cdkHdisp = document.getElementById('cdk-hdisp');
+    if (cdkHdisp) cdkHdisp.value = 'bridgehead';
+    renderCDKDepict();
 }
 
 function toggleSection(bodyId) {
@@ -810,6 +820,47 @@ function renderStructurePreviews(canonicalRsmi) {
 
     drawSide('structure-reactants', reactants, 'canvas-reactant');
     drawSide('structure-products', products, 'canvas-product');
+}
+
+function renderCDKDepict() {
+    if (!activeReaction) return;
+    const container = document.getElementById('cdk-depict-container');
+    if (!container) return;
+
+    const showAAM = document.getElementById('cdk-aam-toggle')?.checked ?? false;
+    const smiles = showAAM && activeReaction.aam_key ? activeReaction.aam_key : activeReaction.canonical_rsmi;
+
+    if (!smiles) {
+        container.innerHTML = '<p style="color:var(--text-secondary); font-size:0.8rem; text-align:center;">No SMILES available</p>';
+        return;
+    }
+
+    const isDark = !document.body.classList.contains('light-theme');
+    const style = isDark ? 'cod' : 'cow';
+    const annotate = showAAM ? 'mapidx' : 'none';
+    const abbr = document.getElementById('cdk-abbr-toggle')?.checked ? 'on' : 'off';
+    const hdisp = document.getElementById('cdk-hdisp')?.value || 'bridgehead';
+    const url = `https://www.simolecule.com/cdkdepict/depict/${style}/svg?smi=${encodeURIComponent(smiles)}&zoom=2&abbr=${abbr}&hdisp=${hdisp}&showtitle=false&annotate=${annotate}`;
+
+    container.innerHTML = '';
+
+    const img = document.createElement('img');
+    img.alt = '2D reaction diagram';
+    img.style.cssText = 'max-width:100%; border-radius:4px; display:block; margin:0 auto;';
+    img.onerror = () => {
+        container.innerHTML = '<p style="color:var(--accent-orange); font-size:0.8rem; text-align:center; padding:0.5rem 0;">CDK Depict unavailable</p>';
+    };
+    img.src = url;
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.style.cssText = 'font-size:0.72rem; color:var(--text-secondary); display:block; margin-top:4px; text-align:right;';
+    link.textContent = 'Open in CDK Depict ↗';
+
+    container.appendChild(img);
+    container.appendChild(link);
 }
 
 function fetchMoleculeReactions(smiles) {
@@ -1446,21 +1497,18 @@ function markTransitionBonds(graphData, arrows) {
 }
 
 function computeChangeSummary(graphData) {
-    if (!graphData || !graphData.links) return {breaking: 0, forming: 0, changing: 0, transition: 0, changedAtomIds: new Set()};
+    if (!graphData || !graphData.links) return {breaking: 0, forming: 0, transition: 0, changedAtomIds: new Set()};
     const breaking = graphData.links.filter(l => l.status === 'breaking');
     const forming  = graphData.links.filter(l => l.status === 'forming');
-    const changing = graphData.links.filter(l => l.status === 'changing');
     const transition = graphData.links.filter(l => l.status === 'transition');
     const changedAtomIds = new Set([
         ...breaking.flatMap(l => [l.source.id || l.source, l.target.id || l.target]),
         ...forming.flatMap(l  => [l.source.id || l.source, l.target.id || l.target]),
-        ...changing.flatMap(l => [l.source.id || l.source, l.target.id || l.target]),
         ...transition.flatMap(l => [l.source.id || l.source, l.target.id || l.target]),
     ]);
     return {
         breaking: breaking.length,
         forming: forming.length,
-        changing: changing.length,
         transition: transition.length,
         changedAtomIds
     };
@@ -1472,7 +1520,6 @@ function renderChangeSummary(summary) {
     el.innerHTML = [
         summary.breaking ? `<span class="change-badge breaking">${summary.breaking} breaking</span>` : '',
         summary.forming  ? `<span class="change-badge forming">${summary.forming} forming</span>`   : '',
-        summary.changing ? `<span class="change-badge changing">${summary.changing} bond order</span>` : '',
         summary.transition ? `<span class="change-badge transition">${summary.transition} transition</span>` : '',
     ].join('');
 }
@@ -1480,9 +1527,7 @@ function renderChangeSummary(summary) {
 // Theme toggler and structure update (FE-14)
 function toggleTheme() {
     document.body.classList.toggle('light-theme');
-    if (activeReaction?.canonical_rsmi && typeof SmilesDrawer !== 'undefined') {
-        try { renderStructurePreviews(activeReaction.canonical_rsmi); } catch (e) {}
-    }
+    renderCDKDepict();
 }
 
 // Similar reactions loading (FE-01)

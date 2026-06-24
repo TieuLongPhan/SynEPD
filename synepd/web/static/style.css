@@ -1450,10 +1450,6 @@
             stroke-dasharray: 4 4;
             stroke-width: 3.5px;
         }
-        .link.changing {
-            stroke: var(--accent-orange);
-            stroke-width: 3px;
-        }
         .link.transition {
             stroke: var(--accent-pink);
             stroke-width: 3px;
@@ -1586,7 +1582,6 @@
         }
         .legend-swatch.breaking  { border-top: 3px dashed var(--accent-red);    background: none; height: 0; }
         .legend-swatch.forming   { border-top: 3px dashed var(--accent-green);  background: none; height: 0; }
-        .legend-swatch.changing  { background: var(--accent-orange); height: 3px; }
         .legend-swatch.transition  { background: var(--accent-pink); height: 3px; }
         .legend-swatch.unchanged { background: #4b5563; height: 2px; }
         /* Atom Tooltip */
@@ -1982,5 +1977,4 @@
         }
         .change-badge.breaking { color: var(--accent-red);    border-color: var(--accent-red);    background: rgba(239,68,68,0.1); }
         .change-badge.forming  { color: var(--accent-green);  border-color: var(--accent-green);  background: rgba(16,185,129,0.1); }
-        .change-badge.changing { color: var(--accent-orange); border-color: var(--accent-orange); background: rgba(245,158,11,0.1); }
         .change-badge.transition { color: var(--accent-pink); border-color: var(--accent-pink); background: rgba(236,72,153,0.1); }

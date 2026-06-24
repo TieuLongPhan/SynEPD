@@ -111,19 +111,24 @@ def serialize_graph(graph: nx.Graph) -> dict:
 
     links_list = []
     for u, v, data in graph.edges(data=True):
-        order = data.get("order")
-        order_r = 1.0
-        order_p = 1.0
-        if isinstance(order, (list, tuple)):
-            order_r = float(order[0])
-            order_p = float(order[1])
+        # Use Kekulé order (integers) when available; fall back to fractional order
+        kekule = data.get("kekule_order")
+        raw_order = data.get("order")
+        ref = kekule if kekule is not None else raw_order
+        order_r = 0.0
+        order_p = 0.0
+        if isinstance(ref, (list, tuple)) and len(ref) >= 2:
+            order_r = float(ref[0])
+            order_p = float(ref[1])
+        elif isinstance(raw_order, (list, tuple)) and len(raw_order) >= 2:
+            order_r = float(raw_order[0])
+            order_p = float(raw_order[1])
 
-        if order_r > 0 and order_p == 0:
+        # Bond order decrease (2→1, 1→0) → breaking; increase (1→2, 0→1) → forming
+        if order_r > order_p:
             status = "breaking"
-        elif order_r == 0 and order_p > 0:
+        elif order_r < order_p:
             status = "forming"
-        elif order_r > 0 and order_p > 0 and order_r != order_p:
-            status = "changing"
         else:
             status = "unchanged"
 

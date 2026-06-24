@@ -144,7 +144,7 @@ function drawGraph() {
         .attr("class", d => `link ${d.status}`);
 
     linkLabelGroup = container.append("g").selectAll("text")
-        .data(graphData.links.filter(l => ['breaking', 'forming', 'changing'].includes(l.status)))
+        .data(graphData.links.filter(l => ['breaking', 'forming'].includes(l.status)))
         .join("text")
         .attr("class", "link-label")
         .attr("text-anchor", "middle")
@@ -208,6 +208,12 @@ function drawGraph() {
     .on('mouseout', () => {
         tooltip.style('display', 'none');
         clearStepsHighlight();
+    });
+
+    nodeGroup.on('dblclick', (event, d) => {
+        d.fx = null;
+        d.fy = null;
+        simulation.alpha(0.3).restart();
     });
 
     // Update loop on tick
@@ -429,8 +435,7 @@ function dragged(event, d) {
 
 function dragended(event, d) {
     if (!event.active) simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
+    // Keep node pinned at dragged position; double-click releases it
 }
 
 function toggleLayout() {
@@ -445,7 +450,7 @@ function toggleLayout() {
         const cy = viewport.clientHeight / 2;
         
         graphData.nodes.forEach(node => {
-            const coord = coords[node.id];
+            const coord = coords[node.atom_map ?? node.id];
             if (coord) {
                 node.fx = coord.x + cx;
                 node.fy = coord.y + cy;
