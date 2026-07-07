@@ -691,4 +691,4 @@ if __name__ == "__main__":
         hierarchy_path=Path("data/hierarchy.md"),
         db_path=Path("data/epdb.sqlite"),
     )
-    print("Release database v1.0.0 built successfully.")
+    print("Release database v0.1.0 built successfully.")

@@ -791,6 +791,68 @@ function kgExportJSON() {
     URL.revokeObjectURL(url);
 }
 
+async function kgExportReactionsJSON() {
+    const reactionIds = [];
+    const templateIds = [];
+    
+    kgNodes.forEach(n => {
+        if (n.type === 'reaction') {
+            const rid = parseInt(n.ref_id || String(n.id).replace('r:', ''));
+            if (!isNaN(rid)) reactionIds.push(rid);
+        } else if (n.type === 'template') {
+            const tid = parseInt(n.ref_id || String(n.id).replace('t:', ''));
+            if (!isNaN(tid)) templateIds.push(tid);
+        }
+    });
+    
+    if (reactionIds.length === 0 && templateIds.length === 0) {
+        alert("No reactions or templates found in the current knowledge graph.");
+        return;
+    }
+    
+    const button = document.querySelector('button[onclick="kgExportReactionsJSON()"]');
+    const origText = button ? button.innerText : "Download Reactions";
+    
+    try {
+        if (button) {
+            button.disabled = true;
+            button.innerText = "Downloading...";
+        }
+        
+        const res = await fetch(`${KG_API()}/api/reactions/export-bulk`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                reaction_ids: reactionIds,
+                template_ids: templateIds
+            })
+        });
+        
+        if (!res.ok) {
+            throw new Error(`HTTP error ${res.status}`);
+        }
+        
+        const data = await res.json();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `synepd_reactions_mapped_${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error("Bulk reactions export failed:", err);
+        alert(`Failed to export reactions: ${err.message}`);
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.innerText = origText;
+        }
+    }
+}
+
 function kgToggleReagents() {
     const cb = document.getElementById('kg-hide-reagents');
     kgHideReagents = cb ? cb.checked : !kgHideReagents;

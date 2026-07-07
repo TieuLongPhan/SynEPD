@@ -6,6 +6,8 @@ from synepd.web.server import (
     get_reactions_by_signature,
     search_reactions,
     list_reaction_centers,
+    export_reactions_bulk,
+    ExportBulkRequest,
 )
 
 
@@ -52,3 +54,18 @@ def test_reaction_centers_smarts():
     assert "results" in data
     if data["results"]:
         assert "smarts" in data["results"][0]
+
+
+def test_export_reactions_bulk():
+    search_res = search_reactions(query="POLAR")
+    if search_res["results"]:
+        rxn_id = search_res["results"][0]["id"]
+        req = ExportBulkRequest(reaction_ids=[rxn_id], template_ids=[])
+        response = export_reactions_bulk(req)
+        assert response.status_code == 200
+        import json
+
+        data = json.loads(response.body.decode("utf-8"))
+        assert len(data) == 1
+        assert data[0]["id"] == rxn_id
+        assert "atom_mapped_smiles" in data[0]

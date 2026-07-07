@@ -167,7 +167,8 @@
                         <div class="kg-row">
                             <button class="kg-mini-btn" onclick="kgZoomToFit()">Fit</button>
                             <button class="kg-mini-btn" onclick="kgClear()">Clear graph</button>
-                            <button class="kg-mini-btn" onclick="kgExportJSON()">Export</button>
+                            <button class="kg-mini-btn" onclick="kgExportJSON()">Export Graph</button>
+                            <button class="kg-mini-btn" onclick="kgExportReactionsJSON()" title="Download JSON containing mapped reactions for all reactions in the current knowledge graph">Download Reactions</button>
                         </div>
                     </div>
                     <div id="kg-seed-results"><p class="kg-hint">Search to find a starting node.</p></div>
@@ -501,7 +502,7 @@
 
     <!-- Script references (FE-16 Modularisation) -->
     <script src="/static/graph.js"></script>
-    <script src="/static/kg.js?v=1.1.0"></script>
+    <script src="/static/kg.js?v=1.1.1"></script>
     <script src="/static/app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsme-editor@2024.4.29/jsme.nocache.js" onerror="if (typeof setSketchStatus === 'function') setSketchStatus('Sketcher library could not load from the JSME CDN.', 'error')"></script>
 

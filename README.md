@@ -181,7 +181,9 @@ python -m twine upload dist/*
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE).
+The software is licensed under the Apache License 2.0. The curated data
+release is distributed under CC BY 4.0 where stated in the release metadata.
+See [LICENSE](LICENSE) for the software license text.
 
 ## Acknowledgments
 

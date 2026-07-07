@@ -398,9 +398,9 @@ def _get_db_info_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict:
             db_release_date = row[1]
             db_license = row[2]
         else:
-            db_version = "v1.0.0"
-            db_release_date = "2026-06-21"
-            db_license = "MIT"
+            db_version = "v0.1.0"
+            db_release_date = "2026-07-07"
+            db_license = "CC BY 4.0"
 
         # Calculate database file modification time for SQLite
         import os
@@ -962,6 +962,63 @@ def export_reaction_json(reaction_id: int):
             "Content-Disposition": f"attachment; filename={detail['case_id']}_epd.json"
         },
     )
+
+
+class ExportBulkRequest(BaseModel):
+    reaction_ids: List[int]
+    template_ids: List[int]
+
+
+@app.post("/api/reactions/export-bulk")
+def export_reactions_bulk(req: ExportBulkRequest):
+    conn, is_pg = _get_connection(get_db_path_or_url())
+    try:
+        cur = conn.cursor()
+        all_reaction_ids = set(req.reaction_ids)
+
+        if req.template_ids:
+            placeholders = ",".join(["?"] * len(req.template_ids))
+            sql = f"SELECT reaction_id FROM epd WHERE reaction_center_id IN ({placeholders})"
+            cur = _execute_query(conn, is_pg, sql, tuple(req.template_ids))
+            for row in cur.fetchall():
+                all_reaction_ids.add(row[0])
+
+        results = []
+        for rid in sorted(all_reaction_ids):
+            try:
+                detail = get_reaction_detail(rid)
+                taxonomy_code = (
+                    detail["taxonomy"]["code"] if detail.get("taxonomy") else None
+                )
+                results.append(
+                    {
+                        "id": rid,
+                        "case_id": detail["case_id"],
+                        "reaction_name": detail["name"],
+                        "canonical_smiles": detail["canonical_rsmi"],
+                        "atom_mapped_smiles": detail["aam_key"],
+                        "taxonomy_code": taxonomy_code,
+                        "epd_lw": [
+                            [
+                                arr["arrow_type_code"],
+                                arr["source_atoms"],
+                                arr["target_atoms"],
+                            ]
+                            for arr in detail["arrows"]
+                        ],
+                    }
+                )
+            except Exception:
+                continue
+
+        return JSONResponse(
+            content=results,
+            headers={
+                "Content-Disposition": "attachment; filename=synepd_reactions_export.json"
+            },
+        )
+    finally:
+        conn.close()
 
 
 class EPDQueryRequest(BaseModel):

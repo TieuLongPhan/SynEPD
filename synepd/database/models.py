@@ -14,6 +14,13 @@ class DatasetRelease:
     license: str
 
 
+DEFAULT_RELEASE = DatasetRelease(
+    version="v0.1.0",
+    release_date="2026-07-07",
+    license="CC BY 4.0",
+)
+
+
 @dataclass
 class Reaction:
     case_id: str
@@ -263,7 +270,6 @@ class SynEPDDatabase:
                 CREATE INDEX IF NOT EXISTS idx_epd_signature ON epd(signature);
 
                 CREATE VIRTUAL TABLE IF NOT EXISTS reaction_fts USING fts5(
-                    reaction_id UNINDEXED,
                     name,
                     case_id,
                     content='reaction',
@@ -272,29 +278,41 @@ class SynEPDDatabase:
 
                 CREATE TRIGGER IF NOT EXISTS reaction_fts_insert
                     AFTER INSERT ON reaction BEGIN
-                        INSERT INTO reaction_fts(rowid, reaction_id, name, case_id)
-                        VALUES (new.id, new.id, new.name, new.case_id);
+                        INSERT INTO reaction_fts(rowid, name, case_id)
+                        VALUES (new.id, new.name, new.case_id);
                     END;
 
                 CREATE TRIGGER IF NOT EXISTS reaction_fts_delete
                     AFTER DELETE ON reaction BEGIN
-                        INSERT INTO reaction_fts(reaction_fts, rowid, reaction_id, name, case_id)
-                        VALUES ('delete', old.id, old.id, old.name, old.case_id);
+                        INSERT INTO reaction_fts(reaction_fts, rowid, name, case_id)
+                        VALUES ('delete', old.id, old.name, old.case_id);
                     END;
 
                 CREATE TRIGGER IF NOT EXISTS reaction_fts_update
                     AFTER UPDATE ON reaction BEGIN
-                        INSERT INTO reaction_fts(reaction_fts, rowid, reaction_id, name, case_id)
-                        VALUES ('delete', old.id, old.id, old.name, old.case_id);
-                        INSERT INTO reaction_fts(rowid, reaction_id, name, case_id)
-                        VALUES (new.id, new.id, new.name, new.case_id);
+                        INSERT INTO reaction_fts(reaction_fts, rowid, name, case_id)
+                        VALUES ('delete', old.id, old.name, old.case_id);
+                        INSERT INTO reaction_fts(rowid, name, case_id)
+                        VALUES (new.id, new.name, new.case_id);
                     END;
             """)
 
+            self.connection.execute(
+                """
+                INSERT OR REPLACE INTO dataset_release (version, release_date, license)
+                VALUES (?, ?, ?);
+                """,
+                (
+                    DEFAULT_RELEASE.version,
+                    DEFAULT_RELEASE.release_date,
+                    DEFAULT_RELEASE.license,
+                ),
+            )
+
             # Populate FTS if empty and reaction table has rows
             self.connection.execute("""
-                INSERT INTO reaction_fts(rowid, reaction_id, name, case_id)
-                SELECT id, id, name, case_id FROM reaction
+                INSERT INTO reaction_fts(rowid, name, case_id)
+                SELECT id, name, case_id FROM reaction
                 WHERE NOT EXISTS (SELECT 1 FROM reaction_fts);
             """)
 
