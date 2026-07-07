@@ -45,6 +45,11 @@ Added
   * Official web server: https://synepd.bioinf.uni-leipzig.de
   * Documentation: https://synepd.readthedocs.io/en/latest/
 
+* Added Zenodo release archive metadata:
+
+  * Zenodo record: https://zenodo.org/records/21235892
+  * DOI: https://doi.org/10.5281/zenodo.21235892
+
 * Added Sphinx documentation under ``docs/source``, including an API reference
   and querying guide.
 * Added Read the Docs configuration via ``.readthedocs.yaml`` and
@@ -66,6 +71,8 @@ Changed
 * Updated the web explorer documentation button to point to Read the Docs.
 * Updated documentation navigation links so the docs return to the official
   SynEPD web server.
+* Updated the database downloader to resolve versioned releases from Zenodo or
+  matching GitHub release tag archives.
 * Added explicit ignore rules for generated Sphinx build output.
 
 Fixed
@@ -88,10 +95,9 @@ Known notes
 * PyPI publishing is configured for published GitHub releases only.
 * PyPI trusted publishing must be configured for the GitHub repository and the
   ``pypi`` environment before the release workflow can upload packages.
-* The SQLite data release should be hosted externally for package
-  distribution; ``synepd.core.data.DEFAULT_ZENODO_RECORD_ID`` should be updated
-  when the final Zenodo record is available.
+* The ``0.1.0`` database can be resolved from the Zenodo record or the matching
+  GitHub tag archive; future releases should add their record IDs to
+  ``synepd.core.data.ZENODO_RECORD_IDS``.
 * Setuptools currently emits a deprecation warning for the TOML table form of
   ``project.license``; this does not block ``0.1.0`` but should be modernized
   in a future release.
-

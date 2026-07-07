@@ -14,6 +14,20 @@ from synkit.Graph.Matcher.subgraph_matcher import SubgraphSearchEngine
 from synepd.core.ingest import extract_graphs
 
 
+def _resolve_query_db_path(
+    db_path: Optional[Union[str, Path]],
+    db_source: Optional[str],
+    db_version: Optional[str],
+) -> Union[str, Path]:
+    if db_path is not None:
+        return db_path
+    if db_source is not None or db_version is not None:
+        from synepd.core.data import get_default_db_path
+
+        return get_default_db_path(version=db_version, source=db_source or "zenodo")
+    return "data/epdb.sqlite"
+
+
 def _get_connection(db_path_or_url: Union[str, Path]):
     # Get from environment if set, otherwise use db_path_or_url
     db_str = os.environ.get("SYNEPD_DATABASE_URL", str(db_path_or_url))
@@ -80,13 +94,16 @@ def standardize_side(side_smiles: str) -> str:
 
 
 def find_reactions_by_template(
-    template: Union[str, nx.Graph], db_path: Optional[Union[str, Path]] = None
+    template: Union[str, nx.Graph],
+    db_path: Optional[Union[str, Path]] = None,
+    db_source: Optional[str] = None,
+    db_version: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """
     Scenario 1: Input a template (either mapped reaction SMILES or reaction center graph),
     and find all reactions in the database that match this template.
     """
-    db_conn_str = db_path if db_path is not None else "data/epdb.sqlite"
+    db_conn_str = _resolve_query_db_path(db_path, db_source, db_version)
     conn, is_pg = _get_connection(db_conn_str)
 
     # Determine rc_graph and WL hash from the template
@@ -165,14 +182,17 @@ def find_reactions_by_template(
 
 
 def query_epd_by_reaction(
-    rsmi: str, db_path: Optional[Union[str, Path]] = None
+    rsmi: str,
+    db_path: Optional[Union[str, Path]] = None,
+    db_source: Optional[str] = None,
+    db_version: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Scenario 2: Query EPD arrows for a given reaction SMILES.
     Supports both mapped and unmapped reactions.
     Projects template arrows if the exact reaction is not in the database, but a matching reaction center template is.
     """
-    db_conn_str = db_path if db_path is not None else "data/epdb.sqlite"
+    db_conn_str = _resolve_query_db_path(db_path, db_source, db_version)
     conn, is_pg = _get_connection(db_conn_str)
 
     # Standardize the query rsmi to check for direct matches
@@ -359,7 +379,9 @@ def query_epd_by_reaction(
 
                     conn.close()
                     # Recursively query the balanced reaction
-                    recursive_res = query_epd_by_reaction(balanced_unmapped, db_path)
+                    recursive_res = query_epd_by_reaction(
+                        balanced_unmapped, db_path=db_conn_str
+                    )
                     if recursive_res.get("success"):
                         recursive_res["balanced_from_imbalanced"] = True
                         recursive_res["original_imbalanced_query"] = rsmi

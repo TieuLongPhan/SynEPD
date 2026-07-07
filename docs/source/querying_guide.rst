@@ -15,6 +15,20 @@ To start querying, initialize the `SynEPDDatabase` manager with the path to the 
     db_path = Path("data/epdb.sqlite")
     db = SynEPDDatabase(db_path)
 
+The published 0.1.0 database can also be resolved from the Zenodo release
+archive and cached locally:
+
+.. code-block:: python
+
+    from synepd.core import get_default_db_path
+    from synepd.database.models import SynEPDDatabase
+
+    db_path = get_default_db_path(version="0.1.0", source="zenodo")
+    db = SynEPDDatabase(db_path)
+
+Use ``source="github"`` to resolve the same database from the matching GitHub
+release tag archive.
+
 Querying Reactions
 ------------------
 Use `ReactionManager` to search and retrieve reaction records:
@@ -92,6 +106,19 @@ Use `EPDManager` to query reactions based on electron-push arrow counts and type
     # 2. Find reactions starting with a specific electron transfer (e.g. Lone Pair to Sigma Star)
     reactions_by_arrow = epd_manager.get_reactions_by_first_arrow("LP-/Sigma+")
     print(f"Found {len(reactions_by_arrow)} reactions initiated by LP to Sigma transfer.")
+
+For the high-level EPD helper, the release source and version can be provided
+directly:
+
+.. code-block:: python
+
+    from synepd.core import query_epd_by_reaction
+
+    result = query_epd_by_reaction(
+        "CC[O-].[NH4+]>>CCO",
+        db_source="zenodo",
+        db_version="0.1.0",
+    )
 
 Closing the Connection
 ----------------------
