@@ -144,9 +144,10 @@ def test_rdkit_render_endpoint_for_reaction_svg():
     assert b"<svg" in response.body
 
 
-def test_docs_directory_mounted():
+def test_docs_source_configured_for_readthedocs():
     from pathlib import Path
 
-    docs_path = Path(__file__).parent.parent.parent / "docs" / "build" / "html"
-    assert docs_path.exists()
-    assert (docs_path / "index.html").exists()
+    root = Path(__file__).parent.parent.parent
+    assert (root / ".readthedocs.yaml").exists()
+    assert (root / "docs" / "source" / "conf.py").exists()
+    assert (root / "docs" / "source" / "index.rst").exists()

@@ -1,5 +1,5 @@
-synepd
-======
+API
+===
 
 .. toctree::
    :maxdepth: 4

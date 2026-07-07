@@ -24,6 +24,7 @@ Features:
 
    querying_guide
    modules
+   changelog
 
 Indices and tables
 ==================
