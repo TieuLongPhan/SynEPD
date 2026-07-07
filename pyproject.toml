@@ -7,7 +7,7 @@ name = "synepd"
 version = "0.1.0"
 description = "Hierarchical reaction templates"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = { file = "LICENSE" }
 dependencies = [
     "fastapi",
@@ -15,6 +15,9 @@ dependencies = [
     "synkit>=1.1.2",
     "synrfp>=0.0.3",
     "uvicorn",
+    "networkx",
+    "rdkit",
+    "numpy",
 ]
 
 [project.optional-dependencies]
@@ -37,6 +40,7 @@ target-version = ["py39"]
 testpaths = ["test"]
 python_files = ["test_*.py", "*_test.py"]
 addopts = "-ra"
+pythonpath = "."
 
 [tool.flake8]
 max-line-length = 88

@@ -132,7 +132,7 @@ function showToast(msg, type = 'error') {
     const el = document.createElement('div');
     el.className = 'toast-item';
     el.style.cssText = `border: 1px solid ${colors[type]}; border-left: 4px solid ${colors[type]};`;
-    el.innerHTML = `<span style="color:${colors[type]}; font-size:1rem;">${icons[type]}</span> ${msg}`;
+    el.innerHTML = `<span style="color:${colors[type]}; font-size:1rem;">${icons[type]}</span> ${escapeHtml(msg)}`;
     document.getElementById('toast-stack').appendChild(el);
     setTimeout(() => el.remove(), type === 'error' ? 5000 : 2500);
 }
@@ -236,12 +236,12 @@ async function triggerSearch() {
                 card.innerHTML = `
                     <h4>Projected Template Match</h4>
                     <p style="color: var(--accent-cyan); font-size: 12px; margin-bottom: 4px; margin-top: 2px;">Path: ${data.path === 1 ? 'Direct DB Match' : 'Template Balanced Projection'}</p>
-                    <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; word-break: break-all; margin-bottom: 0; color: var(--text-secondary);">${data.canonical_rsmi || ''}</p>
+                    <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; word-break: break-all; margin-bottom: 0; color: var(--text-secondary);">${escapeHtml(data.canonical_rsmi || '')}</p>
                     ${balanceNotice}
                 `;
                 resultsContainer.appendChild(card);
             } else {
-                resultsContainer.innerHTML = `<p style="color: var(--accent-red); text-align: center;">No match: ${data.error || 'Check balance'}</p>`;
+                resultsContainer.innerHTML = `<p style="color: var(--accent-red); text-align: center;">No match: ${escapeHtml(data.error || 'Check balance')}</p>`;
             }
             return;
         }
@@ -300,7 +300,7 @@ async function fetchMoreSearchResults() {
             card.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                     <h4 style="margin: 0; font-family: 'Outfit', sans-serif;">${nameHtml}</h4>
-                    ${rxn.taxonomy ? `<span style="font-size: 10px; background: rgba(0, 242, 255, 0.12); color: var(--accent-cyan); padding: 2px 6px; border-radius: 4px; font-weight: 500; font-family: 'Outfit', sans-serif;">${rxn.taxonomy}</span>` : ''}
+                    ${rxn.taxonomy ? `<span style="font-size: 10px; background: rgba(0, 242, 255, 0.12); color: var(--accent-cyan); padding: 2px 6px; border-radius: 4px; font-weight: 500; font-family: 'Outfit', sans-serif;">${escapeHtml(rxn.taxonomy)}</span>` : ''}
                 </div>
                 ${rxn.name ? `<p style="font-size: 11px; margin: 0 0 4px 0; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace;">${caseIdHtml}</p>` : ''}
                 <p style="font-family: 'JetBrains Mono', monospace; font-size: 11px; word-break: break-all; margin: 0; color: var(--text-secondary);">${rsmiHtml}</p>
@@ -504,17 +504,30 @@ function loadQueryEPDResult(data) {
     renderReactionDetails();
 }
 
+let reactionLoadSeq = 0;
+let reactionLoadAbort = null;
+
 async function loadReaction(rxnId) {
+    const seq = ++reactionLoadSeq;
+    if (reactionLoadAbort) reactionLoadAbort.abort();
+    reactionLoadAbort = new AbortController();
     showRightPanelSkeleton();
     try {
-        const res = await fetch(`${API_BASE}/api/reactions/${rxnId}`);
-        activeReaction = await res.json();
+        const res = await fetch(`${API_BASE}/api/reactions/${rxnId}`, {
+            signal: reactionLoadAbort.signal,
+        });
+        if (!res.ok) throw new Error(`Reaction request failed: ${res.status}`);
+        const reaction = await res.json();
+        if (seq !== reactionLoadSeq) return;
+        activeReaction = reaction;
         
         addToHistory(activeReaction);
 
         history.pushState({ reactionId: rxnId }, '', `#reaction/${rxnId}`);
         renderReactionDetails();
     } catch (err) {
+        if (err.name === 'AbortError') return;
+        if (seq !== reactionLoadSeq) return;
         showError("Failed to fetch reaction details.");
     }
 }
@@ -805,6 +818,10 @@ function toggleLegend() {
 
 let _cdkGen = 0; // generation counter to drop stale onerror callbacks
 
+function rdkitDepictUrl(smiles, kind = 'auto') {
+    return `${API_BASE}/api/render/rdkit.svg?smi=${encodeURIComponent(smiles)}&kind=${encodeURIComponent(kind)}`;
+}
+
 function renderCDKDepict() {
     if (!activeReaction) return;
     const container = document.getElementById('cdk-depict-container');
@@ -829,6 +846,7 @@ function renderCDKDepict() {
     const abbr = document.getElementById('cdk-abbr-toggle')?.checked ? 'on' : 'off';
     const hdisp = document.getElementById('cdk-hdisp')?.value || 'bridgehead';
     const url = `https://www.simolecule.com/cdkdepict/depict/${style}/svg?smi=${encodeURIComponent(smiles)}&zoom=2&abbr=${abbr}&hdisp=${hdisp}&showtitle=false&annotate=${annotate}`;
+    const fallbackUrl = rdkitDepictUrl(smiles, smiles.includes('>') ? 'reaction' : 'molecule');
 
     container.innerHTML = '';
     const gen = ++_cdkGen;
@@ -838,8 +856,16 @@ function renderCDKDepict() {
     img.style.cssText = 'max-width:100%; border-radius:4px; display:block; margin:0 auto;';
     img.onerror = () => {
         if (gen !== _cdkGen) return; // stale — a newer render has already taken over
-        container.innerHTML = '<p style="color:var(--accent-orange); font-size:0.8rem; text-align:center; padding:0.5rem 0;">CDK Depict unavailable</p>';
+        if (img.dataset.renderer !== 'rdkit') {
+            img.dataset.renderer = 'rdkit';
+            img.src = fallbackUrl;
+            link.href = fallbackUrl;
+            link.textContent = 'Rendered locally with RDKit';
+            return;
+        }
+        container.innerHTML = '<p style="color:var(--accent-orange); font-size:0.8rem; text-align:center; padding:0.5rem 0;">2D depiction unavailable</p>';
     };
+    img.dataset.renderer = 'cdk';
     img.src = url;
 
     const link = document.createElement('a');
@@ -1398,15 +1424,18 @@ function renderHistory() {
     }
     container.innerHTML = historyData.map(h => {
         const taxCode = h.taxonomy ? (typeof h.taxonomy === 'string' ? h.taxonomy : h.taxonomy.code) : '';
+        const safeId = Number(h.id);
+        const safeName = escapeHtml(h.name || h.case_id || '');
+        const safeTaxCode = escapeHtml(taxCode);
         return `
-            <div class="result-card" onclick="loadReaction(${h.id})" style="padding:0.5rem 0.75rem; cursor:pointer;" tabindex="0" role="button" aria-label="View ${h.name || h.case_id}">
+            <div class="result-card" onclick="loadReaction(${safeId})" style="padding:0.5rem 0.75rem; cursor:pointer;" tabindex="0" role="button" aria-label="View ${safeName}">
                 <div style="display:flex; justify-content:space-between;">
-                    <span style="font-size:0.82rem; font-weight:600;">${h.name || h.case_id}</span>
+                    <span style="font-size:0.82rem; font-weight:600;">${safeName}</span>
                     <span style="font-size:0.68rem; color:var(--text-secondary);">
                         ${new Date(h.ts).toLocaleTimeString()}
                     </span>
                 </div>
-                ${taxCode ? `<span style="font-size:0.7rem; color:var(--accent-purple);">${taxCode}</span>` : ''}
+                ${safeTaxCode ? `<span style="font-size:0.7rem; color:var(--accent-purple);">${safeTaxCode}</span>` : ''}
             </div>
         `;
     }).join('');
@@ -1550,10 +1579,10 @@ async function loadNeighbors(reactionId) {
             card.onclick = () => loadReaction(n.id);
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.82rem; font-weight:600;">${n.name || n.case_id}</span>
-                    ${n.taxonomy ? `<span style="font-size:0.7rem; color:var(--accent-cyan);">${n.taxonomy}</span>` : ''}
+                    <span style="font-size:0.82rem; font-weight:600;">${escapeHtml(n.name || n.case_id)}</span>
+                    ${n.taxonomy ? `<span style="font-size:0.7rem; color:var(--accent-cyan);">${escapeHtml(n.taxonomy)}</span>` : ''}
                 </div>
-                <p style="font-size:0.75rem; font-family:'JetBrains Mono',monospace; margin-top:3px; word-break: break-all; color: var(--text-secondary);">${(n.canonical_rsmi||'').slice(0,60)}…</p>
+                <p style="font-size:0.75rem; font-family:'JetBrains Mono',monospace; margin-top:3px; word-break: break-all; color: var(--text-secondary);">${escapeHtml((n.canonical_rsmi||'').slice(0,60))}…</p>
             `;
             container.appendChild(card);
         });
@@ -1592,6 +1621,8 @@ async function fetchDbInfo() {
         setText('db-release-date-val', data.release_date);
         setText('db-license-val', data.license);
         setText('db-engine-val', data.backend);
+        setText('dash-db-version', data.version);
+        setText('dash-db-updated', data.last_update || data.release_date);
         animateCount('dash-reactions-val', data.counts.reactions);
         animateCount('dash-templates-val', data.counts.reaction_centers || 0);
         animateCount('dash-arrows-val', data.counts.epd_arrows || 0);
@@ -1696,7 +1727,8 @@ function onSubmitRxnInput() {
             if (data.balanced) {
                 status.innerHTML = `<span style="color:var(--accent-green);">Balanced (${data.reactant_atom_count} atoms, charge ${data.reactant_formal_charge})</span>`;
             } else {
-                status.innerHTML = `<span style="color:var(--accent-orange);">Imbalance: ${data.errors ? data.errors.join(' · ') : 'atom/charge discrepancy'}</span>`;
+                const errors = data.errors ? data.errors.map(escapeHtml).join(' · ') : 'atom/charge discrepancy';
+                status.innerHTML = `<span style="color:var(--accent-orange);">Imbalance: ${errors}</span>`;
             }
         } catch (e) {
             status.innerHTML = `<span style="color:var(--accent-orange);">${escapeHtml(e.message || 'Could not check balance')}</span>`;
@@ -1819,30 +1851,61 @@ document.addEventListener('keydown', (e) => {
 
 // Inline balance checker event listener (FE-02)
 let balanceDebounce = null;
+let balanceAbortController = null;
+const balanceCache = new Map();
 const searchInputEl = document.getElementById('search-input');
 if (searchInputEl) {
     searchInputEl.addEventListener('input', (e) => {
         const val = e.target.value.trim();
         clearTimeout(balanceDebounce);
+        if (balanceAbortController) {
+            balanceAbortController.abort();
+            balanceAbortController = null;
+        }
         const balanceStatus = document.getElementById('balance-status');
         if (balanceStatus) balanceStatus.innerHTML = '';
         if (!val.includes('>>')) return;
+
+        // Check client-side cache
+        if (balanceCache.has(val)) {
+            const data = balanceCache.get(val);
+            if (balanceStatus) {
+                if (data.balanced) {
+                    balanceStatus.innerHTML = `<span style="color:var(--accent-green); font-weight:500;">✔ Balanced (${data.reactant_atom_count} atoms, charge ${data.reactant_formal_charge})</span>`;
+                } else {
+                    const errors = data.errors ? data.errors.map(escapeHtml).join(' · ') : 'atom/charge discrepancy';
+                    balanceStatus.innerHTML = `<span style="color:var(--accent-orange); font-weight:500;">⚠ Imbalance: ${errors}</span>`;
+                }
+            }
+            return;
+        }
+
         balanceDebounce = setTimeout(async () => {
+            balanceAbortController = new AbortController();
             try {
                 const res = await fetch(`${API_BASE}/api/check-balance`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({rsmi: val})
+                    body: JSON.stringify({rsmi: val}),
+                    signal: balanceAbortController.signal
                 });
                 const data = await res.json();
+                balanceCache.set(val, data);
                 if (balanceStatus) {
                     if (data.balanced) {
                         balanceStatus.innerHTML = `<span style="color:var(--accent-green); font-weight:500;">✔ Balanced (${data.reactant_atom_count} atoms, charge ${data.reactant_formal_charge})</span>`;
                     } else {
-                        balanceStatus.innerHTML = `<span style="color:var(--accent-orange); font-weight:500;">⚠ Imbalance: ${data.errors ? data.errors.join(' · ') : 'atom/charge discrepancy'}</span>`;
+                        const errors = data.errors ? data.errors.map(escapeHtml).join(' · ') : 'atom/charge discrepancy';
+                        balanceStatus.innerHTML = `<span style="color:var(--accent-orange); font-weight:500;">⚠ Imbalance: ${errors}</span>`;
                     }
                 }
-            } catch (e) {}
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error("Balance check error:", err);
+                }
+            } finally {
+                balanceAbortController = null;
+            }
         }, 600);
     });
 }

@@ -70,6 +70,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs/build/
 
 # PyBuilder
 .pybuilder/
@@ -224,3 +225,4 @@ data/raw/*
 data/old/*
 test.ipynb
 synepd.egg-info/*
+paper/*

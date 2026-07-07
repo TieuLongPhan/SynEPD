@@ -63,8 +63,10 @@ function kgEnterMode() {
 function kgExitMode() {
     const kv = document.getElementById('kg-viewport');
     const gv = document.getElementById('graph-viewport');
+    const gc = document.getElementById('graph-controls-panel');
     if (kv) kv.style.display = 'none';
     if (gv) gv.style.display = '';
+    if (gc) gc.style.display = (typeof activeReaction !== 'undefined' && activeReaction) ? '' : 'none';
 }
 
 // --------------------------------------------------------------------------- //
@@ -437,9 +439,10 @@ function kgRender(centerUid) {
 
     const { nodes, links } = kgGetViewData();
 
-    let svg = d3.select('#kg-canvas svg');
+    let svg = d3.select('#kg-canvas > svg.kg-graph-svg');
     if (svg.empty()) {
         svg = d3.select('#kg-canvas').append('svg')
+            .attr('class', 'kg-graph-svg')
             .attr('width', '100%').attr('height', '100%')
             .attr('viewBox', `0 0 ${width} ${height}`);
 
@@ -633,6 +636,27 @@ function kgCdkUrl(smiles, withMap) {
         + `&showtitle=false&annotate=${annotate}`;
 }
 
+function kgRdkitUrl(smiles, kind = 'auto') {
+    return `${KG_API()}/api/render/rdkit.svg?smi=${encodeURIComponent(smiles)}&kind=${encodeURIComponent(kind)}`;
+}
+
+function kgFallbackToRdkit(img) {
+    if (img.dataset.renderer !== 'rdkit' && img.dataset.rdkitSrc) {
+        img.dataset.renderer = 'rdkit';
+        img.src = img.dataset.rdkitSrc;
+        return;
+    }
+    if (img.parentElement) img.parentElement.style.display = 'none';
+}
+
+function kgDepictImgHtml(smiles, kind, alt) {
+    const cdkUrl = kgCdkUrl(smiles, kind === 'reaction');
+    const rdkitUrl = kgRdkitUrl(smiles, kind);
+    return `<img alt="${escapeHtml(alt)}" src="${escapeHtml(cdkUrl)}"
+                 data-renderer="cdk" data-rdkit-src="${escapeHtml(rdkitUrl)}"
+                 onerror="kgFallbackToRdkit(this)">`;
+}
+
 function kgInfoEls() {
     return {
         panel: document.getElementById('kg-info'),
@@ -666,9 +690,10 @@ async function kgShowMoleculeInfo(d) {
     } catch (e) {}
     const smiles = (info && info.canonical_smiles) || d.smiles || '';
     let html = '';
-    html += `<div class="kg-info-struct"><img alt="structure" src="${kgCdkUrl(smiles, false)}"
-              onerror="this.style.display='none'"></div>`;
+    html += `<div class="kg-info-struct">${kgDepictImgHtml(smiles, 'molecule', 'structure')}</div>`;
     html += `<div class="kg-info-smiles">${escapeHtml(smiles)}</div>`;
+    if (info && info.iupac_name) html += `<div class="kg-info-meta">IUPAC: <span style="color:#00e5ff; font-weight:500;">${escapeHtml(info.iupac_name)}</span></div>`;
+    if (info && info.cas_number) html += `<div class="kg-info-meta">CAS: <code>${escapeHtml(info.cas_number)}</code></div>`;
     if (info && info.inchikey) html += `<div class="kg-info-meta">InChIKey: <code>${escapeHtml(info.inchikey)}</code></div>`;
     const total = info ? info.total_reactions : d.reaction_count;
     if (total !== undefined) html += `<div class="kg-info-meta">${total} reaction${total === 1 ? '' : 's'}</div>`;
@@ -713,8 +738,7 @@ async function kgShowReactionInfo(d) {
     if (rxn.balanced === true)  html += `<span class="kg-trust-badge kg-trust-ok">⚖ Balanced</span>`;
     if (rxn.balanced === false) html += `<span class="kg-trust-badge kg-trust-warn">⚠ Unbalanced</span>`;
 
-    html += `<div class="kg-info-struct"><img alt="reaction" src="${kgCdkUrl(depictSmiles, true)}"
-              onerror="this.style.display='none'"></div>`;
+    html += `<div class="kg-info-struct">${kgDepictImgHtml(depictSmiles, 'reaction', 'reaction')}</div>`;
 
     if (rxn.arrows && rxn.arrows.length) {
         html += `<div class="kg-info-subtitle">EPD (${rxn.arrows.length} arrow${rxn.arrows.length === 1 ? '' : 's'})</div><div class="kg-info-list">`;
@@ -829,9 +853,7 @@ function kgShowTooltip(ev, d) {
     const depictSmi = d.smiles || d.rsmi || null;
     const isRxn = !!(d.rsmi && !d.smiles);
     if (depictSmi) {
-        const imgUrl = kgCdkUrl(depictSmi, isRxn);
-        html += `<div class="kg-tt-struct"><img src="${imgUrl}" alt="structure"
-                      onerror="this.parentElement.style.display='none'"></div>`;
+        html += `<div class="kg-tt-struct">${kgDepictImgHtml(depictSmi, isRxn ? 'reaction' : 'molecule', 'structure')}</div>`;
     }
 
     if (d.smiles) html += `<code style="font-size:0.68rem;">${escapeHtml(d.smiles.length > 48 ? d.smiles.slice(0, 46) + '…' : d.smiles)}</code><br>`;
@@ -890,7 +912,7 @@ function kgClear() {
     kgPathUids.clear();
     if (kgSim) { kgSim.stop(); kgSim = null; }
     const canvas = document.getElementById('kg-canvas');
-    if (canvas) { const s = canvas.querySelector('svg'); if (s) s.remove(); }
+    if (canvas) { const s = canvas.querySelector(':scope > svg.kg-graph-svg'); if (s) s.remove(); }
     kgSvg = kgRoot = kgZoom = null;
     const sel = document.getElementById('kg-selection');
     if (sel) sel.innerHTML = '<p class="kg-hint">Click a node to inspect it.</p>';

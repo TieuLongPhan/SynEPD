@@ -245,18 +245,40 @@ function drawGraph() {
         drawActiveEPDArrows();
     });
 
-    // Zoom-to-fit after simulation settles
+    // Run coordinates simulation synchronously offline for instant rendering (no wobbly animation lag)
+    simulation.stop();
+    for (let i = 0; i < 180; ++i) {
+        simulation.tick();
+    }
+
+    // Force single manual update to render synchronous positions
+    linkGroup
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
+
+    nodeGroup
+        .attr("transform", d => `translate(${d.x},${d.y})`);
+
+    linkLabelGroup
+        .attr("x", d => (d.source.x + d.target.x) / 2)
+        .attr("y", d => (d.source.y + d.target.y) / 2 - 6);
+
+    drawActiveEPDArrows();
+
+    // Zoom-to-fit Setup
     svgRoot = svg;
     zoomBehavior = d3.zoom().scaleExtent([0.1, 4]).on("zoom", (event) => {
         container.attr("transform", event.transform);
     });
     svg.call(zoomBehavior);
 
-    fitTimer = setTimeout(() => zoomToFit(), 1200);
-    simulation.on('end.fit', () => { clearTimeout(fitTimer); zoomToFit(); });
+    // Position instantly without animation lag
+    zoomToFit(true);
 }
 
-function zoomToFit() {
+function zoomToFit(instant = false) {
     if (!activeReaction || !svgRoot || !zoomBehavior) return;
     const nodes = activeReaction.its_graph.nodes.filter(n => n.x != null);
     if (nodes.length === 0) return;
@@ -269,10 +291,18 @@ function zoomToFit() {
     const scale = Math.min(0.9, 0.9 * Math.min(vw / (xMax - xMin + padding), vh / (yMax - yMin + padding)));
     const tx = (vw - (xMin + xMax) * scale) / 2;
     const ty = (vh - (yMin + yMax) * scale) / 2;
-    svgRoot.transition().duration(600).call(
-        zoomBehavior.transform,
-        d3.zoomIdentity.translate(tx, ty).scale(scale)
-    );
+    
+    if (instant) {
+        svgRoot.call(
+            zoomBehavior.transform,
+            d3.zoomIdentity.translate(tx, ty).scale(scale)
+        );
+    } else {
+        svgRoot.transition().duration(400).call(
+            zoomBehavior.transform,
+            d3.zoomIdentity.translate(tx, ty).scale(scale)
+        );
+    }
 }
 
 function downloadSVG() {

@@ -29,6 +29,7 @@ from __future__ import annotations
 import os
 import threading
 from collections import deque
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import APIRouter, HTTPException, Query
@@ -50,15 +51,29 @@ HARD_MAX_REACTIONS = 100
 _rfp_lock = threading.Lock()
 _rfp_ids: Optional[List[int]] = None
 _rfp_matrix = None  # np.ndarray of shape (N, 1024) once built
+_rfp_token: Optional[str] = None
+
+
+def _db_cache_token() -> str:
+    db_path = _db_path()
+    if db_path.startswith(("postgresql://", "postgres://", "host=")):
+        return db_path
+    try:
+        path = Path(db_path)
+        stat = path.stat()
+        return f"{path.resolve()}:{stat.st_size}:{stat.st_mtime_ns}"
+    except OSError:
+        return db_path
 
 
 def _ensure_rfp_matrix():
     """Build (once) a numpy matrix of synrfp fingerprints for all reactions."""
-    global _rfp_ids, _rfp_matrix
-    if _rfp_matrix is not None:
+    global _rfp_ids, _rfp_matrix, _rfp_token
+    token = _db_cache_token()
+    if _rfp_matrix is not None and _rfp_token == token:
         return _rfp_ids, _rfp_matrix
     with _rfp_lock:
-        if _rfp_matrix is not None:  # re-check inside lock
+        if _rfp_matrix is not None and _rfp_token == token:  # re-check inside lock
             return _rfp_ids, _rfp_matrix
         import numpy as np
         from synrfp import synrfp as make_rfp
@@ -86,6 +101,7 @@ def _ensure_rfp_matrix():
 
         _rfp_ids = ids
         _rfp_matrix = np.array(fps, dtype=np.uint8)  # (N, 1024)
+        _rfp_token = token
     return _rfp_ids, _rfp_matrix
 
 
@@ -618,15 +634,28 @@ def kg_molecule_info(molecule_id: int, limit: int = 30):
     limit = _clamp(limit, 1, 200)
     conn, is_pg = _get_connection(_db_path())
     try:
-        cur = _execute_query(
-            conn,
-            is_pg,
-            "SELECT id, canonical_smiles, inchikey FROM molecule WHERE id = ?",
-            (molecule_id,),
-        )
-        mol = cur.fetchone()
-        if not mol:
-            raise HTTPException(status_code=404, detail="Molecule not found")
+        try:
+            cur = _execute_query(
+                conn,
+                is_pg,
+                "SELECT id, canonical_smiles, inchikey, iupac_name, cas_number FROM molecule WHERE id = ?",
+                (molecule_id,),
+            )
+            mol = cur.fetchone()
+            if not mol:
+                raise HTTPException(status_code=404, detail="Molecule not found")
+            iupac_val, cas_val = mol[3], mol[4]
+        except Exception:
+            cur = _execute_query(
+                conn,
+                is_pg,
+                "SELECT id, canonical_smiles, inchikey FROM molecule WHERE id = ?",
+                (molecule_id,),
+            )
+            mol = cur.fetchone()
+            if not mol:
+                raise HTTPException(status_code=404, detail="Molecule not found")
+            iupac_val, cas_val = None, None
 
         cur = _execute_query(
             conn,
@@ -655,6 +684,8 @@ def kg_molecule_info(molecule_id: int, limit: int = 30):
             "id": mol[0],
             "canonical_smiles": mol[1],
             "inchikey": mol[2],
+            "iupac_name": iupac_val,
+            "cas_number": cas_val,
             "total_reactions": total,
             "reactions": reactions,
         }
@@ -897,6 +928,7 @@ def kg_substructure_search(
 
 _rxn_graph_lock = threading.Lock()
 _rxn_graph: Optional[Dict] = None
+_rxn_graph_token: Optional[str] = None
 
 
 def _ensure_rxn_graph() -> Dict:
@@ -904,11 +936,12 @@ def _ensure_rxn_graph() -> Dict:
     mol_reactions : mol_id -> [(rxn_id, side), ...]
     rxn_mols      : rxn_id -> {side: [mol_id, ...]}
     """
-    global _rxn_graph
-    if _rxn_graph is not None:
+    global _rxn_graph, _rxn_graph_token
+    token = _db_cache_token()
+    if _rxn_graph is not None and _rxn_graph_token == token:
         return _rxn_graph
     with _rxn_graph_lock:
-        if _rxn_graph is not None:
+        if _rxn_graph is not None and _rxn_graph_token == token:
             return _rxn_graph
         conn, is_pg = _get_connection(_db_path())
         try:
@@ -930,6 +963,7 @@ def _ensure_rxn_graph() -> Dict:
             rxn_mols[rxn_id][side].append(mol_id)
 
         _rxn_graph = {"mol_reactions": mol_reactions, "rxn_mols": rxn_mols}
+        _rxn_graph_token = token
         return _rxn_graph
 
 

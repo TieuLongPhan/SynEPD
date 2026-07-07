@@ -28,6 +28,260 @@ def generate_aam_key(rsmi: str) -> str:
     return hashlib.md5(rsmi.encode("utf-8")).hexdigest()
 
 
+def collect_all_molecule_inchikeys(raw_records) -> dict[str, str]:
+    from rdkit import Chem
+    from synepd.core.ingest import strip_atom_map
+
+    flat_to_inchikey = {}
+    for c in raw_records:
+        rsmi = c.get("rsmi")
+        if not rsmi:
+            continue
+        parts = rsmi.split(">>")
+        sides = [parts[0], parts[-1]] if len(parts) >= 2 else []
+        for side in sides:
+            for m_smiles in side.split("."):
+                flat_smiles = strip_atom_map(m_smiles)
+                if flat_smiles not in flat_to_inchikey:
+                    try:
+                        mol = Chem.MolFromSmiles(flat_smiles)
+                        inchikey = Chem.MolToInchiKey(mol) if mol else None
+                        if inchikey:
+                            flat_to_inchikey[flat_smiles] = inchikey
+                    except Exception:
+                        pass
+    return flat_to_inchikey
+
+
+def fetch_batch_pubchem(
+    inchikeys: list[str],
+) -> dict[str, tuple[str | None, str | None, int | None]]:
+    import urllib.request
+    import urllib.parse
+    import json
+    import re
+
+    keys_clean = sorted(list(set(k for k in inchikeys if k)))
+    if not keys_clean:
+        return {}
+    results = {k: (None, None, None) for k in keys_clean}
+    url_prop = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/inchikey/property/InChIKey,IUPACName/JSON"
+    data_prop = urllib.parse.urlencode({"inchikey": ",".join(keys_clean)}).encode(
+        "utf-8"
+    )
+    req_prop = urllib.request.Request(url_prop, data=data_prop)
+    cid_to_key = {}
+    key_to_iupac = {}
+    key_to_cid = {}
+    try:
+        with urllib.request.urlopen(req_prop, timeout=10) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            properties = res.get("PropertyTable", {}).get("Properties", [])
+            for prop in properties:
+                cid = prop.get("CID")
+                key = prop.get("InChIKey")
+                iupac = prop.get("IUPACName")
+                if cid and key:
+                    cid_to_key[cid] = key
+                    key_to_cid[key] = cid
+                    if iupac and key not in key_to_iupac:
+                        key_to_iupac[key] = iupac
+    except Exception:
+        pass
+    url_syn = (
+        "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/inchikey/synonyms/JSON"
+    )
+    data_syn = urllib.parse.urlencode({"inchikey": ",".join(keys_clean)}).encode(
+        "utf-8"
+    )
+    req_syn = urllib.request.Request(url_syn, data=data_syn)
+    cas_regex = re.compile(r"^[1-9]\d{1,6}-\d{2}-\d$")
+    key_to_cas = {}
+    try:
+        with urllib.request.urlopen(req_syn, timeout=10) as response:
+            res = json.loads(response.read().decode("utf-8"))
+            info_list = res.get("InformationList", {}).get("Information", [])
+            for info in info_list:
+                cid = info.get("CID")
+                synonyms = info.get("Synonym", [])
+                key = cid_to_key.get(cid)
+                if key and synonyms and key not in key_to_cas:
+                    for syn in synonyms:
+                        if cas_regex.match(syn):
+                            key_to_cas[key] = syn
+                            break
+    except Exception:
+        pass
+    for key in keys_clean:
+        results[key] = (key_to_iupac.get(key), key_to_cas.get(key), key_to_cid.get(key))
+    return results
+
+
+def fetch_nih_cir_fallback(smiles: str, representation: str) -> str | None:
+    import urllib.request
+    import urllib.parse
+
+    encoded = urllib.parse.quote(smiles)
+    url = f"https://cactus.nci.nih.gov/chemical/structure/{encoded}/{representation}"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            text = response.read().decode("utf-8").strip()
+            if text:
+                lines = [line.strip() for line in text.split("\n") if line.strip()]
+                if lines:
+                    return lines[0]
+    except Exception:
+        pass
+    return None
+
+
+def extract_cas_from_pug_view(cid: int) -> str | None:
+    import urllib.request
+    import json
+    import re
+
+    url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/{cid}/JSON?heading=CAS"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode("utf-8"))
+            cas_regex = re.compile(r"^[1-9]\d{1,6}-\d{2}-\d$")
+
+            def search_sections(sections):
+                for sec in sections:
+                    if sec.get("TOCHeading") == "CAS":
+                        for info in sec.get("Information", []):
+                            string_list = info.get("Value", {}).get(
+                                "StringWithMarkup", []
+                            )
+                            for item in string_list:
+                                val = item.get("String", "").strip()
+                                if cas_regex.match(val):
+                                    return val
+                    sub_sec = sec.get("Section", [])
+                    if sub_sec:
+                        res = search_sections(sub_sec)
+                        if res:
+                            return res
+                return None
+
+            sections = data.get("Record", {}).get("Section", [])
+            return search_sections(sections)
+    except Exception:
+        pass
+    return None
+
+
+def compute_reaction_balance_and_counts(rsmi: str) -> tuple[int, int, int, int]:
+    try:
+        from rdkit import Chem
+        from collections import Counter
+
+        parts = rsmi.split(">>")
+        if len(parts) == 2:
+            lhs, rhs = parts[0], parts[1]
+        elif len(parts) == 3:
+            lhs, rhs = parts[0], parts[2]
+        else:
+            return 1, 0, 0, 0
+
+        def get_frag_info(frag: str):
+            counts = Counter()
+            total_atoms = 0
+            total_charge = 0
+            for smi in frag.split("."):
+                mol = Chem.MolFromSmiles(smi)
+                if mol is None:
+                    continue
+                mol = Chem.AddHs(mol)
+                for a in mol.GetAtoms():
+                    counts[a.GetAtomicNum()] += 1
+                    total_atoms += 1
+                    total_charge += a.GetFormalCharge()
+            return counts, total_atoms, total_charge
+
+        l_counts, l_atoms, l_charge = get_frag_info(lhs)
+        r_counts, r_atoms, r_charge = get_frag_info(rhs)
+
+        balanced = 1 if l_counts == r_counts else 0
+        return balanced, l_atoms, r_atoms, r_charge - l_charge
+    except Exception:
+        return 1, 0, 0, 0
+
+
+def compute_rdkit_coords(aam_key: str) -> dict:
+    if not aam_key:
+        return {}
+    coords = {}
+    try:
+        from rdkit import Chem
+        from rdkit.Chem import AllChem
+
+        params = Chem.SmilesParserParams()
+        params.removeHs = False
+
+        sides = aam_key.split(">>")
+        if len(sides) == 2:
+            sides = [sides[1], sides[0]]
+
+        for side_smiles in sides:
+            try:
+                mol = Chem.MolFromSmiles(side_smiles, params)
+                if mol:
+                    AllChem.Compute2DCoords(mol)
+                    conf = mol.GetConformer()
+                    for atom in mol.GetAtoms():
+                        map_num = atom.GetAtomMapNum()
+                        if map_num > 0 and map_num not in coords:
+                            pos = conf.GetAtomPosition(atom.GetIdx())
+                            coords[int(map_num)] = {
+                                "x": float(pos.x * 65),
+                                "y": float(-pos.y * 65),
+                            }
+            except Exception:
+                pass
+    except Exception:
+        pass
+    return coords
+
+
+def compute_molecule_descriptors(smiles: str) -> dict:
+    try:
+        from rdkit import Chem
+        from rdkit.Chem import AllChem, Descriptors
+
+        mol = Chem.MolFromSmiles(smiles)
+        if mol is None:
+            return {}
+
+        formula = Chem.rdMolDescriptors.CalcMolFormula(mol)
+        exact_mass = float(Descriptors.ExactMolWt(mol))
+        num_heavy_atoms = int(mol.GetNumHeavyAtoms())
+
+        ring_info = mol.GetRingInfo()
+        num_rings = int(ring_info.NumRings() if ring_info else 0)
+        num_aromatic_rings = int(Chem.rdMolDescriptors.CalcNumAromaticRings(mol))
+
+        has_charge = 1 if any(a.GetFormalCharge() != 0 for a in mol.GetAtoms()) else 0
+
+        fp = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=2048)
+        pat_fp = Chem.PatternFingerprint(mol, fpSize=2048)
+
+        return {
+            "formula": formula,
+            "exact_mass": exact_mass,
+            "num_heavy_atoms": num_heavy_atoms,
+            "num_rings": num_rings,
+            "num_aromatic_rings": num_aromatic_rings,
+            "has_charge": has_charge,
+            "morgan_fp": fp.ToBinary(),
+            "pattern_fp": pat_fp.ToBinary(),
+        }
+    except Exception:
+        return {}
+
+
 def load_json(path: Path) -> dict:
     opener = gzip.open if path.suffix == ".gz" else open
     with opener(path, "rt", encoding="utf-8") as f:
@@ -102,6 +356,68 @@ def build_release_database(
     if raw_records is None:
         raise ValueError(f"{json_path} must contain records, cases, or a records list")
 
+    import time
+
+    flat_to_inchikey = collect_all_molecule_inchikeys(raw_records)
+    all_inchikeys = sorted(list(set(flat_to_inchikey.values())))
+    print(f"Resolving {len(all_inchikeys)} unique InChIKeys via PubChem...")
+    pubchem_cache = {}
+    for idx in range(0, len(all_inchikeys), 100):
+        chunk = all_inchikeys[idx : idx + 100]
+        try:
+            batch_res = fetch_batch_pubchem(chunk)
+            pubchem_cache.update(batch_res)
+        except Exception as e:
+            print(f"PubChem batch resolution error: {e}")
+        time.sleep(0.5)
+
+    # NIH CIR & PubChem PUG View Fallback for missing IUPAC name or CAS number
+    molecule_details = {}
+    for smiles, key in flat_to_inchikey.items():
+        iupac, cas, cid = pubchem_cache.get(key, (None, None, None))
+        molecule_details[smiles] = (iupac, cas, cid)
+
+    missing_iupac = [s for s, (iupac, _, _) in molecule_details.items() if not iupac]
+    missing_cas = [s for s, (_, cas, _) in molecule_details.items() if not cas]
+
+    print(
+        f"PubChem resolved: {len(all_inchikeys) - len(missing_iupac)} IUPAC, {len(all_inchikeys) - len(missing_cas)} CAS."
+    )
+    if missing_iupac or missing_cas:
+        print(
+            f"Resolving {len(missing_iupac)} missing IUPAC names and {len(missing_cas)} missing CAS numbers using fallbacks..."
+        )
+
+        # Query NIH CIR fallback for missing IUPAC names
+        for idx, smiles in enumerate(missing_iupac):
+            try:
+                iupac = fetch_nih_cir_fallback(smiles, "iupac_name")
+                if iupac:
+                    _, cas, cid = molecule_details[smiles]
+                    molecule_details[smiles] = (iupac, cas, cid)
+            except Exception:
+                pass
+            time.sleep(0.02)
+            if idx > 0 and idx % 200 == 0:
+                print(f"  Processed {idx} IUPAC fallbacks...")
+
+        # Query PubChem PUG View and NIH CIR fallback for missing CAS numbers
+        for idx, smiles in enumerate(missing_cas):
+            iupac, _, cid = molecule_details[smiles]
+            cas = None
+            try:
+                if cid:
+                    cas = extract_cas_from_pug_view(cid)
+                if not cas:
+                    cas = fetch_nih_cir_fallback(smiles, "cas")
+                if cas:
+                    molecule_details[smiles] = (iupac, cas, cid)
+            except Exception:
+                pass
+            time.sleep(0.02)
+            if idx > 0 and idx % 200 == 0:
+                print(f"  Processed {idx} CAS fallbacks...")
+
     db_path.parent.mkdir(parents=True, exist_ok=True)
     if db_path.exists():
         db_path.unlink()
@@ -166,11 +482,26 @@ def build_release_database(
             # -----------------
 
             # 1. Ingest Reaction
+            balanced_val, l_atoms, r_atoms, chg_delta = (
+                compute_reaction_balance_and_counts(canonical_rsmi)
+            )
+            coords_dict = compute_rdkit_coords(aam_key)
+            coords_json = json.dumps(coords_dict) if coords_dict else None
             try:
                 with db.connection:
                     cursor = db.connection.execute(
-                        "INSERT INTO reaction (case_id, canonical_rsmi, aam_key, name) VALUES (?, ?, ?, ?)",
-                        (case_id, canonical_rsmi, aam_key, name),
+                        "INSERT INTO reaction (case_id, canonical_rsmi, aam_key, name, balanced, reactant_atom_count, product_atom_count, formal_charge_delta, coords_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            case_id,
+                            canonical_rsmi,
+                            aam_key,
+                            name,
+                            balanced_val,
+                            l_atoms,
+                            r_atoms,
+                            chg_delta,
+                            coords_json,
+                        ),
                     )
                     reaction_id = cursor.lastrowid
             except Exception:
@@ -206,10 +537,27 @@ def build_release_database(
                         if flat_smiles not in molecule_cache:
                             mol = Chem.MolFromSmiles(flat_smiles)
                             inchikey = Chem.MolToInchiKey(mol) if mol else None
+                            desc = compute_molecule_descriptors(flat_smiles)
+                            iupac, cas, _ = molecule_details.get(
+                                flat_smiles, (None, None, None)
+                            )
                             with db.connection:
                                 cursor = db.connection.execute(
-                                    "INSERT OR IGNORE INTO molecule (canonical_smiles, inchikey) VALUES (?, ?)",
-                                    (flat_smiles, inchikey),
+                                    "INSERT OR IGNORE INTO molecule (canonical_smiles, inchikey, formula, exact_mass, num_heavy_atoms, num_rings, num_aromatic_rings, has_charge, morgan_fp, pattern_fp, iupac_name, cas_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                    (
+                                        flat_smiles,
+                                        inchikey,
+                                        desc.get("formula"),
+                                        desc.get("exact_mass"),
+                                        desc.get("num_heavy_atoms"),
+                                        desc.get("num_rings"),
+                                        desc.get("num_aromatic_rings"),
+                                        desc.get("has_charge"),
+                                        desc.get("morgan_fp"),
+                                        desc.get("pattern_fp"),
+                                        iupac,
+                                        cas,
+                                    ),
                                 )
                                 if cursor.lastrowid:
                                     molecule_cache[flat_smiles] = cursor.lastrowid
@@ -257,10 +605,18 @@ def build_release_database(
                     rc_pkl = pickle.dumps(rc_graph, protocol=pickle.HIGHEST_PROTOCOL)
                     compressed_rc = zlib.compress(rc_pkl, level=9)
 
+                    try:
+                        from synkit.IO import its_to_rsmi, rsmi_to_rsmarts
+
+                        rc_rsmi = its_to_rsmi(rc_graph, sanitize=False)
+                        rc_smarts = rsmi_to_rsmarts(rc_rsmi)
+                    except Exception:
+                        rc_smarts = None
+
                     with db.connection:
                         cursor = db.connection.execute(
-                            "INSERT INTO reaction_center (wlhash, template_graph, graph_format) VALUES (?, ?, ?)",
-                            (db_wlhash, compressed_rc, "pickle.gz"),
+                            "INSERT INTO reaction_center (wlhash, template_graph, graph_format, smarts) VALUES (?, ?, ?, ?)",
+                            (db_wlhash, compressed_rc, "pickle.gz", rc_smarts),
                         )
                         matched_rc_id = cursor.lastrowid
 
@@ -287,10 +643,11 @@ def build_release_database(
                 # 5. Ingest EPD
                 if ground_truth:
                     arrows = parse_epd(ground_truth)
+                    signature = "|".join(arr["arrow_type_code"] for arr in arrows)
                     with db.connection:
                         db.connection.execute(
-                            "INSERT INTO epd (reaction_id, number_arrows) VALUES (?, ?)",
-                            (reaction_id, len(arrows)),
+                            "INSERT INTO epd (reaction_id, number_arrows, signature) VALUES (?, ?, ?)",
+                            (reaction_id, len(arrows), signature),
                         )
                         # Compute mapping from original ITS to canonical ITS if not already done
                         atom_map = None
@@ -331,7 +688,7 @@ def build_release_database(
 if __name__ == "__main__":
     build_release_database(
         json_path=Path("data/polar.json"),
-        hierarchy_path=Path("data/hierarchical.md"),
+        hierarchy_path=Path("data/hierarchy.md"),
         db_path=Path("data/epdb.sqlite"),
     )
     print("Release database v1.0.0 built successfully.")

@@ -16,6 +16,7 @@ from synepd.web.server import (
     get_taxon_reactions,
     get_rc_reactions,
     get_random_reaction,
+    render_rdkit_svg,
 )
 
 
@@ -135,3 +136,17 @@ def test_rc_reactions_endpoint():
         rxns = get_rc_reactions(rc_id=rc_id, limit=5)
         assert "total" in rxns
         assert "results" in rxns
+
+
+def test_rdkit_render_endpoint_for_reaction_svg():
+    response = render_rdkit_svg(smi="CCO>>CC=O", kind="reaction")
+    assert response.media_type == "image/svg+xml"
+    assert b"<svg" in response.body
+
+
+def test_docs_directory_mounted():
+    from pathlib import Path
+
+    docs_path = Path(__file__).parent.parent.parent / "docs" / "build" / "html"
+    assert docs_path.exists()
+    assert (docs_path / "index.html").exists()

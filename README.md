@@ -2,6 +2,8 @@
 
 SynEPD is a hierarchical electron-pushing database for polar organic reaction mechanisms. It combines clean reaction records, a POLAR taxonomy, reaction-center templates, atom-mapped reaction graphs, and electron-pushing diagram (EPD) arrows in a local SQLite database with a web explorer.
 
+Official web server: https://synepd.bioinf.uni-leipzig.de
+
 <p align="center">
   <img
     src="data/synepd.gif"
@@ -66,7 +68,13 @@ The builder writes `data/epdb.sqlite`.
 
 ## Run The Explorer
 
-Start the local web app:
+Use the hosted explorer at:
+
+```text
+https://synepd.bioinf.uni-leipzig.de
+```
+
+For local development, start the app with:
 
 ```bash
 ./run_server.sh

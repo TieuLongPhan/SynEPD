@@ -1,15 +1,19 @@
 import os
 import json
+import logging
 import zlib
 import pickle
 import time
+import uuid
 import sqlite3 as _sqlite3
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
 import networkx as nx
-from fastapi import FastAPI, HTTPException, Query, Request, Response
+from fastapi import FastAPI, HTTPException, Query, Request, Response, Header
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,18 +30,39 @@ from synepd.core.query import (
 # --- Knowledge Graph router ---
 from synepd.web.knowledge_graph import router as kg_router
 
+_CACHE_TTL = 300  # 5 minutes
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if os.environ.get("SYNEPD_BUILD_DOCS") == "1":
+        import threading
+
+        threading.Thread(target=build_sphinx_docs, daemon=True).start()
+    try:
+        from synepd.web.knowledge_graph import _ensure_rfp_matrix, _ensure_rxn_graph
+
+        _ensure_rfp_matrix()
+        _ensure_rxn_graph()
+    except Exception:
+        pass
+    yield
+
+
 app = FastAPI(
     title="SynEPD Mechanistic Web Service",
     description="REST backend and interactive explorer for reaction EPD mechanisms",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
-# Enable CORS for local development
+# Enable CORS
+origins = os.environ.get("SYNEPD_CORS_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -45,8 +70,37 @@ app.add_middleware(
 app.include_router(kg_router)
 
 
+def build_sphinx_docs():
+    import subprocess
+
+    try:
+        project_root = Path(__file__).parent.parent.parent
+        docs_dir = project_root / "docs"
+        if docs_dir.exists():
+            subprocess.run(
+                ["make", "html"],
+                cwd=str(docs_dir),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+    except Exception:
+        pass
+
+
 def get_db_path_or_url() -> str:
     return os.environ.get("SYNEPD_DATABASE_URL", "data/epdb.sqlite")
+
+
+def db_cache_token(db_path_or_url: str) -> str:
+    """Return a stable token that changes when a local SQLite file is rebuilt."""
+    if db_path_or_url.startswith(("postgresql://", "postgres://", "host=")):
+        return db_path_or_url
+    try:
+        path = Path(db_path_or_url)
+        stat = path.stat()
+        return f"{path.resolve()}:{stat.st_size}:{stat.st_mtime_ns}"
+    except OSError:
+        return db_path_or_url
 
 
 def get_submissions_db_path() -> str:
@@ -79,6 +133,14 @@ def serialize_graph(graph: nx.Graph) -> dict:
     if graph is None:
         return {"nodes": [], "links": []}
 
+    def _as_int(v, default=0):
+        if isinstance(v, (list, tuple)):
+            v = v[0] if v else default
+        try:
+            return int(v) if v is not None else default
+        except (TypeError, ValueError):
+            return default
+
     nodes_list = []
     for n, data in graph.nodes(data=True):
         # Extract attributes safely handling tuples from ITS
@@ -87,12 +149,7 @@ def serialize_graph(graph: nx.Graph) -> dict:
             element = element[0]
 
         charge = data.get("charge")
-        if isinstance(charge, (list, tuple)):
-            charge = charge[0]
-
         atom_map = data.get("atom_map")
-        if isinstance(atom_map, (list, tuple)):
-            atom_map = atom_map[0]
         if atom_map is None:
             atom_map = n
 
@@ -106,10 +163,10 @@ def serialize_graph(graph: nx.Graph) -> dict:
 
         nodes_list.append(
             {
-                "id": int(n),
-                "element": str(element),
-                "charge": int(charge),
-                "atom_map": int(atom_map),
+                "id": _as_int(n),
+                "element": str(element) if element is not None else "",
+                "charge": _as_int(charge, 0),
+                "atom_map": _as_int(atom_map, _as_int(n)),
                 "hybridization": str(hybrid) if hybrid is not None else None,
                 "aromatic": bool(aromatic) if aromatic is not None else False,
             }
@@ -244,16 +301,59 @@ def _check_balanced(canonical_rsmi: str) -> bool | None:
         return None
 
 
-@app.get("/api/db-info")
-def get_db_info(response: Response = None):
-    if response is not None:
-        response.headers["Cache-Control"] = "public, max-age=300"
-    db_path = get_db_path_or_url()
-    try:
-        conn, is_pg = _get_connection(db_path)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database connection failed: {e}")
+def _render_rdkit_svg(smi: str, kind: str = "auto") -> str:
+    """Render a molecule or reaction SMILES to SVG using local RDKit."""
+    smi = smi.strip()
+    if not smi:
+        raise ValueError("SMILES is required")
+    if len(smi) > 5000:
+        raise ValueError("SMILES is too long")
 
+    kind = kind.lower()
+    if kind not in {"auto", "molecule", "reaction"}:
+        raise ValueError("kind must be auto, molecule, or reaction")
+
+    is_reaction = kind == "reaction" or (kind == "auto" and ">" in smi)
+
+    from rdkit import Chem
+    from rdkit.Chem import rdChemReactions
+    from rdkit.Chem.Draw import rdMolDraw2D
+
+    if is_reaction:
+        rxn = rdChemReactions.ReactionFromSmarts(smi, useSmiles=True)
+        if rxn is None:
+            raise ValueError("Invalid reaction SMILES")
+        drawer = rdMolDraw2D.MolDraw2DSVG(760, 240)
+        drawer.DrawReaction(rxn)
+    else:
+        mol = Chem.MolFromSmiles(smi)
+        if mol is None:
+            raise ValueError("Invalid molecule SMILES")
+        drawer = rdMolDraw2D.MolDraw2DSVG(420, 260)
+        rdMolDraw2D.PrepareAndDrawMolecule(drawer, mol)
+
+    drawer.FinishDrawing()
+    return drawer.GetDrawingText()
+
+
+@app.get("/api/render/rdkit.svg")
+def render_rdkit_svg(smi: str = Query(...), kind: str = "auto"):
+    try:
+        svg = _render_rdkit_svg(smi, kind=kind)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"RDKit rendering failed: {exc}")
+    return Response(
+        content=svg,
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
+
+@lru_cache(maxsize=4)
+def _get_db_info_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict:
+    conn, is_pg = _get_connection(db_path)
     try:
         cur = conn.cursor()
 
@@ -265,8 +365,7 @@ def get_db_info(response: Response = None):
         cur.execute("SELECT COUNT(*) FROM molecule;")
         molecule_count = cur.fetchone()[0]
 
-        # Count populated class-level taxons only. In the v7 source these are
-        # level-3 classes; in the DB tree they are level=4 because POLAR is root.
+        # Count populated class-level taxons
         cur.execute("""
             SELECT COUNT(DISTINCT t.code)
             FROM taxon t
@@ -303,9 +402,26 @@ def get_db_info(response: Response = None):
             db_release_date = "2026-06-21"
             db_license = "MIT"
 
+        # Calculate database file modification time for SQLite
+        import os
+        from datetime import datetime, timezone
+
+        last_update = None
+        if not is_pg and os.path.exists(db_path):
+            try:
+                mtime = os.path.getmtime(db_path)
+                last_update = datetime.fromtimestamp(mtime, timezone.utc).strftime(
+                    "%Y-%m-%d %H:%M UTC"
+                )
+            except Exception:
+                pass
+        if not last_update:
+            last_update = db_release_date
+
         return {
             "version": db_version,
             "release_date": db_release_date,
+            "last_update": last_update,
             "license": db_license,
             "counts": {
                 "reactions": reaction_count,
@@ -316,17 +432,24 @@ def get_db_info(response: Response = None):
             },
             "backend": "PostgreSQL" if is_pg else "SQLite",
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
     finally:
         conn.close()
 
 
-_CACHE_TTL = 300  # 5 minutes
+@app.get("/api/db-info")
+def get_db_info(response: Response = None):
+    if response is not None:
+        response.headers["Cache-Control"] = "public, max-age=60"
+    db_path = get_db_path_or_url()
+    bucket = int(time.time() / _CACHE_TTL)
+    try:
+        return _get_db_info_cached(db_path, db_cache_token(db_path), bucket)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @lru_cache(maxsize=4)
-def _get_taxonomy_cached(db_path: str, _ttl_bucket: int) -> dict:
+def _get_taxonomy_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict:
     conn, is_pg = _get_connection(db_path)
     try:
         cur = conn.cursor()
@@ -382,9 +505,10 @@ def _get_taxonomy_cached(db_path: str, _ttl_bucket: int) -> dict:
 @app.get("/api/taxonomy")
 def get_taxonomy(response: Response = None):
     if response is not None:
-        response.headers["Cache-Control"] = "public, max-age=300"
+        response.headers["Cache-Control"] = "public, max-age=60"
+    db_path = get_db_path_or_url()
     bucket = int(time.time() / _CACHE_TTL)
-    return _get_taxonomy_cached(get_db_path_or_url(), bucket)
+    return _get_taxonomy_cached(db_path, db_cache_token(db_path), bucket)
 
 
 @app.get("/api/reactions/search")
@@ -543,6 +667,155 @@ def get_random_reaction():
         conn.close()
 
 
+@app.get("/api/reactions/by-arrow-count")
+def get_reactions_by_arrow_count(n: int = Query(...), limit: int = 20, offset: int = 0):
+    limit = max(1, min(limit, 100))
+    offset = max(0, offset)
+    db_path = get_db_path_or_url()
+    conn, is_pg = _get_connection(db_path)
+    try:
+        cur = conn.cursor()
+        primary_taxon = _primary_taxon_sql("r")
+        cur = _execute_query(
+            conn, is_pg, "SELECT COUNT(*) FROM epd WHERE number_arrows = ?", (n,)
+        )
+        total = cur.fetchone()[0]
+
+        sql = f"""
+            SELECT r.id, r.case_id, r.canonical_rsmi, r.aam_key, r.name, {primary_taxon} AS taxon_code
+            FROM epd e
+            JOIN reaction r ON r.id = e.reaction_id
+            WHERE e.number_arrows = ?
+            ORDER BY r.case_id
+            LIMIT ? OFFSET ?
+        """
+        cur = _execute_query(conn, is_pg, sql, (n, limit, offset))
+        results = [
+            {
+                "id": row[0],
+                "case_id": row[1],
+                "canonical_rsmi": row[2],
+                "aam_key": row[3],
+                "name": row[4],
+                "taxonomy": row[5],
+            }
+            for row in cur.fetchall()
+        ]
+        return {"total": total, "offset": offset, "limit": limit, "results": results}
+    finally:
+        conn.close()
+
+
+@app.get("/api/reactions/by-arrow-type")
+def get_reactions_by_arrow_type(
+    code: str = Query(...), mode: str = "contains", limit: int = 20, offset: int = 0
+):
+    limit = max(1, min(limit, 100))
+    offset = max(0, offset)
+    if mode not in ("contains", "excludes"):
+        raise HTTPException(status_code=400, detail="mode must be contains or excludes")
+    db_path = get_db_path_or_url()
+    conn, is_pg = _get_connection(db_path)
+    try:
+        cur = conn.cursor()
+        primary_taxon = _primary_taxon_sql("r")
+
+        if mode == "contains":
+            sub_sql = (
+                "SELECT DISTINCT reaction_id FROM epd_arrow WHERE arrow_type_code = ?"
+            )
+        else:
+            sub_sql = "SELECT id FROM reaction WHERE id NOT IN (SELECT reaction_id FROM epd_arrow WHERE arrow_type_code = ?)"
+
+        cur = _execute_query(conn, is_pg, f"SELECT COUNT(*) FROM ({sub_sql})", (code,))
+        total = cur.fetchone()[0]
+
+        sql = f"""
+            SELECT r.id, r.case_id, r.canonical_rsmi, r.aam_key, r.name, {primary_taxon} AS taxon_code
+            FROM reaction r
+            WHERE r.id IN ({sub_sql})
+            ORDER BY r.case_id
+            LIMIT ? OFFSET ?
+        """
+        cur = _execute_query(conn, is_pg, sql, (code, limit, offset))
+        results = [
+            {
+                "id": row[0],
+                "case_id": row[1],
+                "canonical_rsmi": row[2],
+                "aam_key": row[3],
+                "name": row[4],
+                "taxonomy": row[5],
+            }
+            for row in cur.fetchall()
+        ]
+        return {"total": total, "offset": offset, "limit": limit, "results": results}
+    finally:
+        conn.close()
+
+
+@app.get("/api/reactions/by-signature")
+def get_reactions_by_signature(
+    pattern: str = Query(...),
+    match_type: str = "subsequence",
+    limit: int = 20,
+    offset: int = 0,
+):
+    limit = max(1, min(limit, 100))
+    offset = max(0, offset)
+    if match_type not in ("exact", "prefix", "subsequence"):
+        raise HTTPException(
+            status_code=400, detail="match_type must be exact, prefix, or subsequence"
+        )
+    db_path = get_db_path_or_url()
+    conn, is_pg = _get_connection(db_path)
+    try:
+        cur = conn.cursor()
+        primary_taxon = _primary_taxon_sql("r")
+
+        if match_type == "exact":
+            sql_cond = "e.signature = ?"
+            param = pattern
+        elif match_type == "prefix":
+            sql_cond = "e.signature LIKE ?"
+            param = f"{pattern}%"
+        else:
+            import re
+
+            parts = re.split(r"[,\s|]+", pattern.strip())
+            sql_cond = "e.signature LIKE ?"
+            param = "%" + "%".join(parts) + "%"
+
+        cur = _execute_query(
+            conn, is_pg, f"SELECT COUNT(*) FROM epd e WHERE {sql_cond}", (param,)
+        )
+        total = cur.fetchone()[0]
+
+        sql = f"""
+            SELECT r.id, r.case_id, r.canonical_rsmi, r.aam_key, r.name, {primary_taxon} AS taxon_code
+            FROM epd e
+            JOIN reaction r ON r.id = e.reaction_id
+            WHERE {sql_cond}
+            ORDER BY r.case_id
+            LIMIT ? OFFSET ?
+        """
+        cur = _execute_query(conn, is_pg, sql, (param, limit, offset))
+        results = [
+            {
+                "id": row[0],
+                "case_id": row[1],
+                "canonical_rsmi": row[2],
+                "aam_key": row[3],
+                "name": row[4],
+                "taxonomy": row[5],
+            }
+            for row in cur.fetchall()
+        ]
+        return {"total": total, "offset": offset, "limit": limit, "results": results}
+    finally:
+        conn.close()
+
+
 @app.get("/api/reactions/{reaction_id}")
 def get_reaction_detail(reaction_id: int):
     db_path = get_db_path_or_url()
@@ -552,11 +825,20 @@ def get_reaction_detail(reaction_id: int):
         raise HTTPException(status_code=500, detail=f"Database connection failed: {e}")
 
     try:
+        conn.row_factory = _sqlite3.Row
         cur = conn.cursor()
-        # Fetch reaction
-        sql_rxn = "SELECT id, case_id, canonical_rsmi, aam_key, name FROM reaction WHERE id = ?"
-        cur = _execute_query(conn, is_pg, sql_rxn, (reaction_id,))
-        rxn_row = cur.fetchone()
+        # Fetch reaction (try fetching upgraded columns first, fallback to legacy if not present)
+        sql_rxn = "SELECT id, case_id, canonical_rsmi, aam_key, name, balanced, reactant_atom_count, product_atom_count, formal_charge_delta, coords_json FROM reaction WHERE id = ?"
+        try:
+            cur = _execute_query(conn, is_pg, sql_rxn, (reaction_id,))
+            rxn_row = cur.fetchone()
+            legacy = False
+        except Exception:
+            sql_rxn_legacy = "SELECT id, case_id, canonical_rsmi, aam_key, name FROM reaction WHERE id = ?"
+            cur = _execute_query(conn, is_pg, sql_rxn_legacy, (reaction_id,))
+            rxn_row = cur.fetchone()
+            legacy = True
+
         if not rxn_row:
             raise HTTPException(status_code=404, detail="Reaction not found")
 
@@ -567,6 +849,23 @@ def get_reaction_detail(reaction_id: int):
             "aam_key": rxn_row[3],
             "name": rxn_row[4],
         }
+
+        balanced_val = None
+        reactant_atom_count = None
+        product_atom_count = None
+        formal_charge_delta = None
+        coords_json = None
+
+        if not legacy:
+            balanced_val = rxn_row[5]
+            reactant_atom_count = rxn_row[6]
+            product_atom_count = rxn_row[7]
+            formal_charge_delta = rxn_row[8]
+            coords_json = rxn_row[9]
+
+        rxn_data["reactant_atom_count"] = reactant_atom_count
+        rxn_data["product_atom_count"] = product_atom_count
+        rxn_data["formal_charge_delta"] = formal_charge_delta
 
         # Fetch taxonomy
         sql_tax = """
@@ -613,8 +912,23 @@ def get_reaction_detail(reaction_id: int):
                 rxn_data["graph_error"] = str(ex)
 
         rxn_data["its_graph"] = its_json
-        rxn_data["rdkit_coords"] = compute_rdkit_coords(rxn_data["aam_key"])
-        rxn_data["balanced"] = _check_balanced(rxn_data.get("canonical_rsmi"))
+
+        coords_loaded = False
+        if coords_json:
+            try:
+                coords_raw = json.loads(coords_json)
+                rxn_data["rdkit_coords"] = {int(k): v for k, v in coords_raw.items()}
+                coords_loaded = True
+            except Exception:
+                pass
+
+        if not coords_loaded:
+            rxn_data["rdkit_coords"] = compute_rdkit_coords(rxn_data["aam_key"])
+
+        if balanced_val is not None:
+            rxn_data["balanced"] = bool(balanced_val)
+        else:
+            rxn_data["balanced"] = _check_balanced(rxn_data.get("canonical_rsmi"))
 
         return rxn_data
     finally:
@@ -735,11 +1049,34 @@ class APIError(BaseModel):
     message: str
 
 
+logger = logging.getLogger("synepd")
+
+
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):
+    if exc.status_code == 500:
+        eid = uuid.uuid4().hex[:8]
+        logger.error("HTTP 500 Error [%s] on %s: %s", eid, request.url.path, exc.detail)
+        return JSONResponse(
+            status_code=500,
+            content={
+                "code": "INTERNAL_ERROR",
+                "message": f"Internal server error (ref {eid})",
+            },
+        )
     return JSONResponse(
         status_code=exc.status_code,
         content={"code": "HTTP_ERROR", "message": exc.detail},
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request, exc):
+    eid = uuid.uuid4().hex[:8]
+    logger.exception("Unhandled error [%s] on %s", eid, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"code": "INTERNAL_ERROR", "message": f"Internal error (ref {eid})"},
     )
 
 
@@ -812,21 +1149,40 @@ def list_reaction_centers(limit: int = 50, offset: int = 0):
     conn, is_pg = _get_connection(db_path)
     try:
         cur = conn.cursor()
-        cur = _execute_query(
-            conn,
-            is_pg,
-            """SELECT rc.id, rc.wlhash,
-                      COUNT(i.reaction_id) AS reaction_count
-               FROM reaction_center rc
-               LEFT JOIN its i ON i.rc_id = rc.id
-               GROUP BY rc.id, rc.wlhash
-               ORDER BY reaction_count DESC
-               LIMIT ? OFFSET ?""",
-            (limit, offset),
-        )
-        results = [
-            {"id": r[0], "wlhash": r[1], "reaction_count": r[2]} for r in cur.fetchall()
-        ]
+        try:
+            cur = _execute_query(
+                conn,
+                is_pg,
+                """SELECT rc.id, rc.wlhash, rc.smarts,
+                          COUNT(i.reaction_id) AS reaction_count
+                   FROM reaction_center rc
+                   LEFT JOIN its i ON i.rc_id = rc.id
+                   GROUP BY rc.id, rc.wlhash, rc.smarts
+                   ORDER BY reaction_count DESC
+                   LIMIT ? OFFSET ?""",
+                (limit, offset),
+            )
+            results = [
+                {"id": r[0], "wlhash": r[1], "smarts": r[2], "reaction_count": r[3]}
+                for r in cur.fetchall()
+            ]
+        except Exception:
+            cur = _execute_query(
+                conn,
+                is_pg,
+                """SELECT rc.id, rc.wlhash,
+                          COUNT(i.reaction_id) AS reaction_count
+                   FROM reaction_center rc
+                   LEFT JOIN its i ON i.rc_id = rc.id
+                   GROUP BY rc.id, rc.wlhash
+                   ORDER BY reaction_count DESC
+                   LIMIT ? OFFSET ?""",
+                (limit, offset),
+            )
+            results = [
+                {"id": r[0], "wlhash": r[1], "smarts": None, "reaction_count": r[2]}
+                for r in cur.fetchall()
+            ]
         total = _execute_query(
             conn, is_pg, "SELECT COUNT(*) FROM reaction_center"
         ).fetchone()[0]
@@ -899,10 +1255,8 @@ def get_arrow_types():
         conn.close()
 
 
-@app.get("/api/stats")
-def get_stats():
-    """Return extended database statistics."""
-    db_path = get_db_path_or_url()
+@lru_cache(maxsize=4)
+def _get_stats_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict:
     conn, is_pg = _get_connection(db_path)
     try:
 
@@ -988,21 +1342,46 @@ def get_stats():
         conn.close()
 
 
+@app.get("/api/stats")
+def get_stats(response: Response = None):
+    if response is not None:
+        response.headers["Cache-Control"] = "public, max-age=60"
+    db_path = get_db_path_or_url()
+    bucket = int(time.time() / _CACHE_TTL)
+    try:
+        return _get_stats_cached(db_path, db_cache_token(db_path), bucket)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/molecules/{inchikey}")
 def get_molecule(inchikey: str):
     """Return molecule details and all reactions that contain it."""
     db_path = get_db_path_or_url()
     conn, is_pg = _get_connection(db_path)
     try:
-        cur = _execute_query(
-            conn,
-            is_pg,
-            "SELECT id, canonical_smiles, inchikey FROM molecule WHERE inchikey = ?",
-            (inchikey,),
-        )
-        mol = cur.fetchone()
-        if not mol:
-            raise HTTPException(status_code=404, detail="Molecule not found")
+        try:
+            cur = _execute_query(
+                conn,
+                is_pg,
+                "SELECT id, canonical_smiles, inchikey, iupac_name, cas_number FROM molecule WHERE inchikey = ?",
+                (inchikey,),
+            )
+            mol = cur.fetchone()
+            if not mol:
+                raise HTTPException(status_code=404, detail="Molecule not found")
+            iupac_val, cas_val = mol[3], mol[4]
+        except Exception:
+            cur = _execute_query(
+                conn,
+                is_pg,
+                "SELECT id, canonical_smiles, inchikey FROM molecule WHERE inchikey = ?",
+                (inchikey,),
+            )
+            mol = cur.fetchone()
+            if not mol:
+                raise HTTPException(status_code=404, detail="Molecule not found")
+            iupac_val, cas_val = None, None
 
         cur = _execute_query(
             conn,
@@ -1029,6 +1408,8 @@ def get_molecule(inchikey: str):
             "id": mol[0],
             "canonical_smiles": mol[1],
             "inchikey": mol[2],
+            "iupac_name": iupac_val,
+            "cas_number": cas_val,
             "reactions": reactions,
         }
     finally:
@@ -1194,8 +1575,16 @@ def create_submission(req: SubmissionRequest, request: Request):
 
 
 @app.get("/api/submissions")
-def list_submissions(limit: int = 50, offset: int = 0, status: str = "pending"):
+def list_submissions(
+    limit: int = 50,
+    offset: int = 0,
+    status: str = "pending",
+    x_admin_token: Optional[str] = Header(default=None, alias="X-Admin-Token"),
+):
     """Return cached submissions for local review."""
+    admin_token = os.environ.get("SYNEPD_ADMIN_TOKEN")
+    if admin_token and x_admin_token != admin_token:
+        raise HTTPException(status_code=403, detail="Forbidden: Invalid Admin Token")
     if limit < 1:
         limit = 50
     if limit > 200:
@@ -1241,3 +1630,9 @@ def get_index():
 static_path = Path(__file__).parent / "static"
 if static_path.exists():
     app.mount("/static", StaticFiles(directory=static_path), name="static")
+
+
+# Mount Sphinx documentation directory if it exists
+docs_path = Path(__file__).parent.parent.parent / "docs" / "build" / "html"
+if docs_path.exists():
+    app.mount("/docs", StaticFiles(directory=docs_path, html=True), name="docs")

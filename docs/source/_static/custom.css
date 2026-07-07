@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/* PyData Sphinx Theme overrides to match SynEPD WebUI dark and light theme colors */
+html[data-theme="dark"] {
+    --pst-color-background: #070a13;
+    --pst-color-surface: #101524;
+    --pst-color-surface-hover: #1a2238;
+    --pst-color-text-base: #f3f4f6;
+    --pst-color-text-muted: #9ca3af;
+    --pst-color-border: #232d45;
+    --pst-color-primary: #00f2ff;
+    --pst-color-secondary: #903df5;
+    --pst-color-inline-code: #00f2ff;
+    --pst-color-inline-code-bg: #101524;
+}
+
+html[data-theme="light"] {
+    --pst-color-background: #f8fafc;
+    --pst-color-surface: #ffffff;
+    --pst-color-surface-hover: #f1f5f9;
+    --pst-color-text-base: #0f172a;
+    --pst-color-text-muted: #475569;
+    --pst-color-border: #cbd5e1;
+    --pst-color-primary: #026469;
+    --pst-color-secondary: #7c3aed;
+    --pst-color-inline-code: #026469;
+    --pst-color-inline-code-bg: #f1f5f9;
+}
+
+:root {
+    --pst-font-family-base: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --pst-font-family-heading: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --pst-font-family-monospace: 'Fira Code', 'Courier New', Courier, monospace;
+}
+
+/* Header customization */
+.bd-header {
+    border-bottom: 1px solid var(--pst-color-border) !important;
+}
+
+/* Sidebar and TOC borders */
+.bd-sidebar {
+    border-right: 1px solid var(--pst-color-border) !important;
+}
+
+.bd-toc {
+    border-left: 1px solid var(--pst-color-border) !important;
+}
+
+/* Inline code adjustments */
+code {
+    background-color: var(--pst-color-inline-code-bg) !important;
+    border: 1px solid var(--pst-color-border) !important;
+    color: var(--pst-color-inline-code) !important;
+    border-radius: 4px !important;
+    padding: 0.15em 0.3em !important;
+    font-size: 0.875em !important;
+}
+
+/* Navigation brand name weight */
+.navbar-brand {
+    font-weight: 700 !important;
+    font-size: 1.3rem !important;
+    letter-spacing: -0.02em !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+.navbar-brand .logo__text {
+    background: linear-gradient(135deg, var(--pst-color-primary), var(--pst-color-secondary)) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: 700 !important;
+}
+
+/* Navigation items styling */
+.navbar-nav a {
+    font-weight: 500 !important;
+}
+
+/* Pre-formatted code blocks */
+pre {
+    background-color: var(--pst-color-surface) !important;
+    border: 1px solid var(--pst-color-border) !important;
+    border-radius: 8px !important;
+}
+
+/* Highlight syntax colors adjustment for clean look */
+.highlight {
+    background: transparent !important;
+}
+
+/* Logo styling matching WebUI */
+.navbar-brand img {
+    max-height: 34px !important;
+    border-radius: 4px !important;
+}
+

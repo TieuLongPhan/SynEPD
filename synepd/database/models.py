@@ -25,6 +25,11 @@ class Reaction:
     taxonomy: Optional[ReactionTaxonomy] = None
     its: Optional[ITS] = None
     epd: Optional[EPD] = None
+    balanced: Optional[int] = None
+    reactant_atom_count: Optional[int] = None
+    product_atom_count: Optional[int] = None
+    formal_charge_delta: Optional[int] = None
+    coords_json: Optional[str] = None
 
 
 @dataclass
@@ -32,6 +37,16 @@ class Molecule:
     canonical_smiles: str
     inchikey: Optional[str] = None
     id: Optional[int] = None
+    formula: Optional[str] = None
+    exact_mass: Optional[float] = None
+    num_heavy_atoms: Optional[int] = None
+    num_rings: Optional[int] = None
+    num_aromatic_rings: Optional[int] = None
+    has_charge: Optional[int] = None
+    morgan_fp: Optional[bytes] = None
+    pattern_fp: Optional[bytes] = None
+    iupac_name: Optional[str] = None
+    cas_number: Optional[str] = None
 
 
 @dataclass
@@ -62,6 +77,7 @@ class ReactionCenter:
     wlhash: str
     template_graph: bytes
     graph_format: str
+    smarts: Optional[str] = None
     id: Optional[int] = None
 
 
@@ -78,6 +94,7 @@ class ITS:
 class EPD:
     reaction_id: int
     number_arrows: int
+    signature: Optional[str] = None
     arrows: List[EPDArrow] = field(default_factory=list)
 
 
@@ -130,13 +147,28 @@ class SynEPDDatabase:
                     case_id TEXT NOT NULL UNIQUE,
                     canonical_rsmi TEXT NOT NULL,
                     aam_key TEXT NOT NULL UNIQUE,
-                    name TEXT
+                    name TEXT,
+                    balanced INTEGER,
+                    reactant_atom_count INTEGER,
+                    product_atom_count INTEGER,
+                    formal_charge_delta INTEGER,
+                    coords_json TEXT
                 );
 
                 CREATE TABLE IF NOT EXISTS molecule (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     canonical_smiles TEXT NOT NULL UNIQUE,
-                    inchikey TEXT
+                    inchikey TEXT,
+                    formula TEXT,
+                    exact_mass REAL,
+                    num_heavy_atoms INTEGER,
+                    num_rings INTEGER,
+                    num_aromatic_rings INTEGER,
+                    has_charge INTEGER,
+                    morgan_fp BLOB,
+                    pattern_fp BLOB,
+                    iupac_name TEXT,
+                    cas_number TEXT
                 );
 
                 CREATE TABLE IF NOT EXISTS reaction_component (
@@ -173,7 +205,8 @@ class SynEPDDatabase:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     wlhash TEXT NOT NULL UNIQUE,
                     template_graph BLOB NOT NULL,
-                    graph_format TEXT NOT NULL
+                    graph_format TEXT NOT NULL,
+                    smarts TEXT
                 );
 
                 CREATE TABLE IF NOT EXISTS its (
@@ -189,6 +222,7 @@ class SynEPDDatabase:
                 CREATE TABLE IF NOT EXISTS epd (
                     reaction_id INTEGER PRIMARY KEY,
                     number_arrows INTEGER NOT NULL,
+                    signature TEXT,
                     FOREIGN KEY (reaction_id) REFERENCES its(reaction_id) ON DELETE CASCADE,
                     CHECK (number_arrows >= 1)
                 );
@@ -225,6 +259,8 @@ class SynEPDDatabase:
                 CREATE INDEX IF NOT EXISTS idx_epd_arrow_type ON epd_arrow(arrow_type_code);
                 CREATE INDEX IF NOT EXISTS idx_epd_arrow_index_type ON epd_arrow(arrow_index, arrow_type_code);
                 CREATE INDEX IF NOT EXISTS idx_epd_arrow_reaction ON epd_arrow(reaction_id);
+                CREATE INDEX IF NOT EXISTS idx_molecule_inchikey ON molecule(inchikey);
+                CREATE INDEX IF NOT EXISTS idx_epd_signature ON epd(signature);
 
                 CREATE VIRTUAL TABLE IF NOT EXISTS reaction_fts USING fts5(
                     reaction_id UNINDEXED,

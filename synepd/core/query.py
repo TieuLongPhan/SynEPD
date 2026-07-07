@@ -10,7 +10,6 @@ from rdkit import Chem
 from synkit.Chem.Reaction.standardize import Standardize
 from synkit.Synthesis.Reactor.syn_reactor import SynReactor
 from synkit.IO import rsmi_to_its
-from synkit.Graph.ITS.rc_extractor import RCExtractor
 from synkit.Graph.Matcher.subgraph_matcher import SubgraphSearchEngine
 from synepd.core.ingest import extract_graphs
 
