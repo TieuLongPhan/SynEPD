@@ -166,15 +166,17 @@ function switchTab(tabId) {
     if (tabId !== 'kg' && typeof kgExitMode === 'function') {
         kgExitMode();
     }
-    // Leaving the taxonomy tab closes the TMAP viewport.
+    // Leaving the taxonomy tab closes its full-workspace views.
     if (tabId !== 'taxonomy') {
         tmapExitMode();
+        taxonomyOverviewExitMode();
     }
 }
 
 function tmapEnterMode() {
     const vp = document.getElementById('tmap-viewport');
     if (!vp) return;
+    taxonomyOverviewExitMode();
     vp.style.display = 'flex';
     // Lazy-load: only set src the first time
     const frame = document.getElementById('tmap-frame');
@@ -196,6 +198,58 @@ function tmapOnFrameLoad() {
 function tmapExitMode() {
     const vp = document.getElementById('tmap-viewport');
     if (vp) vp.style.display = 'none';
+}
+
+function taxonomyOverviewEnterMode() {
+    const vp = document.getElementById('taxonomy-overview-viewport');
+    if (!vp) return;
+    tmapExitMode();
+    vp.style.display = 'flex';
+    vp.setAttribute('aria-hidden', 'false');
+    
+    // If tree view is active, ensure iframe src is loaded
+    const btnTree = document.getElementById('tax-view-btn-tree');
+    if (btnTree && btnTree.classList.contains('active')) {
+        const frame = document.getElementById('taxonomy-tree-frame');
+        if (frame && frame.src !== window.location.origin + '/static/taxonomy.html') {
+            frame.src = '/static/taxonomy.html';
+        }
+    }
+    
+    switchTab('taxonomy');
+}
+
+function taxonomyOverviewExitMode() {
+    const vp = document.getElementById('taxonomy-overview-viewport');
+    if (!vp) return;
+    vp.style.display = 'none';
+    vp.setAttribute('aria-hidden', 'true');
+}
+
+function switchTaxonomyView(viewMode) {
+    const btnDiagram = document.getElementById('tax-view-btn-diagram');
+    const btnTree = document.getElementById('tax-view-btn-tree');
+    const paneDiagram = document.getElementById('taxonomy-view-diagram');
+    const paneTree = document.getElementById('taxonomy-view-tree');
+    
+    if (!btnDiagram || !btnTree || !paneDiagram || !paneTree) return;
+    
+    if (viewMode === 'diagram') {
+        btnDiagram.classList.add('active');
+        btnTree.classList.remove('active');
+        paneDiagram.style.display = 'block';
+        paneTree.style.display = 'none';
+    } else {
+        btnDiagram.classList.remove('active');
+        btnTree.classList.add('active');
+        paneDiagram.style.display = 'none';
+        paneTree.style.display = 'block';
+        
+        const frame = document.getElementById('taxonomy-tree-frame');
+        if (frame && frame.src !== window.location.origin + '/static/taxonomy.html') {
+            frame.src = '/static/taxonomy.html';
+        }
+    }
 }
 
 // Search Reactions
@@ -937,6 +991,8 @@ function goHome() {
     if (svgEl) svgEl.remove();
 
     if (typeof kgExitMode === 'function') kgExitMode();
+    tmapExitMode();
+    taxonomyOverviewExitMode();
     document.getElementById('welcome-panel').style.display = "block";
     document.getElementById('detail-panel').style.display = "none";
     document.getElementById('detail-fallback').style.display = "block";

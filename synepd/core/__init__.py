@@ -3,6 +3,7 @@ from synepd.core.data import (
     download_database,
     get_default_db_path,
     get_github_archive_url,
+    get_github_release_api_url,
     get_zenodo_api_url,
 )
 
@@ -12,5 +13,6 @@ __all__ = [
     "get_default_db_path",
     "download_database",
     "get_github_archive_url",
+    "get_github_release_api_url",
     "get_zenodo_api_url",
 ]

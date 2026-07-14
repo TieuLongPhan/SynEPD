@@ -458,6 +458,54 @@
         .graph-viewport:active {
             cursor: grabbing;
         }
+        .taxonomy-overview-viewport {
+            display: none;
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            flex-direction: column;
+            min-width: 0;
+            background: var(--bg-primary);
+        }
+        .taxonomy-overview-badge {
+            padding: 0.1rem 0.5rem;
+            border: 1px solid var(--accent-green);
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--accent-green) 12%, transparent);
+            color: var(--accent-green);
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .taxonomy-toolbar-link {
+            display: inline-block;
+            text-decoration: none;
+        }
+        .taxonomy-toolbar-link-first {
+            margin-left: auto;
+        }
+        .kg-mini-btn.active {
+            background-color: var(--accent-cyan) !important;
+            color: #08131a !important;
+            border-color: var(--accent-cyan) !important;
+            font-weight: 600;
+        }
+        .taxonomy-overview-canvas {
+            flex: 1;
+            overflow: auto;
+            padding: 1rem;
+            background: var(--bg-primary);
+        }
+        .taxonomy-overview-canvas img {
+            display: block;
+            width: max(100%, 1180px);
+            max-width: 2360px;
+            height: auto;
+            margin: 0 auto;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+        }
         .graph-controls {
             position: absolute;
             bottom: 2rem;

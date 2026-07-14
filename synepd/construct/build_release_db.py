@@ -644,10 +644,27 @@ def build_release_database(
                 if ground_truth:
                     arrows = parse_epd(ground_truth)
                     signature = "|".join(arr["arrow_type_code"] for arr in arrows)
+                    representation = c.get("epd_representation")
+                    representation_mode = (
+                        str(representation.get("mode", "exact"))
+                        if isinstance(representation, dict)
+                        else "exact"
+                    )
+                    representation_json = (
+                        json.dumps(representation, sort_keys=True)
+                        if isinstance(representation, dict)
+                        else None
+                    )
                     with db.connection:
                         db.connection.execute(
-                            "INSERT INTO epd (reaction_id, number_arrows, signature) VALUES (?, ?, ?)",
-                            (reaction_id, len(arrows), signature),
+                            "INSERT INTO epd (reaction_id, number_arrows, signature, representation_mode, representation_json) VALUES (?, ?, ?, ?, ?)",
+                            (
+                                reaction_id,
+                                len(arrows),
+                                signature,
+                                representation_mode,
+                                representation_json,
+                            ),
                         )
                         # Compute mapping from original ITS to canonical ITS if not already done
                         atom_map = None

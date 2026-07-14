@@ -897,6 +897,24 @@ def get_reaction_detail(reaction_id: int):
             )
         rxn_data["arrows"] = arrows
 
+        # Optional EPD representation metadata distinguishes exact Lewis-graph
+        # products from documented pair-only surrogates for open-shell endpoints.
+        epd_representation = None
+        try:
+            sql_epd_representation = "SELECT representation_mode, representation_json FROM epd WHERE reaction_id = ?"
+            cur = _execute_query(conn, is_pg, sql_epd_representation, (reaction_id,))
+            representation_row = cur.fetchone()
+            if representation_row:
+                representation_mode, representation_json = representation_row
+                if representation_json:
+                    epd_representation = json.loads(representation_json)
+                elif representation_mode and representation_mode != "exact":
+                    epd_representation = {"mode": representation_mode}
+        except Exception:
+            if is_pg:
+                conn.rollback()
+        rxn_data["epd_representation"] = epd_representation
+
         # Fetch ITS graph
         sql_its = "SELECT graph_data, graph_format FROM its WHERE reaction_id = ?"
         cur = _execute_query(conn, is_pg, sql_its, (reaction_id,))

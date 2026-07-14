@@ -12,7 +12,7 @@ license = { file = "LICENSE" }
 dependencies = [
     "fastapi",
     "pydantic",
-    "synkit>=1.1.2",
+    "synkit==1.5.0",
     "synrfp>=0.0.3",
     "uvicorn",
     "networkx",

@@ -102,6 +102,8 @@ class EPD:
     reaction_id: int
     number_arrows: int
     signature: Optional[str] = None
+    representation_mode: str = "exact"
+    representation_json: Optional[str] = None
     arrows: List[EPDArrow] = field(default_factory=list)
 
 
@@ -230,6 +232,8 @@ class SynEPDDatabase:
                     reaction_id INTEGER PRIMARY KEY,
                     number_arrows INTEGER NOT NULL,
                     signature TEXT,
+                    representation_mode TEXT NOT NULL DEFAULT 'exact',
+                    representation_json TEXT,
                     FOREIGN KEY (reaction_id) REFERENCES its(reaction_id) ON DELETE CASCADE,
                     CHECK (number_arrows >= 1)
                 );

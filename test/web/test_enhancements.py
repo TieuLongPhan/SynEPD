@@ -21,6 +21,7 @@ def test_new_reaction_fields():
         assert "product_atom_count" in detail
         assert "formal_charge_delta" in detail
         assert "rdkit_coords" in detail
+        assert "epd_representation" in detail
 
 
 def test_by_arrow_count():

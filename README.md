@@ -144,12 +144,23 @@ result = query_epd_by_reaction(
 )
 ```
 
-Use the matching GitHub release archive instead:
+Use the matching GitHub Release asset instead (with a tag-archive fallback):
 
 ```python
 from synepd.core import get_default_db_path
 
 db_path = get_default_db_path(version="0.1.0", source="github")
+```
+
+For a portable client, prefer Zenodo and fall back to the matching GitHub
+release automatically:
+
+```python
+result = query_epd_by_reaction(
+    rsmi,
+    db_source="auto",
+    db_version="0.1.0",
+)
 ```
 
 ## Checks

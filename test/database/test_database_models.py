@@ -37,6 +37,10 @@ def test_create_tables():
             )
             assert tuple(cursor.fetchone()) == ("v0.1.0", "2026-07-07", "CC BY 4.0")
 
+            cursor.execute("PRAGMA table_info(epd);")
+            epd_columns = {row[1] for row in cursor.fetchall()}
+            assert {"representation_mode", "representation_json"}.issubset(epd_columns)
+
 
 def test_init_vocabulary():
     with tempfile.TemporaryDirectory() as tmpdir:

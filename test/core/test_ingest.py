@@ -1,7 +1,9 @@
 import json
 import tempfile
 from pathlib import Path
+import networkx as nx
 from synepd.core.ingest import (
+    _set_reaction_center_standard_order,
     parse_hierarchy,
     strip_atom_map,
     extract_graphs,
@@ -46,6 +48,34 @@ def test_extract_graphs():
     assert rc_graph is not None
     assert isinstance(wlhash, str)
     assert len(wlhash) > 0
+
+
+def test_extract_graphs_uses_kekule_order_for_reaction_center():
+    rsmi = (
+        "[O:1]([c:7]1[cH:5][cH:2][cH:4][cH:3][cH:6]1)[H:8]>>"
+        "[O:1]=[C:7]1[CH:5]([H:8])[CH:2]=[CH:4][CH:3]=[CH:6]1"
+    )
+
+    kekule_result = extract_graphs(rsmi)
+    order_result = extract_graphs(rsmi, reaction_center_bond_order="order")
+
+    assert kekule_result is not None
+    assert order_result is not None
+    _, kekule_center, _ = kekule_result
+    _, order_center, _ = order_result
+    assert set(kekule_center.nodes) == {1, 5, 7, 8}
+    assert set(order_center.nodes) == {1, 2, 3, 4, 5, 6, 7, 8}
+
+
+def test_kekule_reaction_center_ignores_unchanged_aromatic_bonds():
+    its_graph = nx.Graph()
+    its_graph.add_edge(1, 2, order=(1.5, 1.5), kekule_order=(1.0, 2.0))
+    its_graph.add_edge(2, 3, order=(1.5, 1.0), kekule_order=(2.0, 1.0))
+
+    _set_reaction_center_standard_order(its_graph, "kekule_order")
+
+    assert its_graph.edges[1, 2]["standard_order"] == 0.0
+    assert its_graph.edges[2, 3]["standard_order"] == 1.0
 
 
 def test_parse_epd():

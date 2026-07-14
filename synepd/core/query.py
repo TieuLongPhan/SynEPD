@@ -443,9 +443,12 @@ def query_epd_by_reaction(
 
     # Get the mapping from the reference reaction to the RC template
     cur = _execute_query(
-        conn, is_pg, "SELECT aam_key FROM reaction WHERE id = ?", (ref_reaction_id,)
+        conn,
+        is_pg,
+        "SELECT case_id, name, aam_key FROM reaction WHERE id = ?",
+        (ref_reaction_id,),
     )
-    ref_aam_key = cur.fetchone()[0]
+    ref_case_id, ref_name, ref_aam_key = cur.fetchone()
     ref_its, _, _ = extract_graphs(ref_aam_key)
 
     ref_mappings = SubgraphSearchEngine().find_subgraph_mappings(
@@ -509,6 +512,9 @@ def query_epd_by_reaction(
     return {
         "success": True,
         "path": 2,
+        "reference_reaction_id": ref_reaction_id,
+        "reference_case_id": ref_case_id,
+        "name": ref_name,
         "reaction_center_id": matched_rc_id,
         "reaction_center_wlhash": matched_wlhash,
         "mapped_rsmi": matched_smart,

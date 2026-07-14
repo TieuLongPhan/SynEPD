@@ -63,7 +63,11 @@ def test_build_release_database_with_clean_records(monkeypatch):
                             "reaction_name": "Example",
                             "reaction_names": ["Example", "Alias example"],
                             "rsmi": "CCO>>CCO",
-                            "epd": [],
+                            "epd": [["LP-/Sigma+", [1], [1, 2]]],
+                            "epd_representation": {
+                                "mode": "closed_shell_surrogate",
+                                "limitation": "Fixture representation note.",
+                            },
                         }
                     ]
                 }
@@ -137,6 +141,14 @@ def test_build_release_database_with_clean_records(monkeypatch):
             "POLAR.01.01.001",
             "POLAR.01.01.002",
         ]
+
+        cursor.execute("SELECT representation_mode, representation_json FROM epd;")
+        mode, representation_json = cursor.fetchone()
+        assert mode == "closed_shell_surrogate"
+        assert json.loads(representation_json) == {
+            "mode": "closed_shell_surrogate",
+            "limitation": "Fixture representation note.",
+        }
 
         conn.close()
 

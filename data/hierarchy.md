@@ -1,10 +1,12 @@
 # SynEPD POLAR hierarchy
 
-Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are excluded.
-
 # POLAR — Polar reaction mechanisms
 
-## POLAR.01 — Proton / ion / Lewis acid–base transfer
+This hierarchy is organized by the dominant two-electron electron-flow pattern encoded in `data/polar.json`.
+Named reactions are placed under that encoded polar step; reagent, substrate, and synthetic-sequence names are not treated as independent mechanistic axes.
+Composite transformations remain in `POLAR.08` and are secondary to an elementary mechanistic label when both are present.
+
+## POLAR.01 — Acid–base transfer, ionization, and association
 
 ### POLAR.01.01 — Heteroatom proton transfer
 
@@ -22,9 +24,17 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.01.01.007 — Thiol / thiolate proton transfer
 
-#### POLAR.01.01.008 — Oxonium / ammonium neutralization
+#### POLAR.01.01.008 — Oxonium or ammonium neutralization
 
-### POLAR.01.02 — Carbon acid/base proton transfer
+#### POLAR.01.01.009 — Pyridine protonation
+
+#### POLAR.01.01.010 — Imidazole protonation
+
+#### POLAR.01.01.011 — Protonation of an alkoxide after arene reduction
+
+#### POLAR.01.01.012 — Protonation of an alkoxide after dissolving-metal reduction
+
+### POLAR.01.02 — Carbon deprotonation and carbanion generation
 
 #### POLAR.01.02.001 — Enolate generation
 
@@ -42,7 +52,9 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.01.02.008 — Cyanomethyl carbanion formation
 
-### POLAR.01.03 — Tautomerizing proton transfer
+#### POLAR.01.02.009 — N-Heterocyclic carbene generation by carbon deprotonation
+
+### POLAR.01.03 — Prototropic tautomerization
 
 #### POLAR.01.03.001 — Keto–enol tautomerization
 
@@ -60,7 +72,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.01.03.008 — Phenol–cyclohexadienone tautomerization
 
-### POLAR.01.04 — Intramolecular proton transfer
+### POLAR.01.04 — Intramolecular proton transfer and proton relay
 
 #### POLAR.01.04.001 — Internal proton shuttle
 
@@ -78,25 +90,11 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.01.04.008 — Proton transfer in organocatalytic ion pair
 
-### POLAR.01.05 — Ion-pair / salt formation
+### POLAR.01.05 — Salt and ion-pair formation
 
-#### POLAR.01.05.001 — Ammonium carboxylate salt formation
+#### POLAR.01.05.001 — Phase-transfer ion-pair formation
 
-#### POLAR.01.05.002 — Pyridinium salt formation
-
-#### POLAR.01.05.003 — Imidazolium salt formation
-
-#### POLAR.01.05.004 — Diazonium salt formation
-
-#### POLAR.01.05.005 — Quaternary ammonium salt formation
-
-#### POLAR.01.05.006 — Sulfonium salt formation
-
-#### POLAR.01.05.007 — Phosphonium salt formation
-
-#### POLAR.01.05.008 — Phase-transfer ion-pair formation
-
-### POLAR.01.06 — Lewis acid–base association / dissociation
+### POLAR.01.06 — Lewis acid–base association and dissociation
 
 #### POLAR.01.06.001 — Carbonyl Lewis-acid activation
 
@@ -116,7 +114,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.01.06.009 — Frustrated-Lewis-pair adduct formation
 
-### POLAR.01.07 — Charge relocation / zwitterion / ylide formation
+### POLAR.01.07 — Ylide and zwitterion formation
 
 #### POLAR.01.07.001 — Wittig ylide generation
 
@@ -132,9 +130,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.01.07.007 — Betaine zwitterion formation
 
-#### POLAR.01.07.008 — N-heterocyclic carbene generation
-
-### POLAR.01.08 — Ionization / heterolysis
+### POLAR.01.08 — Ionization and heterolysis
 
 #### POLAR.01.08.001 — Carbocation formation
 
@@ -154,7 +150,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.01.08.009 — Episulfonium ion formation
 
-### POLAR.01.09 — Counterion exchange / ion metathesis
+### POLAR.01.09 — Counterion and metal-ion exchange
 
 #### POLAR.01.09.001 — Halide counterion exchange
 
@@ -162,23 +158,17 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.01.09.003 — Hexafluorophosphate salt exchange
 
-#### POLAR.01.09.004 — Ion-exchange resin neutralization
+#### POLAR.01.09.004 — Carboxylate salt exchange
 
-#### POLAR.01.09.005 — Amine salt liberation
+#### POLAR.01.09.005 — Enolate metal exchange
 
-#### POLAR.01.09.006 — Carboxylate salt exchange
-
-#### POLAR.01.09.007 — Alkoxide salt formation
-
-#### POLAR.01.09.008 — Enolate metal exchange
-
-#### POLAR.01.09.009 — Phase-transfer counterion swap
+#### POLAR.01.09.006 — Phase-transfer counterion swap
 
 ## POLAR.02 — Substitution
 
-### POLAR.02.01 — Bimolecular nucleophilic substitution at saturated carbon
+### POLAR.02.01 — Associative substitution at saturated carbon (SN2)
 
-#### POLAR.02.01.001 — SN2 reaction
+#### POLAR.02.01.001 — General SN2 substitution
 
 #### POLAR.02.01.002 — Williamson ether synthesis
 
@@ -202,9 +192,23 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.02.01.012 — Acetoacetate alkylation
 
-### POLAR.02.02 — Dissociative / solvolytic substitution
+#### POLAR.02.01.013 — Phase-transfer alkylation
 
-#### POLAR.02.02.001 — SN1 reaction
+#### POLAR.02.01.014 — Crown-ether-assisted substitution
+
+#### POLAR.02.01.015 — Quaternary ammonium alkylation
+
+#### POLAR.02.01.016 — Phosphonium alkylation
+
+#### POLAR.02.01.017 — Sulfonium alkylation
+
+#### POLAR.02.01.018 — Pyridinium alkylation
+
+#### POLAR.02.01.019 — Imidazolium alkylation
+
+### POLAR.02.02 — Dissociative substitution through a cation (SN1)
+
+#### POLAR.02.02.001 — General SN1 substitution
 
 #### POLAR.02.02.002 — Tertiary alkyl halide solvolysis
 
@@ -228,7 +232,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.02.02.012 — Tertiary alcohol substitution by hydrogen halide
 
-### POLAR.02.03 — Internal-return / neighboring-group-assisted substitution
+### POLAR.02.03 — Internal-return and neighboring-group-assisted substitution
 
 #### POLAR.02.03.001 — SNi alcohol-to-chloride conversion
 
@@ -252,7 +256,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.02.03.011 — Neighboring amide participation
 
-### POLAR.02.04 — Electrophilic substitution at aliphatic or activated carbon
+### POLAR.02.04 — Electrophilic substitution at nucleophilic carbon
 
 #### POLAR.02.04.001 — Enolate alkylation
 
@@ -278,7 +282,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.02.04.012 — C-Azo coupling of enolates
 
-### POLAR.02.05 — Electrophilic aromatic / heteroaromatic substitution
+### POLAR.02.05 — Electrophilic aromatic and heteroaromatic substitution
 
 #### POLAR.02.05.001 — Aromatic nitration
 
@@ -316,175 +320,203 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.02.05.018 — Nencki reaction
 
-### POLAR.02.06 — Diazonium and related aryl leaving-group substitution
+### POLAR.02.06 — Nucleophilic aromatic addition–elimination (SNAr)
 
-#### POLAR.02.06.001 — Sandmeyer reaction
+#### POLAR.02.06.001 — SNAr addition–elimination
 
-#### POLAR.02.06.002 — Balz–Schiemann reaction
+#### POLAR.02.06.002 — Meisenheimer-complex substitution
 
-#### POLAR.02.06.003 — Gattermann aryl halide synthesis
+#### POLAR.02.06.003 — Chichibabin amination
 
-#### POLAR.02.06.004 — Schiemann fluorination
+#### POLAR.02.06.004 — Nitro-activated aryl fluoride displacement
 
-#### POLAR.02.06.005 — Diazonium hydrolysis to phenol
+#### POLAR.02.06.005 — Heteroaryl chloride displacement
 
-#### POLAR.02.06.006 — Diazonium iodide substitution
+#### POLAR.02.06.006 — Pyridine SNAr substitution
 
-#### POLAR.02.06.007 — Diazonium cyanation
+#### POLAR.02.06.007 — Quinoline SNAr substitution
 
-#### POLAR.02.06.008 — Gomberg–Bachmann arylation
+#### POLAR.02.06.008 — Sanger reagent substitution
 
-#### POLAR.02.06.009 — Meerwein arylation
+#### POLAR.02.06.009 — Activated aryl sulfone displacement
 
-#### POLAR.02.06.010 — Aryl diazonium thiolation
+### POLAR.02.07 — Diazonium-derived aryl substitution
 
-#### POLAR.02.06.011 — Aryl diazonium azidation
+#### POLAR.02.07.001 — Sandmeyer reaction
 
-#### POLAR.02.06.012 — Triazene substitution by electrophile
+#### POLAR.02.07.002 — Balz–Schiemann fluorination
 
-#### POLAR.02.06.013 — Triazene-to-aryl halide conversion
+#### POLAR.02.07.003 — Gattermann aryl halide synthesis
 
-### POLAR.02.07 — Allylic / benzylic substitution
+#### POLAR.02.07.004 — Diazonium hydrolysis to phenol
 
-#### POLAR.02.07.001 — Allylic SN1 substitution
+#### POLAR.02.07.005 — Diazonium iodide substitution
 
-#### POLAR.02.07.002 — Allylic SN2′ substitution
+#### POLAR.02.07.006 — Diazonium cyanation
 
-#### POLAR.02.07.003 — Benzylic nucleophilic substitution
+#### POLAR.02.07.007 — Gomberg–Bachmann arylation
 
-#### POLAR.02.07.004 — Tsuji–Trost allylic substitution
+#### POLAR.02.07.008 — Meerwein arylation
 
-#### POLAR.02.07.005 — Mitsunobu substitution
+#### POLAR.02.07.009 — Aryl diazonium thiolation
 
-#### POLAR.02.07.006 — Allylic halide displacement
+#### POLAR.02.07.010 — Aryl diazonium azidation
 
-#### POLAR.02.07.007 — Allylic acetate displacement
+#### POLAR.02.07.011 — Triazene substitution by electrophile
 
-#### POLAR.02.07.008 — Benzylic alcohol substitution
+#### POLAR.02.07.012 — Triazene-to-aryl halide conversion
 
-#### POLAR.02.07.009 — Benzylic halide solvolysis
+### POLAR.02.08 — Allylic, benzylic, and propargylic substitution
 
-#### POLAR.02.07.010 — Allylic rearrangement substitution
+#### POLAR.02.08.001 — Allylic SN1 substitution
 
-#### POLAR.02.07.011 — Propargylic substitution
+#### POLAR.02.08.002 — Allylic SN2′ substitution
 
-#### POLAR.02.07.012 — Cinnamyl substitution
+#### POLAR.02.08.003 — Benzylic nucleophilic substitution
 
-### POLAR.02.08 — Heteroatom-center substitution
+#### POLAR.02.08.004 — Tsuji–Trost allylic substitution
 
-#### POLAR.02.08.001 — Silylation of alcohols
+#### POLAR.02.08.005 — Mitsunobu substitution
 
-#### POLAR.02.08.002 — Silylation of amines
+#### POLAR.02.08.006 — Allylic halide displacement
 
-#### POLAR.02.08.003 — Desilylation of silyl ethers
+#### POLAR.02.08.007 — Allylic acetate displacement
 
-#### POLAR.02.08.004 — Substitution at silicon by fluoride
+#### POLAR.02.08.008 — Benzylic alcohol substitution
 
-#### POLAR.02.08.005 — Sulfonyl chloride substitution
+#### POLAR.02.08.009 — Benzylic halide solvolysis
 
-#### POLAR.02.08.006 — Silyl chloride alcohol substitution
+#### POLAR.02.08.010 — Allylic rearrangement substitution
 
-#### POLAR.02.08.007 — Silyl chloride amine substitution
+#### POLAR.02.08.011 — Propargylic substitution
 
-#### POLAR.02.08.008 — Phosphoryl chloride substitution
+#### POLAR.02.08.012 — Cinnamyl substitution
 
-#### POLAR.02.08.009 — Phosphoramidate substitution
+### POLAR.02.09 — Substitution at silicon, phosphorus, sulfur, boron, or tin
 
-#### POLAR.02.08.010 — Phosphate ester substitution
+#### POLAR.02.09.001 — Silylation of alcohols
 
-#### POLAR.02.08.011 — Boronate ester exchange
+#### POLAR.02.09.002 — Silylation of amines
 
-#### POLAR.02.08.012 — Stannane substitution
+#### POLAR.02.09.003 — Desilylation of silyl ethers
 
-#### POLAR.02.08.013 — Sulfurane ligand exchange
+#### POLAR.02.09.004 — Substitution at silicon by fluoride
 
-#### POLAR.02.08.014 — Electrophilic SCF3 transfer by substitution at sulfur
+#### POLAR.02.09.005 — Sulfonyl chloride substitution
 
-### POLAR.02.09 — Ring-opening substitution
+#### POLAR.02.09.006 — Silyl chloride alcohol substitution
 
-#### POLAR.02.09.001 — Epoxide opening by alcohol
+#### POLAR.02.09.007 — Silyl chloride amine substitution
 
-#### POLAR.02.09.002 — Epoxide opening by amine
+#### POLAR.02.09.008 — Phosphoryl chloride substitution
 
-#### POLAR.02.09.003 — Epoxide opening by thiol
+#### POLAR.02.09.009 — Phosphoramidate substitution
 
-#### POLAR.02.09.004 — Aziridine opening
+#### POLAR.02.09.010 — Phosphate ester substitution
 
-#### POLAR.02.09.005 — Oxetane opening
+#### POLAR.02.09.011 — Boronate ester exchange
 
-#### POLAR.02.09.006 — Cyclic sulfate opening
+#### POLAR.02.09.012 — Stannane substitution
 
-#### POLAR.02.09.007 — Cyclic sulfite opening
+#### POLAR.02.09.013 — Sulfurane ligand exchange
 
-#### POLAR.02.09.008 — Halonium-ion opening
+#### POLAR.02.09.014 — Electrophilic SCF3 transfer by substitution at sulfur
 
-#### POLAR.02.09.009 — Bromonium-ion opening
+#### POLAR.02.09.015 — Phosphorylation
 
-#### POLAR.02.09.010 — Iodonium-ion opening
+#### POLAR.02.09.016 — Phosphate ester formation
 
-#### POLAR.02.09.011 — Cyclic carbonate opening
+#### POLAR.02.09.017 — Phosphoramidate formation
 
-### POLAR.02.10 — Acetal / oxocarbenium / anomeric substitution
+#### POLAR.02.09.018 — Phosphonate ester formation
 
-#### POLAR.02.10.001 — Glycosylation
+#### POLAR.02.09.019 — Sulfonylation
 
-#### POLAR.02.10.002 — Koenigs–Knorr glycosylation
+#### POLAR.02.09.020 — Sulfonamide formation
 
-#### POLAR.02.10.003 — Fischer glycosylation
+#### POLAR.02.09.021 — Sulfonate ester formation
 
-#### POLAR.02.10.004 — Ferrier glycosylation
+#### POLAR.02.09.022 — Sulfinate ester formation
 
-#### POLAR.02.10.005 — Anomeric substitution
+#### POLAR.02.09.023 — Sulfinamide formation
 
-#### POLAR.02.10.006 — Acetal exchange
+#### POLAR.02.09.024 — Tosylation
 
-#### POLAR.02.10.007 — Ketal exchange
+#### POLAR.02.09.025 — Mesylation
 
-#### POLAR.02.10.008 — Thioacetal exchange
+#### POLAR.02.09.026 — Nosylation
 
-#### POLAR.02.10.009 — Glycosyl halide substitution
+#### POLAR.02.09.027 — Atherton–Todd rearrangement
 
-#### POLAR.02.10.010 — Glycosyl trichloroacetimidate substitution
+### POLAR.02.10 — Ring-opening substitution
 
-#### POLAR.02.10.011 — Oxocarbenium alcohol capture
+#### POLAR.02.10.001 — Epoxide opening by alcohol
 
-#### POLAR.02.10.012 — Oxocarbenium carbon capture
+#### POLAR.02.10.002 — Epoxide opening by amine
 
-### POLAR.02.11 — Vinylic / alkynyl polar substitution
+#### POLAR.02.10.003 — Epoxide opening by thiol
 
-#### POLAR.02.11.001 — Vinylic nucleophilic substitution
+#### POLAR.02.10.004 — Aziridine opening
 
-#### POLAR.02.11.002 — Activated vinyl halide displacement
+#### POLAR.02.10.005 — Oxetane opening
 
-#### POLAR.02.11.003 — β-Haloenone substitution
+#### POLAR.02.10.006 — Cyclic sulfate opening
 
-#### POLAR.02.11.004 — Vinyl sulfone substitution
+#### POLAR.02.10.007 — Cyclic sulfite opening
 
-#### POLAR.02.11.005 — Alkynyl halide substitution
+#### POLAR.02.10.008 — Halonium-ion opening
 
-#### POLAR.02.11.006 — Alkynyl sulfone substitution
+#### POLAR.02.10.009 — Bromonium-ion opening
 
-#### POLAR.02.11.007 — Ketene acetal substitution
+#### POLAR.02.10.010 — Iodonium-ion opening
 
-### POLAR.02.12 — Phase-transfer / onium-mediated alkylation
+#### POLAR.02.10.011 — Cyclic carbonate opening
 
-#### POLAR.02.12.001 — Phase-transfer alkylation
+### POLAR.02.11 — Acetal, anomeric, and glycosyl substitution
 
-#### POLAR.02.12.002 — Crown-ether-assisted substitution
+#### POLAR.02.11.001 — Glycosylation
 
-#### POLAR.02.12.003 — Quaternary ammonium alkylation
+#### POLAR.02.11.002 — Koenigs–Knorr glycosylation
 
-#### POLAR.02.12.004 — Phosphonium alkylation
+#### POLAR.02.11.003 — Fischer glycosylation
 
-#### POLAR.02.12.005 — Sulfonium alkylation
+#### POLAR.02.11.004 — Ferrier glycosylation
 
-#### POLAR.02.12.006 — Pyridinium alkylation
+#### POLAR.02.11.005 — Anomeric substitution
 
-#### POLAR.02.12.007 — Imidazolium alkylation
+#### POLAR.02.11.006 — Acetal exchange
+
+#### POLAR.02.11.007 — Ketal exchange
+
+#### POLAR.02.11.008 — Thioacetal exchange
+
+#### POLAR.02.11.009 — Glycosyl halide substitution
+
+#### POLAR.02.11.010 — Glycosyl trichloroacetimidate substitution
+
+#### POLAR.02.11.011 — Oxocarbenium alcohol capture
+
+#### POLAR.02.11.012 — Oxocarbenium carbon capture
+
+### POLAR.02.12 — Vinylic and alkynyl substitution
+
+#### POLAR.02.12.001 — Vinylic nucleophilic substitution
+
+#### POLAR.02.12.002 — Activated vinyl halide displacement
+
+#### POLAR.02.12.003 — β-Haloenone substitution
+
+#### POLAR.02.12.004 — Vinyl sulfone substitution
+
+#### POLAR.02.12.005 — Alkynyl halide substitution
+
+#### POLAR.02.12.006 — Alkynyl sulfone substitution
+
+#### POLAR.02.12.007 — Ketene acetal substitution
 
 ## POLAR.03 — Addition
 
-### POLAR.03.01 — Nucleophilic addition to carbonyl C=O bonds
+### POLAR.03.01 — Nucleophilic addition to carbonyl compounds
 
 #### POLAR.03.01.001 — Grignard addition to aldehydes
 
@@ -522,9 +554,55 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.03.01.018 — Nucleophilic addition to an oxocarbenium C=O+ center
 
-### POLAR.03.02 — Nucleophilic addition to imines / iminium ions
+#### POLAR.03.01.019 — Mukaiyama-type carbonyl addition
 
-#### POLAR.03.02.001 — Iminium cyanide addition
+#### POLAR.03.01.020 — Silyl enol ether addition
+
+#### POLAR.03.01.021 — Hosomi–Sakurai allylation
+
+#### POLAR.03.01.022 — Sakurai crotylation
+
+#### POLAR.03.01.023 — Silyl ketene acetal addition
+
+#### POLAR.03.01.024 — Chiral Lewis-acid carbonyl addition
+
+#### POLAR.03.01.025 — Intramolecular hemiacetal formation
+
+#### POLAR.03.01.026 — Transannular carbonyl addition
+
+#### POLAR.03.01.027 — Lactol formation by carbonyl addition
+
+#### POLAR.03.01.028 — Crotylboration
+
+#### POLAR.03.01.029 — Propargylboration
+
+#### POLAR.03.01.030 — Allenylboration
+
+#### POLAR.03.01.031 — Arylboronate 1,2-addition
+
+#### POLAR.03.01.032 — Silyl nucleophile carbonyl addition
+
+#### POLAR.03.01.033 — Cyanosilylation
+
+#### POLAR.03.01.034 — Trifluoromethyltrimethylsilane addition
+
+#### POLAR.03.01.035 — Difluoromethylsilane addition
+
+#### POLAR.03.01.036 — Thiol addition to carbonyls
+
+#### POLAR.03.01.037 — Hydroxylamine addition to carbonyls
+
+#### POLAR.03.01.038 — Hydrazine addition to carbonyls
+
+#### POLAR.03.01.039 — Formaldehyde hydroxymethylation
+
+#### POLAR.03.01.040 — Paraformaldehyde addition
+
+#### POLAR.03.01.041 — Chloral addition
+
+### POLAR.03.02 — Nucleophilic addition to imines and iminium ions
+
+#### POLAR.03.02.001 — Cyanide addition to an iminium ion
 
 #### POLAR.03.02.002 — Organoboron imine addition
 
@@ -534,25 +612,37 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.03.02.005 — Mannich-type imine addition
 
-#### POLAR.03.02.006 — Iminium cyanation
+#### POLAR.03.02.006 — Iminium allylation
 
-#### POLAR.03.02.007 — Iminium allylation
+#### POLAR.03.02.007 — Iminium arylation
 
-#### POLAR.03.02.008 — Iminium arylation
+#### POLAR.03.02.008 — Hemiaminal formation
 
-#### POLAR.03.02.009 — Hemiaminal formation
+#### POLAR.03.02.009 — Aminal formation
 
-#### POLAR.03.02.010 — Aminal formation
+#### POLAR.03.02.010 — Indole addition to iminium ions
 
-#### POLAR.03.02.011 — Indole addition to iminium ions
+#### POLAR.03.02.011 — Reductive-amination iminium capture step
 
-#### POLAR.03.02.012 — Reductive-amination iminium capture step
+#### POLAR.03.02.012 — General nucleophilic addition to an iminium C=N+ center
 
-#### POLAR.03.02.013 — General nucleophilic addition to an iminium C=N+ center
+#### POLAR.03.02.013 — General nucleophilic addition to a neutral imine
 
-#### POLAR.03.02.014 — General nucleophilic addition to a neutral imine
+#### POLAR.03.02.014 — SnCl4-mediated iminium addition
 
-### POLAR.03.03 — Aldol-type carbon–carbon bond-forming addition
+#### POLAR.03.02.015 — Intramolecular Mannich addition
+
+#### POLAR.03.02.016 — Intramolecular hemiaminal formation
+
+#### POLAR.03.02.017 — Water addition to imines
+
+#### POLAR.03.02.018 — Alcohol addition to imines
+
+#### POLAR.03.02.019 — Thiol addition to iminium ions
+
+#### POLAR.03.02.020 — Isocyanide addition to iminium ions
+
+### POLAR.03.03 — Aldol-type carbonyl addition
 
 #### POLAR.03.03.001 — Aldol addition
 
@@ -572,11 +662,13 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.03.03.009 — Asymmetric proline aldol addition
 
-#### POLAR.03.03.010 — Nitroaldol addition
+#### POLAR.03.03.010 — Henry (nitroaldol) addition
 
-#### POLAR.03.03.011 — Henry addition
+#### POLAR.03.03.011 — Crossed aldol addition
 
-#### POLAR.03.03.012 — Crossed aldol addition
+#### POLAR.03.03.012 — TiCl4-mediated aldol addition
+
+#### POLAR.03.03.013 — Intramolecular aldol addition
 
 ### POLAR.03.04 — Conjugate addition
 
@@ -614,7 +706,9 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.03.04.017 — Conjugate addition to a coumarin / α-pyrone system
 
-### POLAR.03.05 — Electrophilic addition to alkenes / alkynes
+#### POLAR.03.04.018 — Intramolecular Michael addition
+
+### POLAR.03.05 — Electrophilic addition to alkenes and alkynes
 
 #### POLAR.03.05.001 — Hydrohalogenation of alkenes
 
@@ -648,7 +742,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.03.05.016 — Vinyl cation capture
 
-### POLAR.03.06 — Cationic addition / cationic cyclization
+### POLAR.03.06 — Cationic cyclization
 
 #### POLAR.03.06.001 — Prins cyclization
 
@@ -669,6 +763,10 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 #### POLAR.03.06.009 — Sakurai–Prins cyclization
 
 #### POLAR.03.06.010 — Biomimetic terpene cyclization
+
+#### POLAR.03.06.011 — Cyclization onto iminium ion
+
+#### POLAR.03.06.012 — Spiroketal-forming addition
 
 ### POLAR.03.07 — Addition to nitriles and heterocumulenes
 
@@ -696,137 +794,53 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.03.07.012 — Addition to nitrones
 
-### POLAR.03.08 — Lewis-acid-activated addition
+#### POLAR.03.07.013 — Cyclization onto nitrile
 
-#### POLAR.03.08.001 — Mukaiyama-type carbonyl addition
+#### POLAR.03.07.014 — Ketene silyl acetal addition
 
-#### POLAR.03.08.002 — Silyl enol ether addition
+#### POLAR.03.07.015 — Isocyanate trapping by alcohol
 
-#### POLAR.03.08.003 — Sakurai allylation
+#### POLAR.03.07.016 — Isocyanate trapping by amine
 
-#### POLAR.03.08.004 — Hosomi–Sakurai reaction
+#### POLAR.03.07.017 — Isothiocyanate trapping by amine
 
-#### POLAR.03.08.005 — Sakurai crotylation
+### POLAR.03.08 — Addition to carbon dioxide, carbon monoxide, sulfur dioxide, azo, or diazo electrophiles
 
-#### POLAR.03.08.006 — Silyl ketene acetal addition
+#### POLAR.03.08.001 — Carboxylation of organolithium reagents
 
-#### POLAR.03.08.007 — TiCl4-mediated aldol addition
+#### POLAR.03.08.002 — Carboxylation of Grignard reagents
 
-#### POLAR.03.08.008 — BF3-mediated acetal addition
+#### POLAR.03.08.003 — Carbonylation by carbon monoxide addition
 
-#### POLAR.03.08.009 — SnCl4-mediated iminium addition
+#### POLAR.03.08.004 — Sulfur dioxide insertion-like addition
 
-#### POLAR.03.08.010 — Chiral Lewis-acid carbonyl addition
+#### POLAR.03.08.005 — Nucleophilic addition to electrophilic azo nitrogen
 
-### POLAR.03.09 — Ring-forming intramolecular addition
+#### POLAR.03.08.006 — Nucleophilic addition to terminal diazo nitrogen
 
-#### POLAR.03.09.001 — Intramolecular aldol addition
+### POLAR.03.09 — Direct capture of a localized carbocation
 
-#### POLAR.03.09.002 — Intramolecular Mannich addition
+#### POLAR.03.09.001 — BF3-mediated acetal addition
 
-#### POLAR.03.09.003 — Intramolecular Michael addition
+#### POLAR.03.09.002 — Anionic nucleophile capture of a preformed localized carbocation
 
-#### POLAR.03.09.004 — Intramolecular hemiacetal formation
+#### POLAR.03.09.003 — Neutral lone-pair capture of a preformed localized carbocation
 
-#### POLAR.03.09.005 — Intramolecular hemiaminal formation
+#### POLAR.03.09.004 — π-Nucleophile capture of a preformed localized carbocation
 
-#### POLAR.03.09.006 — Transannular carbonyl addition
+#### POLAR.03.09.005 — σ-Bond carbon transfer to a preformed localized carbocation
 
-#### POLAR.03.09.007 — Cyclization onto iminium ion
+### POLAR.03.10 — Dearomatizing nucleophilic addition
 
-#### POLAR.03.09.008 — Cyclization onto nitrile
+#### POLAR.03.10.001 — Dearomatizing capture of a tropylium / arenium ion
 
-#### POLAR.03.09.009 — Lactol formation by carbonyl addition
+#### POLAR.03.10.002 — Dearomatizing addition to an azaarenium / acridinium ion
 
-#### POLAR.03.09.010 — Spiroketal-forming addition
+#### POLAR.03.10.003 — Dearomatizing addition to a benzopyrylium / flavylium ion
 
-### POLAR.03.10 — Organoboron / organosilicon polar addition
+#### POLAR.03.10.004 — σ-Adduct formation on a neutral electron-poor arene / heteroarene
 
-#### POLAR.03.10.001 — Allylboration
-
-#### POLAR.03.10.002 — Crotylboration
-
-#### POLAR.03.10.003 — Propargylboration
-
-#### POLAR.03.10.004 — Allenylboration
-
-#### POLAR.03.10.005 — Arylboronate 1,2-addition
-
-#### POLAR.03.10.006 — Silyl nucleophile carbonyl addition
-
-#### POLAR.03.10.007 — Cyanosilylation
-
-#### POLAR.03.10.008 — Trifluoromethyltrimethylsilane addition
-
-#### POLAR.03.10.009 — Difluoromethylsilane addition
-
-### POLAR.03.11 — Heteroatom nucleophile addition to C=X
-
-#### POLAR.03.11.001 — Alcohol addition to aldehydes
-
-#### POLAR.03.11.002 — Alcohol addition to ketones
-
-#### POLAR.03.11.003 — Amine addition to aldehydes
-
-#### POLAR.03.11.004 — Amine addition to ketones
-
-#### POLAR.03.11.005 — Thiol addition to carbonyls
-
-#### POLAR.03.11.006 — Hydroxylamine addition to carbonyls
-
-#### POLAR.03.11.007 — Hydrazine addition to carbonyls
-
-#### POLAR.03.11.008 — Water addition to imines
-
-#### POLAR.03.11.009 — Alcohol addition to imines
-
-#### POLAR.03.11.010 — Thiol addition to iminium ions
-
-### POLAR.03.12 — Addition to activated small molecules / cumulenes
-
-#### POLAR.03.12.001 — Carboxylation of organolithium reagents
-
-#### POLAR.03.12.002 — Carboxylation of Grignard reagents
-
-#### POLAR.03.12.003 — Carbonylation by carbon monoxide addition
-
-#### POLAR.03.12.004 — Isocyanide addition to iminium ions
-
-#### POLAR.03.12.005 — Ketene silyl acetal addition
-
-#### POLAR.03.12.006 — Sulfur dioxide insertion-like addition
-
-#### POLAR.03.12.007 — Formaldehyde hydroxymethylation
-
-#### POLAR.03.12.008 — Paraformaldehyde addition
-
-#### POLAR.03.12.009 — Chloral addition
-
-#### POLAR.03.12.010 — Nucleophilic addition to electrophilic azo nitrogen
-
-#### POLAR.03.12.011 — Nucleophilic addition to terminal diazo nitrogen
-
-### POLAR.03.13 — Direct capture of preformed localized carbocations
-
-#### POLAR.03.13.001 — Anionic nucleophile capture of a preformed localized carbocation
-
-#### POLAR.03.13.002 — Neutral lone-pair capture of a preformed localized carbocation
-
-#### POLAR.03.13.003 — π-Nucleophile capture of a preformed localized carbocation
-
-#### POLAR.03.13.004 — σ-Bond carbon transfer to a preformed localized carbocation
-
-### POLAR.03.14 — Dearomatizing nucleophilic addition
-
-#### POLAR.03.14.001 — Dearomatizing capture of a tropylium / arenium ion
-
-#### POLAR.03.14.002 — Dearomatizing addition to an azaarenium / acridinium ion
-
-#### POLAR.03.14.003 — Dearomatizing addition to a benzopyrylium / flavylium ion
-
-#### POLAR.03.14.004 — σ-Adduct formation on a neutral electron-poor arene / heteroarene
-
-## POLAR.04 — Addition–elimination
+## POLAR.04 — Addition–elimination and condensation
 
 ### POLAR.04.01 — Acyl addition–elimination
 
@@ -842,323 +856,259 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.04.01.006 — Ester aminolysis
 
-#### POLAR.04.01.007 — Ester alcoholysis
+#### POLAR.04.01.007 — Transesterification by alcoholysis
 
-#### POLAR.04.01.008 — Transesterification
+#### POLAR.04.01.008 — Lactonization
 
-#### POLAR.04.01.009 — Lactonization
+#### POLAR.04.01.009 — Lactamization
 
-#### POLAR.04.01.010 — Lactamization
+#### POLAR.04.01.010 — Schotten–Baumann acylation
 
-#### POLAR.04.01.011 — Schotten–Baumann acylation
+#### POLAR.04.01.011 — N-Acylation of amines
 
-#### POLAR.04.01.012 — N-Acylation of amines
+#### POLAR.04.01.012 — O-Acylation of alcohols
 
-#### POLAR.04.01.013 — O-Acylation of alcohols
+#### POLAR.04.01.013 — Thioester formation
 
-#### POLAR.04.01.014 — Thioester formation
+#### POLAR.04.01.014 — Steglich esterification
 
-### POLAR.04.02 — Activated acyl transfer / coupling
+#### POLAR.04.01.015 — Yamaguchi esterification
 
-#### POLAR.04.02.001 — Steglich esterification
+#### POLAR.04.01.016 — Mukaiyama esterification
 
-#### POLAR.04.02.002 — Yamaguchi esterification
+#### POLAR.04.01.017 — Shiina esterification
 
-#### POLAR.04.02.003 — Mukaiyama esterification
+#### POLAR.04.01.018 — Mixed anhydride coupling
 
-#### POLAR.04.02.004 — Shiina esterification
+#### POLAR.04.01.019 — Peptide coupling
 
-#### POLAR.04.02.005 — Mixed anhydride coupling
+#### POLAR.04.01.020 — Carbodiimide-mediated coupling
 
-#### POLAR.04.02.006 — Peptide coupling
+#### POLAR.04.01.021 — HATU coupling
 
-#### POLAR.04.02.007 — Carbodiimide-mediated coupling
+#### POLAR.04.01.022 — HBTU coupling
 
-#### POLAR.04.02.008 — HATU coupling
+#### POLAR.04.01.023 — PyBOP coupling
 
-#### POLAR.04.02.009 — HBTU coupling
+#### POLAR.04.01.024 — CDI-mediated acylation
 
-#### POLAR.04.02.010 — PyBOP coupling
+#### POLAR.04.01.025 — Ghosez reagent acylation
 
-#### POLAR.04.02.011 — CDI-mediated acylation
+#### POLAR.04.01.026 — Weinreb amide formation
 
-#### POLAR.04.02.012 — Ghosez reagent acylation
+#### POLAR.04.01.027 — Weinreb ketone synthesis
 
-#### POLAR.04.02.013 — Weinreb amide formation
+#### POLAR.04.01.028 — Ester hydrolysis
 
-#### POLAR.04.02.014 — Weinreb ketone synthesis
+#### POLAR.04.01.029 — Amide hydrolysis
 
-### POLAR.04.03 — Carbonyl condensation with heteroatom nucleophiles
+#### POLAR.04.01.030 — Thioester hydrolysis
 
-#### POLAR.04.03.001 — Imine formation
+#### POLAR.04.01.031 — Lactone hydrolysis
 
-#### POLAR.04.03.002 — Schiff base formation
+#### POLAR.04.01.032 — Lactam hydrolysis
 
-#### POLAR.04.03.003 — Oxime formation
+#### POLAR.04.01.033 — Anhydride hydrolysis
 
-#### POLAR.04.03.004 — Hydrazone formation
+#### POLAR.04.01.034 — Acid chloride hydrolysis
 
-#### POLAR.04.03.005 — Semicarbazone formation
+#### POLAR.04.01.035 — Carbamate hydrolysis
 
-#### POLAR.04.03.006 — Tosylhydrazone formation
+#### POLAR.04.01.036 — Urea hydrolysis
 
-#### POLAR.04.03.007 — Acetal formation
+#### POLAR.04.01.037 — Imide hydrolysis
 
-#### POLAR.04.03.008 — Ketal formation
+#### POLAR.04.01.038 — Carbonate hydrolysis
 
-#### POLAR.04.03.009 — Thioacetal formation
+#### POLAR.04.01.039 — Orthoester hydrolysis
 
-#### POLAR.04.03.010 — Dithioacetal formation
+#### POLAR.04.01.040 — Carbamate formation
 
-#### POLAR.04.03.011 — Enamine formation
+#### POLAR.04.01.041 — Boc anhydride carbamate formation
 
-#### POLAR.04.03.012 — Imidazolidine formation
+#### POLAR.04.01.042 — Cbz chloroformate carbamate formation
 
-#### POLAR.04.03.013 — Oxazolidine formation
+#### POLAR.04.01.043 — Urea formation
 
-#### POLAR.04.03.014 — Thiazolidine formation
+#### POLAR.04.01.044 — Thiourea formation
 
-#### POLAR.04.03.015 — N,O-acetal formation
+#### POLAR.04.01.045 — Carbonate formation
 
-### POLAR.04.04 — Carbonyl C–C condensation followed by elimination
+#### POLAR.04.01.046 — Chloroformate substitution
 
-#### POLAR.04.04.001 — Aldol condensation
+### POLAR.04.02 — Carbonyl condensation with a heteroatom nucleophile
 
-#### POLAR.04.04.002 — Claisen–Schmidt condensation
+#### POLAR.04.02.001 — Imine (Schiff-base) formation
 
-#### POLAR.04.04.003 — Knoevenagel condensation
+#### POLAR.04.02.002 — Oxime formation
 
-#### POLAR.04.04.004 — Doebner modification
+#### POLAR.04.02.003 — Hydrazone formation
 
-#### POLAR.04.04.005 — Perkin reaction
+#### POLAR.04.02.004 — Semicarbazone formation
 
-#### POLAR.04.04.006 — Henry condensation
+#### POLAR.04.02.005 — Tosylhydrazone formation
 
-#### POLAR.04.04.007 — Nitroalkene-forming condensation
+#### POLAR.04.02.006 — Acetal formation
 
-#### POLAR.04.04.008 — Benzoin condensation dehydration variant
+#### POLAR.04.02.007 — Ketal formation
 
-#### POLAR.04.04.009 — Crotonic condensation
+#### POLAR.04.02.008 — Thioacetal formation
 
-#### POLAR.04.04.010 — Meldrum acid alkylidene formation
+#### POLAR.04.02.009 — Dithioacetal formation
 
-#### POLAR.04.04.011 — Barbituric acid alkylidene formation
+#### POLAR.04.02.010 — Enamine formation
 
-#### POLAR.04.04.012 — Acylmethylene formation
+#### POLAR.04.02.011 — Imidazolidine formation
 
-### POLAR.04.05 — Acyl enolate / ester condensation
+#### POLAR.04.02.012 — Oxazolidine formation
 
-#### POLAR.04.05.001 — Claisen condensation
+#### POLAR.04.02.013 — Thiazolidine formation
 
-#### POLAR.04.05.002 — Crossed Claisen condensation
+#### POLAR.04.02.014 — N,O-acetal formation
 
-#### POLAR.04.05.003 — Dieckmann condensation
+### POLAR.04.03 — Carbonyl C–C condensation followed by elimination
 
-#### POLAR.04.05.004 — Acetoacetic ester synthesis
+#### POLAR.04.03.001 — Aldol condensation
 
-#### POLAR.04.05.005 — Malonic ester synthesis
+#### POLAR.04.03.002 — Claisen–Schmidt condensation
 
-#### POLAR.04.05.006 — Blaise reaction
+#### POLAR.04.03.003 — Knoevenagel condensation
 
-#### POLAR.04.05.007 — Thorpe–Ziegler reaction
+#### POLAR.04.03.004 — Doebner modification
 
-#### POLAR.04.05.008 — Intramolecular acyl-enolate condensation
+#### POLAR.04.03.005 — Perkin reaction
 
-#### POLAR.04.05.009 — Darzens condensation
+#### POLAR.04.03.006 — Henry condensation
 
-#### POLAR.04.05.010 — Stobbe condensation
+#### POLAR.04.03.007 — Nitroalkene-forming condensation
 
-#### POLAR.04.05.011 — Acyloin-type polar condensation
+#### POLAR.04.03.008 — Benzoin condensation dehydration variant
 
-#### POLAR.04.05.012 — Lactone-forming Claisen condensation
+#### POLAR.04.03.009 — Crotonic condensation
 
-### POLAR.04.06 — Nucleophilic aromatic addition–elimination
+#### POLAR.04.03.010 — Meldrum acid alkylidene formation
 
-#### POLAR.04.06.001 — SNAr addition–elimination
+#### POLAR.04.03.011 — Barbituric acid alkylidene formation
 
-#### POLAR.04.06.002 — Meisenheimer-complex substitution
+#### POLAR.04.03.012 — Acylmethylene formation
 
-#### POLAR.04.06.003 — Chichibabin amination
+### POLAR.04.04 — Acyl-enolate and ester condensation
 
-#### POLAR.04.06.004 — Nitro-activated aryl fluoride displacement
+#### POLAR.04.04.001 — Claisen condensation
 
-#### POLAR.04.06.005 — Heteroaryl chloride displacement
+#### POLAR.04.04.002 — Crossed Claisen condensation
 
-#### POLAR.04.06.006 — Pyridine SNAr substitution
+#### POLAR.04.04.003 — Dieckmann condensation
 
-#### POLAR.04.06.007 — Quinoline SNAr substitution
+#### POLAR.04.04.004 — Acetoacetic ester synthesis
 
-#### POLAR.04.06.008 — Sanger reagent substitution
+#### POLAR.04.04.005 — Malonic ester synthesis
 
-#### POLAR.04.06.009 — Activated aryl sulfone displacement
+#### POLAR.04.04.006 — Blaise reaction
 
-### POLAR.04.07 — Phosphoryl / sulfonyl / sulfinyl addition–elimination
+#### POLAR.04.04.007 — Thorpe–Ziegler reaction
 
-#### POLAR.04.07.001 — Phosphorylation
+#### POLAR.04.04.008 — Intramolecular acyl-enolate condensation
 
-#### POLAR.04.07.002 — Phosphate ester formation
+#### POLAR.04.04.009 — Darzens condensation
 
-#### POLAR.04.07.003 — Phosphoramidate formation
+#### POLAR.04.04.010 — Stobbe condensation
 
-#### POLAR.04.07.004 — Phosphonate ester formation
+#### POLAR.04.04.011 — Acyloin-type acyl-enolate condensation
 
-#### POLAR.04.07.005 — Sulfonylation
+#### POLAR.04.04.012 — Lactone-forming Claisen condensation
 
-#### POLAR.04.07.006 — Sulfonamide formation
+### POLAR.04.05 — Addition–elimination at activated alkenes and conjugated systems
 
-#### POLAR.04.07.007 — Sulfonate ester formation
+#### POLAR.04.05.001 — Morita–Baylis–Hillman reaction
 
-#### POLAR.04.07.008 — Sulfinate ester formation
+#### POLAR.04.05.002 — Rauhut–Currier reaction
 
-#### POLAR.04.07.009 — Sulfinamide formation
+#### POLAR.04.05.003 — Vinylic substitution by addition–elimination
 
-#### POLAR.04.07.010 — Tosylation
+#### POLAR.04.05.004 — β-Elimination after conjugate addition
 
-#### POLAR.04.07.011 — Mesylation
+#### POLAR.04.05.005 — Addition–elimination on vinyl sulfones
 
-#### POLAR.04.07.012 — Nosylation
+#### POLAR.04.05.006 — Addition–elimination on nitroalkenes
 
-### POLAR.04.08 — Addition–elimination at activated alkenes / conjugated systems
+#### POLAR.04.05.007 — Addition–elimination on enones
 
-#### POLAR.04.08.001 — Morita–Baylis–Hillman reaction
+#### POLAR.04.05.008 — Addition–elimination on acrylates
 
-#### POLAR.04.08.002 — Rauhut–Currier reaction
+#### POLAR.04.05.009 — Conjugated iminium substitution
 
-#### POLAR.04.08.003 — Vinylic substitution by addition–elimination
+#### POLAR.04.05.010 — Activated alkene amination
 
-#### POLAR.04.08.004 — β-Elimination after conjugate addition
+### POLAR.04.06 — Intramolecular addition–elimination and cyclodehydration
 
-#### POLAR.04.08.005 — Addition–elimination on vinyl sulfones
+#### POLAR.04.06.001 — Intramolecular esterification
 
-#### POLAR.04.08.006 — Addition–elimination on nitroalkenes
+#### POLAR.04.06.002 — Intramolecular amidation
 
-#### POLAR.04.08.007 — Addition–elimination on enones
+#### POLAR.04.06.003 — Isoquinolinium-forming cyclodehydration
 
-#### POLAR.04.08.008 — Addition–elimination on acrylates
+#### POLAR.04.06.004 — Paal–Knorr pyrrole formation
 
-#### POLAR.04.08.009 — Conjugated iminium substitution
+#### POLAR.04.06.005 — Paal–Knorr furan formation
 
-#### POLAR.04.08.010 — Activated alkene amination
+#### POLAR.04.06.006 — Paal–Knorr thiophene formation
 
-### POLAR.04.09 — Intramolecular addition–elimination / cyclodehydration
+#### POLAR.04.06.007 — Cyclodehydration to oxazole
 
-#### POLAR.04.09.001 — Intramolecular esterification
+#### POLAR.04.06.008 — Cyclodehydration to thiazole
 
-#### POLAR.04.09.002 — Intramolecular amidation
+#### POLAR.04.06.009 — Cyclodehydration to imidazole
 
-#### POLAR.04.09.003 — Isoquinolinium-forming cyclodehydration
+#### POLAR.04.06.010 — Lactone-forming cyclodehydration
 
-#### POLAR.04.09.004 — Paal–Knorr pyrrole formation
+#### POLAR.04.06.011 — Lactam-forming cyclodehydration
 
-#### POLAR.04.09.005 — Paal–Knorr furan formation
+#### POLAR.04.06.012 — Isoquinoline-forming cyclodehydration
 
-#### POLAR.04.09.006 — Paal–Knorr thiophene formation
+### POLAR.04.07 — Isocyanide and nitrilium addition–elimination
 
-#### POLAR.04.09.007 — Cyclodehydration to oxazole
+#### POLAR.04.07.001 — Ugi imidoyl transfer step
 
-#### POLAR.04.09.008 — Cyclodehydration to thiazole
+#### POLAR.04.07.002 — Passerini acyl transfer step
 
-#### POLAR.04.09.009 — Cyclodehydration to imidazole
+#### POLAR.04.07.003 — Nitrilium hydrolysis
 
-#### POLAR.04.09.010 — Lactone-forming cyclodehydration
+#### POLAR.04.07.004 — Isonitrile acylation
 
-#### POLAR.04.09.011 — Lactam-forming cyclodehydration
+#### POLAR.04.07.005 — Isonitrile hydration
 
-#### POLAR.04.09.012 — Isoquinoline-forming cyclodehydration
+#### POLAR.04.07.006 — Tetrazole-forming isocyanide addition–elimination
 
-### POLAR.04.10 — Hydrolysis / solvolysis through tetrahedral intermediate
+#### POLAR.04.07.007 — Imidoyl chloride substitution
 
-#### POLAR.04.10.001 — Ester hydrolysis
+#### POLAR.04.07.008 — Amidine formation
 
-#### POLAR.04.10.002 — Amide hydrolysis
+### POLAR.04.08 — Imine, oxime, and hydrazone exchange or hydrolysis
 
-#### POLAR.04.10.003 — Thioester hydrolysis
+#### POLAR.04.08.001 — Transimination (imine exchange)
 
-#### POLAR.04.10.004 — Lactone hydrolysis
+#### POLAR.04.08.002 — Oxime ligation
 
-#### POLAR.04.10.005 — Lactam hydrolysis
+#### POLAR.04.08.003 — Hydrazone ligation
 
-#### POLAR.04.10.006 — Anhydride hydrolysis
+#### POLAR.04.08.004 — Dynamic hydrazone exchange
 
-#### POLAR.04.10.007 — Acid chloride hydrolysis
+#### POLAR.04.08.005 — Semicarbazone exchange
 
-#### POLAR.04.10.008 — Carbamate hydrolysis
+#### POLAR.04.08.006 — Acylhydrazone formation
 
-#### POLAR.04.10.009 — Urea hydrolysis
+#### POLAR.04.08.007 — Acylhydrazone exchange
 
-#### POLAR.04.10.010 — Imide hydrolysis
+#### POLAR.04.08.008 — Iminium hydrolysis
 
-#### POLAR.04.10.011 — Carbonate hydrolysis
+#### POLAR.04.08.009 — Enamine hydrolysis
 
-#### POLAR.04.10.012 — Orthoester hydrolysis
+## POLAR.05 — Elimination and fragmentation
 
-### POLAR.04.11 — Urea / carbamate / carbonate / thiocarbonyl transfer
+### POLAR.05.01 — Concerted anti β-elimination (E2)
 
-#### POLAR.04.11.001 — Carbamate formation
-
-#### POLAR.04.11.002 — Boc anhydride carbamate formation
-
-#### POLAR.04.11.003 — Cbz chloroformate carbamate formation
-
-#### POLAR.04.11.004 — Urea formation
-
-#### POLAR.04.11.005 — Thiourea formation
-
-#### POLAR.04.11.006 — Carbonate formation
-
-#### POLAR.04.11.007 — Isocyanate trapping by alcohol
-
-#### POLAR.04.11.008 — Isocyanate trapping by amine
-
-#### POLAR.04.11.009 — Isothiocyanate trapping by amine
-
-#### POLAR.04.11.010 — Chloroformate substitution
-
-### POLAR.04.12 — Isocyanide / nitrilium addition–elimination
-
-#### POLAR.04.12.001 — Ugi imidoyl transfer step
-
-#### POLAR.04.12.002 — Passerini acyl transfer step
-
-#### POLAR.04.12.003 — Nitrilium hydrolysis
-
-#### POLAR.04.12.004 — Isonitrile acylation
-
-#### POLAR.04.12.005 — Isonitrile hydration
-
-#### POLAR.04.12.006 — Tetrazole-forming isocyanide addition–elimination
-
-#### POLAR.04.12.007 — Imidoyl chloride substitution
-
-#### POLAR.04.12.008 — Amidine formation
-
-### POLAR.04.13 — Imine / oxime / hydrazone exchange
-
-#### POLAR.04.13.001 — Transimination
-
-#### POLAR.04.13.002 — Imine exchange
-
-#### POLAR.04.13.003 — Oxime ligation
-
-#### POLAR.04.13.004 — Hydrazone ligation
-
-#### POLAR.04.13.005 — Dynamic hydrazone exchange
-
-#### POLAR.04.13.006 — Semicarbazone exchange
-
-#### POLAR.04.13.007 — Acylhydrazone formation
-
-#### POLAR.04.13.008 — Acylhydrazone exchange
-
-#### POLAR.04.13.009 — Iminium hydrolysis
-
-#### POLAR.04.13.010 — Enamine hydrolysis
-
-## POLAR.05 — Elimination
-
-### POLAR.05.01 — Concerted β-elimination
-
-#### POLAR.05.01.001 — E2 elimination
+#### POLAR.05.01.001 — General E2 elimination
 
 #### POLAR.05.01.002 — Dehydrohalogenation
 
@@ -1170,21 +1120,19 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.05.01.006 — Hofmann elimination
 
-#### POLAR.05.01.007 — Zaitsev-selective elimination
+#### POLAR.05.01.007 — Zaitsev (Saytzeff)-selective elimination
 
-#### POLAR.05.01.008 — Saytzeff elimination
+#### POLAR.05.01.008 — Anti-periplanar β-elimination
 
-#### POLAR.05.01.009 — Anti-periplanar β-elimination
+#### POLAR.05.01.009 — Base-induced alcohol derivative elimination
 
-#### POLAR.05.01.010 — Base-induced alcohol derivative elimination
+#### POLAR.05.01.010 — Dehydrosulfonylation
 
-#### POLAR.05.01.011 — Dehydrosulfonylation
+#### POLAR.05.01.011 — Dehydroacetoxylation
 
-#### POLAR.05.01.012 — Dehydroacetoxylation
+### POLAR.05.02 — Stepwise cationic elimination (E1)
 
-### POLAR.05.02 — Stepwise cationic elimination
-
-#### POLAR.05.02.001 — E1 elimination
+#### POLAR.05.02.001 — General E1 elimination
 
 #### POLAR.05.02.002 — Acid-catalyzed alcohol dehydration
 
@@ -1200,33 +1148,31 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.05.02.008 — Oxocarbenium-to-alkene elimination
 
-### POLAR.05.03 — Conjugate-base elimination
+### POLAR.05.03 — Conjugate-base elimination (E1cb)
 
-#### POLAR.05.03.001 — E1cb elimination
+#### POLAR.05.03.001 — General E1cb elimination
 
-#### POLAR.05.03.002 — Aldol dehydration
+#### POLAR.05.03.002 — Aldol and β-hydroxy-carbonyl dehydration
 
-#### POLAR.05.03.003 — β-Hydroxy carbonyl dehydration
+#### POLAR.05.03.003 — Benzylidene malonate dehydration
 
-#### POLAR.05.03.004 — Benzylidene malonate dehydration
+#### POLAR.05.03.004 — Nitroalkene formation from nitroalcohols
 
-#### POLAR.05.03.005 — Nitroalkene formation from nitroalcohols
+#### POLAR.05.03.005 — Sulfone-stabilized elimination
 
-#### POLAR.05.03.006 — Sulfone-stabilized elimination
+#### POLAR.05.03.006 — β-Halo carbonyl elimination
 
-#### POLAR.05.03.007 — β-Halo carbonyl elimination
+#### POLAR.05.03.007 — β-Amino carbonyl elimination
 
-#### POLAR.05.03.008 — β-Amino carbonyl elimination
+#### POLAR.05.03.008 — β-Alkoxy carbonyl elimination
 
-#### POLAR.05.03.009 — β-Alkoxy carbonyl elimination
+#### POLAR.05.03.009 — β-Acyloxy carbonyl elimination
 
-#### POLAR.05.03.010 — β-Acyloxy carbonyl elimination
+#### POLAR.05.03.010 — Elimination from Michael adducts
 
-#### POLAR.05.03.011 — Elimination from Michael adducts
+#### POLAR.05.03.011 — Vinylogous E1cb elimination
 
-#### POLAR.05.03.012 — Vinylogous E1cb elimination
-
-### POLAR.05.04 — α-Elimination / carbene generation
+### POLAR.05.04 — α-Elimination and carbene generation
 
 #### POLAR.05.04.001 — Dichlorocarbene formation from chloroform
 
@@ -1244,29 +1190,25 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.05.04.008 — Haloalkene carbene generation
 
-### POLAR.05.05 — Syn elimination
+### POLAR.05.05 — Concerted syn elimination
 
-#### POLAR.05.05.001 — Cope elimination
+#### POLAR.05.05.001 — Cope (amine-oxide) elimination
 
-#### POLAR.05.05.002 — Chugaev elimination
+#### POLAR.05.05.002 — Chugaev xanthate pyrolysis
 
 #### POLAR.05.05.003 — Ester pyrolysis
 
-#### POLAR.05.05.004 — Amine oxide elimination
+#### POLAR.05.05.004 — Selenoxide elimination
 
-#### POLAR.05.05.005 — Xanthate pyrolysis
+#### POLAR.05.05.005 — Sulfoxide elimination
 
-#### POLAR.05.05.006 — Selenoxide elimination
+#### POLAR.05.05.006 — Burgess dehydration
 
-#### POLAR.05.05.007 — Sulfoxide elimination
+#### POLAR.05.05.007 — Martin sulfurane dehydration
 
-#### POLAR.05.05.008 — Burgess dehydration
+#### POLAR.05.05.008 — Grieco elimination
 
-#### POLAR.05.05.009 — Martin sulfurane dehydration
-
-#### POLAR.05.05.010 — Grieco elimination
-
-### POLAR.05.06 — Fragmentation / retro-addition
+### POLAR.05.06 — Fragmentation and retro-addition
 
 #### POLAR.05.06.001 — Retro-aldol reaction
 
@@ -1276,19 +1218,15 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.05.06.004 — Eschenmoser fragmentation
 
-#### POLAR.05.06.005 — Wharton fragmentation
+#### POLAR.05.06.005 — β-Fragmentation of alkoxides
 
-#### POLAR.05.06.006 — β-Fragmentation of alkoxides
+#### POLAR.05.06.006 — Cyclopropylcarbinyl fragmentation
 
-#### POLAR.05.06.007 — Oxy-Cope fragmentation polar variant
+#### POLAR.05.06.007 — Fragmentation of tetrahedral intermediates
 
-#### POLAR.05.06.008 — Cyclopropylcarbinyl fragmentation
+#### POLAR.05.06.008 — Retro-Prins fragmentation
 
-#### POLAR.05.06.009 — Fragmentation of tetrahedral intermediates
-
-#### POLAR.05.06.010 — Retro-Prins fragmentation
-
-### POLAR.05.07 — Decarboxylative / decarbonylative elimination
+### POLAR.05.07 — Decarboxylative and decarbonylative elimination
 
 #### POLAR.05.07.001 — β-Keto acid decarboxylation
 
@@ -1298,9 +1236,9 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.05.07.004 — Decarboxylative alkene formation
 
-#### POLAR.05.07.005 — Hunsdiecker decarboxylation polar step
+#### POLAR.05.07.005 — Hunsdiecker-type decarboxylative bromination
 
-#### POLAR.05.07.006 — Barton decarboxylation polar step
+#### POLAR.05.07.006 — Barton-type decarboxylation
 
 #### POLAR.05.07.007 — Decarbonylation of aldehydes under ionic conditions
 
@@ -1310,7 +1248,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.05.07.010 — Amino acid decarboxylation
 
-### POLAR.05.08 — Elimination-driven deprotection / activation
+### POLAR.05.08 — Elimination-driven deprotection and activation
 
 #### POLAR.05.08.001 — Fmoc deprotection
 
@@ -1328,37 +1266,31 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.05.08.008 — Cyanoethyl deprotection
 
-### POLAR.05.09 — Elimination to heteroatom multiple bonds
+### POLAR.05.09 — Elimination to a heteroatom multiple bond
 
-#### POLAR.05.09.001 — Oxime dehydration to nitrile
+#### POLAR.05.09.001 — Aldoxime dehydration to nitrile
 
-#### POLAR.05.09.002 — Amide dehydration to nitrile
+#### POLAR.05.09.002 — Primary-amide dehydration to nitrile
 
-#### POLAR.05.09.003 — Aldoxime dehydration
+#### POLAR.05.09.003 — Nitrile oxide formation
 
-#### POLAR.05.09.004 — Primary amide dehydration
+#### POLAR.05.09.004 — Isocyanide formation
 
-#### POLAR.05.09.005 — Nitrile oxide formation
+#### POLAR.05.09.005 — Carbodiimide formation
 
-#### POLAR.05.09.006 — Isocyanide formation
+### POLAR.05.10 — Aryne and alkyne formation by elimination
 
-#### POLAR.05.09.007 — Carbodiimide formation
-
-### POLAR.05.10 — Elimination–addition precursor formation
-
-#### POLAR.05.10.001 — Benzyne generation from aryl halides
+#### POLAR.05.10.001 — Benzyne (dehydrobenzene) generation
 
 #### POLAR.05.10.002 — Aryne generation from silyl aryl triflates
 
-#### POLAR.05.10.003 — Dehydrobenzene formation
+#### POLAR.05.10.003 — Hetaryne generation
 
-#### POLAR.05.10.004 — Hetaryne generation
+#### POLAR.05.10.004 — Alkyne formation by double dehydrohalogenation
 
-#### POLAR.05.10.005 — Alkyne formation by double dehydrohalogenation
+## POLAR.06 — Two-electron redox and polar atom transfer
 
-## POLAR.06 — Polar two-electron redox / hydride and ionic atom transfer
-
-### POLAR.06.01 — Hydride transfer to substrate
+### POLAR.06.01 — Hydride delivery and polar reduction
 
 #### POLAR.06.01.001 — Sodium borohydride reduction
 
@@ -1390,7 +1322,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.06.01.015 — Reductive amination hydride step
 
-### POLAR.06.02 — Hydride abstraction / oxidation
+### POLAR.06.02 — Hydride abstraction and activated alcohol oxidation
 
 #### POLAR.06.02.001 — Oppenauer oxidation
 
@@ -1414,17 +1346,15 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.06.02.011 — Ley–Griffith TPAP oxidation
 
-#### POLAR.06.02.012 — Pfitzner–Moffatt oxidation
+#### POLAR.06.02.012 — Albright–Goldman oxidation
 
-#### POLAR.06.02.013 — Albright–Goldman oxidation
+#### POLAR.06.02.013 — Sommelet oxidation
 
-#### POLAR.06.02.014 — Sommelet oxidation
-
-### POLAR.06.03 — Oxygen-atom transfer redox
+### POLAR.06.03 — Oxygen-atom transfer and oxygenation
 
 #### POLAR.06.03.001 — Prilezhaev epoxidation
 
-#### POLAR.06.03.002 — Baeyer–Villiger oxidation
+#### POLAR.06.03.002 — Baeyer–Villiger oxidation and rearrangement
 
 #### POLAR.06.03.003 — Rubottom oxidation
 
@@ -1432,7 +1362,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.06.03.005 — Sulfoxide-to-sulfone oxidation
 
-#### POLAR.06.03.006 — Alkene dihydroxylation by osmium tetroxide
+#### POLAR.06.03.006 — Alkene dihydroxylation
 
 #### POLAR.06.03.007 — Sharpless asymmetric dihydroxylation
 
@@ -1482,27 +1412,23 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.06.05.003 — Aldehyde-to-carboxylic-acid oxidation
 
-#### POLAR.06.05.004 — Alkene-to-diol oxidation
+#### POLAR.06.05.004 — Amine-to-imine oxidation
 
-#### POLAR.06.05.005 — Amine-to-imine oxidation
+#### POLAR.06.05.005 — Amine N-oxidation
 
-#### POLAR.06.05.006 — Amine N-oxidation
+#### POLAR.06.05.006 — Thiol-to-disulfide oxidation
 
-#### POLAR.06.05.007 — Sulfide oxidation
+#### POLAR.06.05.007 — Phenol oxidative dearomatization
 
-#### POLAR.06.05.008 — Thiol-to-disulfide oxidation
+#### POLAR.06.05.008 — Benzylic oxidation
 
-#### POLAR.06.05.009 — Phenol oxidative dearomatization
+#### POLAR.06.05.009 — Allylic oxidation
 
-#### POLAR.06.05.010 — Benzylic oxidation
+#### POLAR.06.05.010 — Pinnick oxidation
 
-#### POLAR.06.05.011 — Allylic oxidation
+#### POLAR.06.05.011 — Tamao–Fleming oxidation
 
-#### POLAR.06.05.012 — Pinnick oxidation
-
-#### POLAR.06.05.013 — Tamao–Fleming oxidation
-
-### POLAR.06.06 — Disproportionation / internal redox
+### POLAR.06.06 — Disproportionation and internal hydride transfer
 
 #### POLAR.06.06.001 — Cannizzaro reaction
 
@@ -1518,9 +1444,9 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.06.06.007 — Formose-type disproportionation
 
-#### POLAR.06.06.008 — Benzil–benzilic acid redox balance
+#### POLAR.06.06.008 — Ionic hydride relay reaction
 
-### POLAR.06.07 — Halogen / pseudohalogen transfer redox
+### POLAR.06.07 — Halogen and pseudohalogen transfer
 
 #### POLAR.06.07.001 — Electrophilic fluorination
 
@@ -1530,7 +1456,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.06.07.004 — Electrophilic iodination
 
-#### POLAR.06.07.005 — NBS allylic bromination polar step
+#### POLAR.06.07.005 — Allylic bromination by NBS
 
 #### POLAR.06.07.006 — Phosphine-mediated alcohol halogenation
 
@@ -1542,7 +1468,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.06.07.010 — Selectfluor fluorination
 
-### POLAR.06.08 — Oxidative cleavage
+### POLAR.06.08 — Oxidative bond cleavage
 
 #### POLAR.06.08.001 — Ozonolysis
 
@@ -1550,27 +1476,23 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.06.08.003 — Malaprade periodate cleavage
 
-#### POLAR.06.08.004 — Glycol cleavage
+#### POLAR.06.08.004 — Oxidative cleavage of alkenes
 
-#### POLAR.06.08.005 — Oxidative cleavage of alkenes
+#### POLAR.06.08.005 — Oxidative vicinal-diol (glycol) cleavage
 
-#### POLAR.06.08.006 — Oxidative cleavage of vicinal diols
+#### POLAR.06.08.006 — Osmate-periodate cleavage
 
-#### POLAR.06.08.007 — Osmate-periodate cleavage
+#### POLAR.06.08.007 — Lead tetraacetate glycol cleavage
 
-#### POLAR.06.08.008 — Lead tetraacetate glycol cleavage
+#### POLAR.06.08.008 — Oxidative C–C bond cleavage
 
-#### POLAR.06.08.009 — Baeyer–Villiger cleavage variant
+### POLAR.06.09 — Reductive bond cleavage
 
-#### POLAR.06.08.010 — Oxidative C–C bond cleavage
+#### POLAR.06.09.001 — Reductive cleavage of benzyl ethers
 
-### POLAR.06.09 — Reductive cleavage / deprotection
+#### POLAR.06.09.002 — Reductive cleavage of benzyl esters
 
-#### POLAR.06.09.001 — Polar reductive cleavage of benzyl ethers
-
-#### POLAR.06.09.002 — Polar reductive cleavage of benzyl esters
-
-#### POLAR.06.09.003 — Polar reductive debenzylation surrogate
+#### POLAR.06.09.003 — Reductive debenzylation
 
 #### POLAR.06.09.004 — Reductive dehalogenation
 
@@ -1580,15 +1502,11 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.06.09.007 — Reductive S–S bond cleavage
 
-#### POLAR.06.09.008 — Birch reduction ionic protonation step
+#### POLAR.06.09.008 — Cleavage of azo compounds
 
-#### POLAR.06.09.009 — Dissolving-metal carbonyl reduction polar workup
+### POLAR.06.10 — Deoxygenation and desulfurization
 
-#### POLAR.06.09.010 — Cleavage of azo compounds
-
-### POLAR.06.10 — Deoxygenation / desulfurization
-
-#### POLAR.06.10.001 — Barton–McCombie deoxygenation polar step
+#### POLAR.06.10.001 — Reductive C–O cleavage of a thiocarbonyl-activated alcohol
 
 #### POLAR.06.10.002 — Markó–Lam deoxygenation
 
@@ -1608,53 +1526,45 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.06.10.010 — Phosphine-mediated deoxygenation
 
-### POLAR.06.11 — Hypervalent iodine / organosulfur redox
+### POLAR.06.11 — Hypervalent-iodine and activated-sulfur oxidation
 
 #### POLAR.06.11.001 — IBX oxidation
 
-#### POLAR.06.11.002 — Dess–Martin periodinane oxidation
+#### POLAR.06.11.002 — PIDA-mediated oxidation
 
-#### POLAR.06.11.003 — PIDA-mediated oxidation
+#### POLAR.06.11.003 — PIFA-mediated oxidation
 
-#### POLAR.06.11.004 — PIFA-mediated oxidation
+#### POLAR.06.11.004 — Koser reagent oxidation
 
-#### POLAR.06.11.005 — Koser reagent oxidation
+#### POLAR.06.11.005 — Hypervalent iodine dearomatization
 
-#### POLAR.06.11.006 — Hypervalent iodine dearomatization
+#### POLAR.06.11.006 — Sulfurane oxidation
 
-#### POLAR.06.11.007 — Sulfurane oxidation
+#### POLAR.06.11.007 — Martin sulfurane dehydration redox step
 
-#### POLAR.06.11.008 — Martin sulfurane dehydration redox step
+#### POLAR.06.11.008 — Alkoxybenziodoxole oxidation
 
-#### POLAR.06.11.009 — Alkoxybenziodoxole oxidation
+#### POLAR.06.11.009 — Iodoxybenzene oxidation
 
-#### POLAR.06.11.010 — Iodoxybenzene oxidation
+### POLAR.06.12 — Organocatalytic hydride and electron-pair transfer
 
-### POLAR.06.12 — Organocatalytic hydride / electron-pair transfer
+#### POLAR.06.12.001 — NADH-model reduction
 
-#### POLAR.06.12.001 — Hantzsch ester transfer reduction
+#### POLAR.06.12.002 — Iminium-ion transfer hydrogenation
 
-#### POLAR.06.12.002 — NADH-model reduction
+#### POLAR.06.12.003 — Enamine-mediated redox-neutral aldehyde reaction
 
-#### POLAR.06.12.003 — Iminium-ion transfer hydrogenation
+#### POLAR.06.12.004 — NHC redox esterification
 
-#### POLAR.06.12.004 — Enamine-mediated redox-neutral aldehyde reaction
+#### POLAR.06.12.005 — NHC redox amidation
 
-#### POLAR.06.12.005 — NHC redox esterification
+#### POLAR.06.12.006 — Breslow-intermediate oxidation
 
-#### POLAR.06.12.006 — NHC redox amidation
+#### POLAR.06.12.007 — NHC internal redox reaction
 
-#### POLAR.06.12.007 — Breslow-intermediate oxidation
+## POLAR.07 — Rearrangement and migration
 
-#### POLAR.06.12.008 — NHC internal redox reaction
-
-#### POLAR.06.12.009 — Hydride shift in oxocarbenium chemistry
-
-#### POLAR.06.12.010 — Ionic hydride relay reaction
-
-## POLAR.07 — Rearrangement / migration
-
-### POLAR.07.01 — Carbocationic rearrangement
+### POLAR.07.01 — Cationic skeletal rearrangement and 1,2-migration
 
 #### POLAR.07.01.001 — Wagner–Meerwein rearrangement
 
@@ -1678,55 +1588,77 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.07.01.011 — Camphene rearrangement
 
-#### POLAR.07.01.012 — Meinwald rearrangement
+#### POLAR.07.01.012 — Meinwald epoxide rearrangement
 
 #### POLAR.07.01.013 — Acid-catalyzed epoxide rearrangement
 
-### POLAR.07.02 — Hydride / alkyl migration
+#### POLAR.07.01.014 — 1,2-Hydride shift
 
-#### POLAR.07.02.001 — 1,2-Hydride shift
+#### POLAR.07.01.015 — 1,2-Methyl shift
 
-#### POLAR.07.02.002 — 1,2-Methyl shift
+#### POLAR.07.01.016 — 1,2-Alkyl shift
 
-#### POLAR.07.02.003 — 1,2-Alkyl shift
+#### POLAR.07.01.017 — 1,2-Aryl shift
 
-#### POLAR.07.02.004 — 1,2-Aryl shift
+#### POLAR.07.01.018 — Ring-expansion migration
 
-#### POLAR.07.02.005 — Ring-expansion migration
+#### POLAR.07.01.019 — Neopentyl rearrangement
 
-#### POLAR.07.02.006 — Neopentyl rearrangement
+#### POLAR.07.01.020 — Hydride migration in oxocarbenium ions
 
-#### POLAR.07.02.007 — Hydride migration in oxocarbenium ions
+#### POLAR.07.01.021 — Alkyl migration in iminium ions
 
-#### POLAR.07.02.008 — Alkyl migration in iminium ions
+#### POLAR.07.01.022 — Carbonyl transposition by hydride migration
 
-### POLAR.07.03 — Acyl / aryl / silyl migration
+### POLAR.07.02 — Anionic rearrangement
+
+#### POLAR.07.02.001 — Favorskii rearrangement
+
+#### POLAR.07.02.002 — Payne rearrangement
+
+#### POLAR.07.02.003 — Anionic epoxide rearrangement
+
+#### POLAR.07.02.004 — Anionic ammonium ylide shift
+
+#### POLAR.07.02.005 — Wittig rearrangement
+
+#### POLAR.07.02.006 — [1,2]-Wittig rearrangement
+
+#### POLAR.07.02.007 — [2,3]-Wittig rearrangement
+
+#### POLAR.07.02.008 — Anionic silyl migration
+
+#### POLAR.07.02.009 — α-Halosulfone ring-contraction rearrangement
+
+#### POLAR.07.02.010 — Anionic Fries rearrangement
+
+#### POLAR.07.02.011 — Anionic oxy-Cope rearrangement
+
+#### POLAR.07.02.012 — Base-promoted acyl migration
+
+### POLAR.07.03 — Acyl, aryl, and silyl migration
 
 #### POLAR.07.03.001 — Fries rearrangement
 
-#### POLAR.07.03.002 — Photo-Fries polar product rearrangement
+#### POLAR.07.03.002 — Baker–Venkataraman rearrangement
 
-#### POLAR.07.03.003 — Baker–Venkataraman rearrangement primary placement
+#### POLAR.07.03.003 — Benzilic acid rearrangement
 
-#### POLAR.07.03.004 — Benzilic acid rearrangement acyl-migration view
+#### POLAR.07.03.004 — Brook rearrangement
 
-#### POLAR.07.03.005 — Brook rearrangement
+#### POLAR.07.03.005 — Smiles rearrangement
 
-#### POLAR.07.03.006 — Anionic oxy-Cope acyl-migration tag
+#### POLAR.07.03.006 — Truce–Smiles rearrangement
 
-#### POLAR.07.03.007 — Smiles rearrangement
+#### POLAR.07.03.007 — Chapman rearrangement
 
-#### POLAR.07.03.008 — Truce–Smiles rearrangement
+#### POLAR.07.03.008 — Mumm rearrangement
 
-#### POLAR.07.03.009 — Chapman rearrangement
+#### POLAR.07.03.009 — Acyl transfer O-to-N migration
 
-#### POLAR.07.03.010 — Mumm rearrangement
+#### POLAR.07.03.010 — Silyl O-to-C migration
 
-#### POLAR.07.03.011 — Acyl transfer O-to-N migration
-
-#### POLAR.07.03.012 — Silyl O-to-C migration
-
-### POLAR.07.04 — Nitrogen-centered / heteroatom migration
+### POLAR.07.04 — Nitrogen-centered and heteroatom-to-carbon migration
 
 #### POLAR.07.04.001 — Beckmann rearrangement
 
@@ -1738,209 +1670,161 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.07.04.005 — Schmidt rearrangement
 
-#### POLAR.07.04.006 — Baeyer–Villiger rearrangement migration step
+#### POLAR.07.04.006 — Neber rearrangement
 
-#### POLAR.07.04.007 — Neber rearrangement
+#### POLAR.07.04.007 — Stieglitz rearrangement
 
-#### POLAR.07.04.008 — Stieglitz rearrangement
+#### POLAR.07.04.008 — Wolff rearrangement precursor conversion
 
-#### POLAR.07.04.009 — Wolff rearrangement polar precursor step
+#### POLAR.07.04.009 — Aza-Baeyer–Villiger rearrangement
 
-#### POLAR.07.04.010 — Aza-Baeyer–Villiger rearrangement
+#### POLAR.07.04.010 — Boulton–Katritzky rearrangement
 
-#### POLAR.07.04.011 — Boulton–Katritzky rearrangement
+#### POLAR.07.04.011 — Dimroth rearrangement
 
-#### POLAR.07.04.012 — Dimroth rearrangement
+#### POLAR.07.04.012 — Heteroatom-to-carbon migration
 
-#### POLAR.07.04.013 — Heteroatom-to-carbon migration
+### POLAR.07.05 — Ring expansion and contraction
 
-### POLAR.07.05 — Anionic rearrangement
+#### POLAR.07.05.001 — Demjanov rearrangement
 
-#### POLAR.07.05.001 — Favorskii rearrangement
+#### POLAR.07.05.002 — Tiffeneau–Demjanov rearrangement
 
-#### POLAR.07.05.002 — Payne rearrangement
+#### POLAR.07.05.003 — Cyclobutanone ring contraction
 
-#### POLAR.07.05.003 — Anionic epoxide rearrangement
+#### POLAR.07.05.004 — Azetidine ring expansion
 
-#### POLAR.07.05.004 — Anionic ammonium ylide shift
+#### POLAR.07.05.005 — Epoxide ring expansion
 
-#### POLAR.07.05.005 — Wittig rearrangement
+### POLAR.07.06 — Fragmentation rearrangement
 
-#### POLAR.07.05.006 — [1,2]-Wittig rearrangement
+#### POLAR.07.06.001 — Wharton rearrangement
 
-#### POLAR.07.05.007 — [2,3]-Wittig rearrangement
+#### POLAR.07.06.002 — Ramberg–Bäcklund fragmentation
 
-#### POLAR.07.05.008 — Anionic silyl migration
+#### POLAR.07.06.003 — Haller–Bauer cleavage
 
-#### POLAR.07.05.009 — α-Halosulfone ring-contraction rearrangement
+#### POLAR.07.06.004 — Cieplak-type fragmentation
 
-#### POLAR.07.05.010 — Anionic Fries rearrangement
+#### POLAR.07.06.005 — α-Hydroxy ketone fragmentation
 
-#### POLAR.07.05.011 — Anionic oxy-Cope rearrangement
+#### POLAR.07.06.006 — β-Amino alcohol fragmentation
 
-#### POLAR.07.05.012 — Base-promoted acyl migration
+#### POLAR.07.06.007 — Oxyanion-accelerated fragmentation
 
-### POLAR.07.06 — Ring expansion / contraction
+#### POLAR.07.06.008 — Aza-Grob fragmentation
 
-#### POLAR.07.06.001 — Demjanov rearrangement
+### POLAR.07.07 — Neighboring-group-participation rearrangement
 
-#### POLAR.07.06.002 — Tiffeneau–Demjanov rearrangement
+#### POLAR.07.07.001 — Anchimeric-assistance rearrangement
 
-#### POLAR.07.06.003 — Beckmann ring expansion
+#### POLAR.07.07.002 — Phenonium-ion rearrangement
 
-#### POLAR.07.06.004 — Favorskii ring contraction
+#### POLAR.07.07.003 — Acyloxonium rearrangement
 
-#### POLAR.07.06.005 — Semipinacol ring expansion
+#### POLAR.07.07.004 — Episulfonium rearrangement
 
-#### POLAR.07.06.006 — Baeyer–Villiger ring expansion
+#### POLAR.07.07.005 — Epoxonium rearrangement
 
-#### POLAR.07.06.007 — Dowd–Beckwith polar analogue
+#### POLAR.07.07.006 — Iodonium-promoted rearrangement
 
-#### POLAR.07.06.008 — Cyclobutanone ring contraction
+#### POLAR.07.07.007 — Thionium-promoted rearrangement
 
-#### POLAR.07.06.009 — Azetidine ring expansion
+#### POLAR.07.07.008 — Neighboring acetal rearrangement
 
-#### POLAR.07.06.010 — Epoxide ring expansion
+### POLAR.07.08 — Oxonium, iminium, acetal, and carbohydrate rearrangement
 
-### POLAR.07.07 — Fragmentation rearrangement
+#### POLAR.07.08.001 — Ferrier rearrangement
 
-#### POLAR.07.07.001 — Grob fragmentation rearrangement
+#### POLAR.07.08.002 — Allylic imidate C-to-N migration
 
-#### POLAR.07.07.002 — Eschenmoser fragmentation rearrangement
+#### POLAR.07.08.003 — Amadori rearrangement
 
-#### POLAR.07.07.003 — Wharton rearrangement
+#### POLAR.07.08.004 — Heyns rearrangement
 
-#### POLAR.07.07.004 — Ramberg–Bäcklund fragmentation
+#### POLAR.07.08.005 — Lobry de Bruyn–Alberda van Ekenstein rearrangement
 
-#### POLAR.07.07.005 — Haller–Bauer cleavage
+#### POLAR.07.08.006 — Anomerization through oxocarbenium ion
 
-#### POLAR.07.07.006 — Cieplak-type fragmentation
+#### POLAR.07.08.007 — Glycal rearrangement
 
-#### POLAR.07.07.007 — α-Hydroxy ketone fragmentation
+#### POLAR.07.08.008 — Iminium-enamine rearrangement
 
-#### POLAR.07.07.008 — β-Amino alcohol fragmentation
+#### POLAR.07.08.009 — Aza-Cope–Mannich sequence
 
-#### POLAR.07.07.009 — Oxyanion-accelerated fragmentation
+#### POLAR.07.08.010 — N-Acyliminium rearrangement
 
-#### POLAR.07.07.010 — Aza-Grob fragmentation
+#### POLAR.07.08.011 — Glycal oxocarbenium rearrangement
 
-### POLAR.07.08 — Neighboring-group-participation rearrangement
+#### POLAR.07.08.012 — Anomeric rearrangement
 
-#### POLAR.07.08.001 — Anchimeric-assistance rearrangement
+#### POLAR.07.08.013 — Glycosyl orthoester rearrangement
 
-#### POLAR.07.08.002 — Phenonium-ion rearrangement
+#### POLAR.07.08.014 — Acetal migration
 
-#### POLAR.07.08.003 — Acyloxonium rearrangement
+#### POLAR.07.08.015 — Benzylidene acetal rearrangement
 
-#### POLAR.07.08.004 — Episulfonium rearrangement
+#### POLAR.07.08.016 — Acyl migration in carbohydrates
 
-#### POLAR.07.08.005 — Epoxonium rearrangement
+#### POLAR.07.08.017 — Silyl migration in carbohydrates
 
-#### POLAR.07.08.006 — Iodonium-promoted rearrangement
+#### POLAR.07.08.018 — Glycal allylic rearrangement
 
-#### POLAR.07.08.007 — Thionium-promoted rearrangement
+### POLAR.07.09 — Sulfur, selenium, and phosphorus rearrangement
 
-#### POLAR.07.08.008 — Neighboring acetal rearrangement
+#### POLAR.07.09.001 — Pummerer rearrangement
 
-### POLAR.07.09 — Oxonium / iminium / acetal rearrangement
+#### POLAR.07.09.002 — Mislow–Evans rearrangement
 
-#### POLAR.07.09.001 — Ferrier rearrangement
+#### POLAR.07.09.003 — [2,3]-Sigmatropic sulfoxide rearrangement
 
-#### POLAR.07.09.002 — Overman-like imidate rearrangement polar variant
+#### POLAR.07.09.004 — Selenoxide rearrangement
 
-#### POLAR.07.09.003 — Amadori rearrangement
+#### POLAR.07.09.005 — Phosphorane rearrangement
 
-#### POLAR.07.09.004 — Heyns rearrangement
+#### POLAR.07.09.006 — Arbuzov rearrangement
 
-#### POLAR.07.09.005 — Lobry de Bruyn–Alberda van Ekenstein rearrangement
+#### POLAR.07.09.007 — Perkow rearrangement
 
-#### POLAR.07.09.006 — Anomerization through oxocarbenium ion
+#### POLAR.07.09.008 — Sulfenate–sulfoxide rearrangement
 
-#### POLAR.07.09.007 — Glycal rearrangement
+### POLAR.07.10 — Onium-ylide rearrangement
 
-#### POLAR.07.09.008 — Iminium-enamine rearrangement
+#### POLAR.07.10.001 — Stevens rearrangement of ammonium ylides
 
-#### POLAR.07.09.009 — Aza-Cope–Mannich polar sequence
+#### POLAR.07.10.002 — Stevens rearrangement of sulfonium ylides
 
-#### POLAR.07.09.010 — N-Acyliminium rearrangement
+#### POLAR.07.10.003 — Sulfur-ylide allylic rearrangement
 
-### POLAR.07.10 — Sulfur / selenium / phosphorus rearrangement
+#### POLAR.07.10.004 — Sommelet–Hauser rearrangement of ammonium ylides
 
-#### POLAR.07.10.001 — Pummerer rearrangement
+#### POLAR.07.10.005 — [2,3]-Sulfonium ylide rearrangement
 
-#### POLAR.07.10.002 — Mislow–Evans rearrangement
+#### POLAR.07.10.006 — [1,2]-Sulfonium ylide rearrangement
 
-#### POLAR.07.10.003 — [2,3]-Sigmatropic sulfoxide rearrangement polar tag
+#### POLAR.07.10.007 — [2,3]-Oxonium ylide rearrangement
 
-#### POLAR.07.10.004 — Selenoxide rearrangement
+#### POLAR.07.10.008 — [1,2]-Oxonium ylide rearrangement
 
-#### POLAR.07.10.005 — Phosphorane rearrangement
+### POLAR.07.11 — Acid/base-induced skeletal rearrangement
 
-#### POLAR.07.10.006 — Arbuzov rearrangement
+#### POLAR.07.11.001 — Retropinacol rearrangement
 
-#### POLAR.07.10.007 — Perkow rearrangement
+#### POLAR.07.11.002 — Allylic alcohol rearrangement under acid
 
-#### POLAR.07.10.008 — Atherton–Todd rearrangement
+#### POLAR.07.11.003 — Tertiary alcohol skeletal rearrangement
 
-#### POLAR.07.10.009 — Sulfenate–sulfoxide rearrangement
+#### POLAR.07.11.004 — Terpene skeletal rearrangement
 
-### POLAR.07.11 — Onium ylide rearrangement
+#### POLAR.07.11.005 — Steroidal cation rearrangement
 
-#### POLAR.07.11.001 — Stevens rearrangement of ammonium ylides
+#### POLAR.07.11.006 — Cationic ring-contraction rearrangement
 
-#### POLAR.07.11.002 — Stevens rearrangement of sulfonium ylides
+#### POLAR.07.11.007 — Cationic ring-expansion rearrangement
 
-#### POLAR.07.11.003 — Doyle–Kirmse rearrangement polar tag
+#### POLAR.07.11.008 — Oxaspiropentane rearrangement
 
-#### POLAR.07.11.004 — Sommelet–Hauser rearrangement of ammonium ylides
-
-#### POLAR.07.11.005 — [2,3]-Sulfonium ylide rearrangement
-
-#### POLAR.07.11.006 — [1,2]-Sulfonium ylide rearrangement
-
-#### POLAR.07.11.007 — [2,3]-Oxonium ylide rearrangement
-
-#### POLAR.07.11.008 — [1,2]-Oxonium ylide rearrangement
-
-### POLAR.07.12 — Acetal / anomeric / carbohydrate rearrangement
-
-#### POLAR.07.12.001 — Glycal oxocarbenium rearrangement
-
-#### POLAR.07.12.002 — Anomeric rearrangement
-
-#### POLAR.07.12.003 — Glycosyl orthoester rearrangement
-
-#### POLAR.07.12.004 — Acetal migration
-
-#### POLAR.07.12.005 — Benzylidene acetal rearrangement
-
-#### POLAR.07.12.006 — Acyl migration in carbohydrates
-
-#### POLAR.07.12.007 — Silyl migration in carbohydrates
-
-#### POLAR.07.12.008 — Glycal allylic rearrangement
-
-### POLAR.07.13 — Acid/base-induced skeletal rearrangement
-
-#### POLAR.07.13.001 — Retropinacol rearrangement
-
-#### POLAR.07.13.002 — Epoxide Meinwald rearrangement
-
-#### POLAR.07.13.003 — Allylic alcohol rearrangement under acid
-
-#### POLAR.07.13.004 — Tertiary alcohol skeletal rearrangement
-
-#### POLAR.07.13.005 — Terpene skeletal rearrangement
-
-#### POLAR.07.13.006 — Steroidal cation rearrangement
-
-#### POLAR.07.13.007 — Cationic ring-contraction rearrangement
-
-#### POLAR.07.13.008 — Cationic ring-expansion rearrangement
-
-#### POLAR.07.13.009 — Oxaspiropentane rearrangement
-
-## POLAR.08 — Composite polar transformation
+## POLAR.08 — Composite polar transformations
 
 ### POLAR.08.01 — Condensation sequence
 
@@ -1950,29 +1834,27 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.08.01.003 — Benzoin condensation
 
-#### POLAR.08.01.004 — Acyloin condensation polar workup sequence
+#### POLAR.08.01.004 — Acyloin-forming reductive coupling sequence
 
 #### POLAR.08.01.005 — Darzens reaction
 
-#### POLAR.08.01.006 — Horner–Wadsworth condensation sequence
+#### POLAR.08.01.006 — Japp–Klingemann reaction
 
-#### POLAR.08.01.007 — Japp–Klingemann reaction
+#### POLAR.08.01.007 — β-Dicarbonyl aldehyde condensation sequence
 
-#### POLAR.08.01.008 — β-Dicarbonyl aldehyde condensation sequence
+#### POLAR.08.01.008 — Cinnamic-acid-forming condensation sequence
 
-#### POLAR.08.01.009 — Cinnamic-acid-forming condensation sequence
+#### POLAR.08.01.009 — Alkylidene active-methylene condensation sequence
 
-#### POLAR.08.01.010 — Alkylidene active-methylene condensation sequence
+#### POLAR.08.01.010 — Doebner net condensation
 
-#### POLAR.08.01.011 — Doebner net condensation
+#### POLAR.08.01.011 — Pictet–Spengler net condensation
 
-#### POLAR.08.01.012 — Pictet–Spengler net condensation
+#### POLAR.08.01.012 — Pyrrole-forming dicarbonyl condensation sequence
 
-#### POLAR.08.01.013 — Pyrrole-forming dicarbonyl condensation sequence
+#### POLAR.08.01.013 — Dihydropyrimidinone condensation sequence
 
-#### POLAR.08.01.014 — Dihydropyrimidinone condensation sequence
-
-### POLAR.08.02 — Protection / deprotection sequence
+### POLAR.08.02 — Protection and deprotection sequence
 
 #### POLAR.08.02.001 — Boc protection
 
@@ -1984,29 +1866,27 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.08.02.005 — Fmoc protection
 
-#### POLAR.08.02.006 — Fmoc carbonate protection
+#### POLAR.08.02.006 — Silyl ether protection
 
-#### POLAR.08.02.007 — Silyl ether protection
+#### POLAR.08.02.007 — Silyl ether deprotection
 
-#### POLAR.08.02.008 — Silyl ether deprotection
+#### POLAR.08.02.008 — Acetal protection
 
-#### POLAR.08.02.009 — Acetal protection
+#### POLAR.08.02.009 — Acetal deprotection
 
-#### POLAR.08.02.010 — Acetal deprotection
+#### POLAR.08.02.010 — Ketal protection
 
-#### POLAR.08.02.011 — Ketal protection
+#### POLAR.08.02.011 — Ketal deprotection
 
-#### POLAR.08.02.012 — Ketal deprotection
+#### POLAR.08.02.012 — Thioacetal protection
 
-#### POLAR.08.02.013 — Thioacetal protection
+#### POLAR.08.02.013 — Thioacetal deprotection
 
-#### POLAR.08.02.014 — Thioacetal deprotection
+#### POLAR.08.02.014 — Benzyl protection
 
-#### POLAR.08.02.015 — Benzyl protection
+#### POLAR.08.02.015 — Alloc deprotection
 
-#### POLAR.08.02.016 — Alloc deprotection
-
-### POLAR.08.03 — Functional-group activation / derivatization
+### POLAR.08.03 — Functional-group activation and derivatization
 
 #### POLAR.08.03.001 — Tosylation activation
 
@@ -2066,7 +1946,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.08.04.014 — Hantzsch thiazole synthesis
 
-### POLAR.08.05 — Polar cascade / tandem sequence
+### POLAR.08.05 — Polar cascade and tandem sequence
 
 #### POLAR.08.05.001 — Michael–aldol sequence
 
@@ -2092,7 +1972,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.08.05.012 — Enamine–iminium cascade
 
-### POLAR.08.06 — Ionic polymerization / chain-growth sequence
+### POLAR.08.06 — Polar polymerization and step-growth sequence
 
 #### POLAR.08.06.001 — Cationic alkene polymerization
 
@@ -2136,7 +2016,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.08.07.010 — Ketone-to-alkene conversion
 
-### POLAR.08.08 — Polar olefination / C=C-forming sequence
+### POLAR.08.08 — Polar olefination and C=C-forming sequence
 
 #### POLAR.08.08.001 — Wittig reaction
 
@@ -2158,7 +2038,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.08.08.010 — Ohira–Bestmann homologation
 
-#### POLAR.08.08.011 — Tebbe-type polar carbonyl olefination tag
+#### POLAR.08.08.011 — Tebbe-type carbonyl olefination
 
 #### POLAR.08.08.012 — Lombardo methylenation
 
@@ -2192,7 +2072,7 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.08.09.014 — Combes quinoline synthesis
 
-### POLAR.08.10 — Carbohydrate / nucleotide conjugation sequence
+### POLAR.08.10 — Carbohydrate and nucleotide conjugation sequence
 
 #### POLAR.08.10.001 — Glycoside formation sequence
 
@@ -2206,17 +2086,17 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 
 #### POLAR.08.10.006 — Nucleotide deprotection sequence
 
-### POLAR.08.11 — Peptide / bioconjugation polar sequence
+### POLAR.08.11 — Peptide and bioconjugation polar sequence
 
 #### POLAR.08.11.001 — Solid-phase peptide coupling cycle
 
-#### POLAR.08.11.002 — Native chemical ligation polar step
+#### POLAR.08.11.002 — Native chemical ligation step
 
 #### POLAR.08.11.003 — Oxime bioconjugation sequence
 
 #### POLAR.08.11.004 — Hydrazone bioconjugation sequence
 
-### POLAR.08.12 — Dearomatization / rearomatization polar sequence
+### POLAR.08.12 — Dearomatization and rearomatization polar sequence
 
 #### POLAR.08.12.001 — Phenolic oxidative dearomatization sequence
 
@@ -2225,4 +2105,3 @@ Generated from `data/raw/polar_hierarchy.md`; `POLAR.99` placeholder classes are
 #### POLAR.08.12.003 — Dearomatizing spirocyclization sequence
 
 #### POLAR.08.12.004 — Rearomatizing elimination sequence
-
