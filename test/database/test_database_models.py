@@ -18,6 +18,7 @@ def test_create_tables():
 
             expected_tables = {
                 "dataset_release",
+                "schema_migration",
                 "reaction",
                 "molecule",
                 "reaction_component",
@@ -28,6 +29,7 @@ def test_create_tables():
                 "epd",
                 "epd_arrow_type",
                 "epd_arrow",
+                "mechanism_context",
                 "sqlite_sequence",
             }
             assert expected_tables.issubset(tables)
@@ -35,11 +37,26 @@ def test_create_tables():
             cursor.execute(
                 "SELECT version, release_date, license FROM dataset_release;"
             )
-            assert tuple(cursor.fetchone()) == ("v0.1.0", "2026-07-07", "CC BY 4.0")
+            assert tuple(cursor.fetchone()) == ("v0.2.0", "2026-07-15", "CC BY 4.0")
 
             cursor.execute("PRAGMA table_info(epd);")
             epd_columns = {row[1] for row in cursor.fetchall()}
             assert {"representation_mode", "representation_json"}.issubset(epd_columns)
+
+            cursor.execute("PRAGMA table_info(reaction);")
+            reaction_columns = {row[1] for row in cursor.fetchall()}
+            assert "canonical_aam_key" in reaction_columns
+
+            cursor.execute("PRAGMA table_info(mechanism_context);")
+            context_columns = {row[1] for row in cursor.fetchall()}
+            assert {
+                "construction_version",
+                "context_hash",
+                "anchor_graph",
+                "graph_format",
+                "events_json",
+                "diagnostics_json",
+            }.issubset(context_columns)
 
 
 def test_init_vocabulary():

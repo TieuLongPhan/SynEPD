@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from synepd.precheck.epd_verification import verify_records
+from synepd.precheck.epd_verification import _is_issue, verify_records
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
@@ -25,3 +25,11 @@ def test_jones_open_shell_endpoint_uses_documented_surrogate():
         "23": 3,
         "26": 3,
     }
+    assert not _is_issue(result)
+
+
+def test_only_mismatches_and_errors_are_strict_issues():
+    assert not _is_issue({"status": "pass"})
+    assert not _is_issue({"status": "surrogate_pass"})
+    assert _is_issue({"status": "mismatch"})
+    assert _is_issue({"status": "error"})

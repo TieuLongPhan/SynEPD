@@ -1,8 +1,7 @@
 import os
 import json
 import logging
-import zlib
-import pickle
+import hmac
 import time
 import uuid
 import sqlite3 as _sqlite3
@@ -14,6 +13,7 @@ from typing import Any, Dict, List, Optional
 
 import networkx as nx
 from fastapi import FastAPI, HTTPException, Query, Request, Response, Header
+from fastapi.routing import APIRoute
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,6 +25,17 @@ from synepd.core.query import (
     _read_bytes,
     query_epd_by_reaction,
     extract_graphs,
+)
+from synepd.core.graph_codec import decode_graph
+from synepd.core.mechanism import (
+    MECHANISM_CONTEXT_VERSION,
+    build_mechanistic_center,
+    serialize_mechanism_context,
+)
+from synepd.web.operations import (
+    FixedWindowRateLimiter,
+    RateLimitMiddleware,
+    RequestSizeLimitMiddleware,
 )
 
 # --- Knowledge Graph router ---
@@ -39,21 +50,56 @@ async def lifespan(app: FastAPI):
         import threading
 
         threading.Thread(target=build_sphinx_docs, daemon=True).start()
-    try:
-        from synepd.web.knowledge_graph import _ensure_rfp_matrix, _ensure_rxn_graph
-
-        _ensure_rfp_matrix()
-        _ensure_rxn_graph()
-    except Exception:
-        pass
+    # Knowledge-graph and fingerprint indexes remain lazy. Prewarming both on
+    # startup duplicates large process-local structures and can exceed memory
+    # limits before the first request reaches the service.
     yield
 
 
 app = FastAPI(
     title="SynEPD Mechanistic Web Service",
     description="REST backend and interactive explorer for reaction EPD mechanisms",
-    version="1.0.0",
+    version="0.2.0",
     lifespan=lifespan,
+)
+
+
+def _positive_env_int(name: str, default: int) -> int:
+    try:
+        return max(1, int(os.environ.get(name, default)))
+    except (TypeError, ValueError):
+        return default
+
+
+_PUBLIC_RATE_LIMITER = FixedWindowRateLimiter(
+    requests=_positive_env_int("SYNEPD_RATE_LIMIT", 60),
+    window_seconds=_positive_env_int("SYNEPD_RATE_WINDOW_SECONDS", 60),
+)
+_RATE_LIMITED_OPERATIONS = {
+    ("POST", "/api/query-epd"),
+    ("POST", "/api/check-balance"),
+    ("POST", "/api/submissions"),
+    ("GET", "/api/render/rdkit.svg"),
+    ("GET", "/api/kg/path"),
+    ("GET", "/api/kg/substructure-search"),
+}
+_BODY_LIMITED_PATHS = {
+    "/api/query-epd",
+    "/api/check-balance",
+    "/api/reactions/export-bulk",
+    "/api/submissions",
+}
+
+
+app.add_middleware(
+    RateLimitMiddleware,
+    limiter=_PUBLIC_RATE_LIMITER,
+    operations=_RATE_LIMITED_OPERATIONS,
+)
+app.add_middleware(
+    RequestSizeLimitMiddleware,
+    maximum_bytes=_positive_env_int("SYNEPD_MAX_REQUEST_BYTES", 1_000_000),
+    paths=_BODY_LIMITED_PATHS,
 )
 
 # Enable CORS
@@ -67,7 +113,8 @@ app.add_middleware(
 )
 
 
-app.include_router(kg_router)
+app.include_router(kg_router, prefix="/api")
+app.include_router(kg_router, prefix="/api/v1", tags=["v1"])
 
 
 def build_sphinx_docs():
@@ -169,6 +216,7 @@ def serialize_graph(graph: nx.Graph) -> dict:
                 "atom_map": _as_int(atom_map, _as_int(n)),
                 "hybridization": str(hybrid) if hybrid is not None else None,
                 "aromatic": bool(aromatic) if aromatic is not None else False,
+                "mechanistic_roles": list(data.get("mechanistic_roles", ())),
             }
         )
 
@@ -202,19 +250,15 @@ def serialize_graph(graph: nx.Graph) -> dict:
                 "order_r": order_r,
                 "order_p": order_p,
                 "status": status,
+                "mechanistic_roles": list(data.get("mechanistic_roles", ())),
             }
         )
 
     return {"nodes": nodes_list, "links": links_list}
 
 
-def _deserialize_graph(raw: bytes) -> nx.Graph:
-    decompressed = zlib.decompress(raw)
-    try:
-        data = json.loads(decompressed)
-        return nx.node_link_graph(data)
-    except (json.JSONDecodeError, UnicodeDecodeError, TypeError):
-        return pickle.loads(decompressed)  # legacy fallback
+def _deserialize_graph(raw: bytes, graph_format: str) -> nx.Graph:
+    return decode_graph(raw, graph_format)
 
 
 def _primary_taxon_sql(reaction_alias: str = "r") -> str:
@@ -828,7 +872,7 @@ def get_reaction_detail(reaction_id: int):
         conn.row_factory = _sqlite3.Row
         cur = conn.cursor()
         # Fetch reaction (try fetching upgraded columns first, fallback to legacy if not present)
-        sql_rxn = "SELECT id, case_id, canonical_rsmi, aam_key, name, balanced, reactant_atom_count, product_atom_count, formal_charge_delta, coords_json FROM reaction WHERE id = ?"
+        sql_rxn = "SELECT id, case_id, canonical_rsmi, aam_key, canonical_aam_key, name, balanced, reactant_atom_count, product_atom_count, formal_charge_delta, coords_json FROM reaction WHERE id = ?"
         try:
             cur = _execute_query(conn, is_pg, sql_rxn, (reaction_id,))
             rxn_row = cur.fetchone()
@@ -842,26 +886,35 @@ def get_reaction_detail(reaction_id: int):
         if not rxn_row:
             raise HTTPException(status_code=404, detail="Reaction not found")
 
-        rxn_data = {
-            "id": rxn_row[0],
-            "case_id": rxn_row[1],
-            "canonical_rsmi": rxn_row[2],
-            "aam_key": rxn_row[3],
-            "name": rxn_row[4],
-        }
-
         balanced_val = None
         reactant_atom_count = None
         product_atom_count = None
         formal_charge_delta = None
         coords_json = None
 
-        if not legacy:
-            balanced_val = rxn_row[5]
-            reactant_atom_count = rxn_row[6]
-            product_atom_count = rxn_row[7]
-            formal_charge_delta = rxn_row[8]
-            coords_json = rxn_row[9]
+        if legacy:
+            rxn_data = {
+                "id": rxn_row[0],
+                "case_id": rxn_row[1],
+                "canonical_rsmi": rxn_row[2],
+                "aam_key": rxn_row[3],
+                "canonical_aam_key": rxn_row[3],
+                "name": rxn_row[4],
+            }
+        else:
+            rxn_data = {
+                "id": rxn_row[0],
+                "case_id": rxn_row[1],
+                "canonical_rsmi": rxn_row[2],
+                "aam_key": rxn_row[3],
+                "canonical_aam_key": rxn_row[4],
+                "name": rxn_row[5],
+            }
+            balanced_val = rxn_row[6]
+            reactant_atom_count = rxn_row[7]
+            product_atom_count = rxn_row[8]
+            formal_charge_delta = rxn_row[9]
+            coords_json = rxn_row[10]
 
         rxn_data["reactant_atom_count"] = reactant_atom_count
         rxn_data["product_atom_count"] = product_atom_count
@@ -915,6 +968,45 @@ def get_reaction_detail(reaction_id: int):
                 conn.rollback()
         rxn_data["epd_representation"] = epd_representation
 
+        # New release databases materialize the EPD-aware center. Legacy
+        # databases remain readable and simply report no mechanism context.
+        mechanism_context = None
+        try:
+            cur = _execute_query(
+                conn,
+                is_pg,
+                """
+                SELECT construction_version, context_hash, anchor_graph,
+                       graph_format, events_json, diagnostics_json
+                FROM mechanism_context
+                WHERE reaction_id = ?
+                """,
+                (reaction_id,),
+            )
+            context_row = cur.fetchone()
+            if context_row:
+                (
+                    construction_version,
+                    context_hash,
+                    anchor_graph,
+                    graph_format,
+                    events_json,
+                    diagnostics_json,
+                ) = context_row
+                mechanism_context = {
+                    "construction_version": construction_version,
+                    "context_hash": context_hash,
+                    "anchor_graph": serialize_graph(
+                        _deserialize_graph(_read_bytes(anchor_graph), graph_format)
+                    ),
+                    "events": json.loads(events_json),
+                    "diagnostics": json.loads(diagnostics_json),
+                }
+        except Exception:
+            if is_pg:
+                conn.rollback()
+        rxn_data["mechanism_context"] = mechanism_context
+
         # Fetch ITS graph
         sql_its = "SELECT graph_data, graph_format FROM its WHERE reaction_id = ?"
         cur = _execute_query(conn, is_pg, sql_its, (reaction_id,))
@@ -924,7 +1016,7 @@ def get_reaction_detail(reaction_id: int):
             graph_data, graph_format = its_row
             try:
                 raw_bytes = _read_bytes(graph_data)
-                its_graph = _deserialize_graph(raw_bytes)
+                its_graph = _deserialize_graph(raw_bytes, graph_format)
                 its_json = serialize_graph(its_graph)
             except Exception as ex:
                 rxn_data["graph_error"] = str(ex)
@@ -962,6 +1054,7 @@ def export_reaction_json(reaction_id: int):
         "reaction_name": detail["name"],
         "canonical_smiles": detail["canonical_rsmi"],
         "atom_mapped_smiles": detail["aam_key"],
+        "canonical_atom_mapped_smiles": detail.get("canonical_aam_key"),
         "taxonomy_code": taxonomy_code,
         "epd_lw": [
             [
@@ -996,7 +1089,7 @@ def export_reactions_bulk(req: ExportBulkRequest):
 
         if req.template_ids:
             placeholders = ",".join(["?"] * len(req.template_ids))
-            sql = f"SELECT reaction_id FROM epd WHERE reaction_center_id IN ({placeholders})"
+            sql = "SELECT reaction_id FROM its " f"WHERE rc_id IN ({placeholders})"
             cur = _execute_query(conn, is_pg, sql, tuple(req.template_ids))
             for row in cur.fetchall():
                 all_reaction_ids.add(row[0])
@@ -1015,6 +1108,7 @@ def export_reactions_bulk(req: ExportBulkRequest):
                         "reaction_name": detail["name"],
                         "canonical_smiles": detail["canonical_rsmi"],
                         "atom_mapped_smiles": detail["aam_key"],
+                        "canonical_atom_mapped_smiles": detail.get("canonical_aam_key"),
                         "taxonomy_code": taxonomy_code,
                         "epd_lw": [
                             [
@@ -1074,12 +1168,12 @@ def query_epd(req: EPDQueryRequest):
         try:
             conn, is_pg = _get_connection(db_path)
             cur = conn.cursor()
-            sql_its = "SELECT graph_data FROM its WHERE reaction_id = ?"
+            sql_its = "SELECT graph_data, graph_format FROM its WHERE reaction_id = ?"
             cur = _execute_query(conn, is_pg, sql_its, (rxn_id,))
             its_row = cur.fetchone()
             if its_row:
                 raw_bytes = _read_bytes(its_row[0])
-                its_graph = _deserialize_graph(raw_bytes)
+                its_graph = _deserialize_graph(raw_bytes, its_row[1])
                 its_json = serialize_graph(its_graph)
 
             # Fetch taxonomy
@@ -1114,6 +1208,43 @@ def query_epd(req: EPDQueryRequest):
                 pass
 
     res["its_graph"] = its_json
+    if rxn_id:
+        try:
+            detail = get_reaction_detail(rxn_id)
+            res["mechanism_context"] = detail.get("mechanism_context")
+            res["canonical_aam_key"] = detail.get("canonical_aam_key")
+        except Exception:
+            res["mechanism_context"] = None
+    elif res.get("mapped_rsmi") and res.get("arrows"):
+        try:
+            epd = [
+                [
+                    arrow["arrow_type_code"],
+                    arrow["source_atoms"],
+                    arrow["target_atoms"],
+                ]
+                for arrow in res["arrows"]
+            ]
+            center = build_mechanistic_center(res["mapped_rsmi"], epd)
+            payload = serialize_mechanism_context(center)
+            res["mechanism_context"] = {
+                "construction_version": MECHANISM_CONTEXT_VERSION,
+                "context_hash": payload.context_hash,
+                "anchor_graph": serialize_graph(center.anchor_graph),
+                "events": json.loads(payload.events_json),
+                "diagnostics": json.loads(payload.diagnostics_json),
+            }
+            from synkit.Chem.Reaction.canon_rsmi import CanonRSMI
+
+            res["canonical_aam_key"] = (
+                CanonRSMI(backend="wl", wl_iterations=5)
+                .canonicalise(res["mapped_rsmi"])
+                .canonical_rsmi
+            )
+        except Exception:
+            res["mechanism_context"] = None
+    else:
+        res["mechanism_context"] = None
     res["rdkit_coords"] = compute_rdkit_coords(res.get("mapped_rsmi"))
     return res
 
@@ -1160,12 +1291,19 @@ def health_check():
     """Lightweight liveness probe."""
     db_path = get_db_path_or_url()
     try:
-        conn, _ = _get_connection(db_path)
-        conn.execute("SELECT 1").fetchone()
-        conn.close()
-        return {"status": "ok", "db": db_path}
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Database unavailable: {e}")
+        conn, is_pg = _get_connection(db_path)
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+        finally:
+            conn.close()
+        return {
+            "status": "ok",
+            "database_backend": "postgresql" if is_pg else "sqlite",
+        }
+    except Exception:
+        raise HTTPException(status_code=503, detail="Database unavailable")
 
 
 @app.get("/api/reactions/{reaction_id}/neighbors")
@@ -1658,7 +1796,12 @@ def list_submissions(
 ):
     """Return cached submissions for local review."""
     admin_token = os.environ.get("SYNEPD_ADMIN_TOKEN")
-    if admin_token and x_admin_token != admin_token:
+    if not admin_token:
+        raise HTTPException(
+            status_code=503,
+            detail="Submission administration is not configured",
+        )
+    if not x_admin_token or not hmac.compare_digest(x_admin_token, admin_token):
         raise HTTPException(status_code=403, detail="Forbidden: Invalid Admin Token")
     if limit < 1:
         limit = 50
@@ -1689,6 +1832,56 @@ def list_submissions(
         return {"total": total, "results": [dict(row) for row in rows]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+def _install_versioned_api_aliases() -> None:
+    """Expose the current stable contract under ``/api/v1``.
+
+    The unversioned paths remain as compatibility aliases for the existing UI
+    and downstream users during the v0.2 transition.
+    """
+    for route in tuple(app.routes):
+        if not isinstance(route, APIRoute):
+            continue
+        if not route.path.startswith("/api/") or route.path.startswith("/api/v1/"):
+            continue
+        app.add_api_route(
+            "/api/v1" + route.path[len("/api") :],
+            route.endpoint,
+            methods=sorted(route.methods or ()),
+            response_model=route.response_model,
+            status_code=route.status_code,
+            response_class=route.response_class,
+            tags=[*route.tags, "v1"],
+            summary=route.summary,
+            description=route.description,
+            response_description=route.response_description,
+            responses=route.responses,
+            deprecated=route.deprecated,
+            dependencies=route.dependencies,
+            include_in_schema=route.include_in_schema,
+            openapi_extra=route.openapi_extra,
+            name=f"v1_{route.name}",
+        )
+
+
+_install_versioned_api_aliases()
+
+
+def _prefer_static_api_routes() -> None:
+    """Ensure fixed paths win over sibling ``{parameter}`` routes."""
+    positions = [
+        index
+        for index, route in enumerate(app.router.routes)
+        if isinstance(route, APIRoute) and route.path.startswith("/api/")
+    ]
+    api_routes = [app.router.routes[index] for index in positions]
+    api_routes.sort(key=lambda route: route.path.count("{"))
+    for index, route in zip(positions, api_routes):
+        app.router.routes[index] = route
+
+
+_prefer_static_api_routes()
 
 
 # Fallback/Default redirect to index.html

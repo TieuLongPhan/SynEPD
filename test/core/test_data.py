@@ -1,7 +1,9 @@
 import os
+import hashlib
 import zipfile
 import unittest.mock as mock
 from pathlib import Path
+import pytest
 from synepd.core.data import (
     DEFAULT_DB_FILENAME,
     DEFAULT_ZENODO_RECORD_ID,
@@ -11,6 +13,7 @@ from synepd.core.data import (
     get_github_release_api_url,
     get_zenodo_api_url,
     get_zenodo_record_id,
+    _verify_checksum,
 )
 
 
@@ -121,3 +124,14 @@ def test_download_database_auto_falls_back_to_github(tmp_path):
             download_database(dest_path, source="auto", version="0.1.0")
 
     github.assert_called_once_with(dest_path, version="0.1.0")
+
+
+def test_verify_checksum_accepts_valid_digest_and_rejects_mismatch(tmp_path):
+    path = tmp_path / "artifact.sqlite"
+    path.write_bytes(b"trusted release bytes")
+    checksum = f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
+
+    _verify_checksum(path, checksum)
+
+    with pytest.raises(ValueError, match="checksum validation"):
+        _verify_checksum(path, "sha256:" + "0" * 64)

@@ -21,7 +21,7 @@ class HierarchyNode:
 
 
 @dataclass
-class SynEPDDatabase:
+class CaseIndex:
     """Indexed view of SynEPD cases."""
 
     cases: Tuple[Case, ...]
@@ -141,3 +141,7 @@ def infer_hierarchy(cases: Iterable[Case]) -> Dict[str, HierarchyNode]:
         )
         for code, data in grouped.items()
     }
+
+
+# Backward-compatible public name; new code should use ``CaseIndex``.
+SynEPDDatabase = CaseIndex

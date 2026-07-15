@@ -5,11 +5,13 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import networkx as nx
+import pytest
 import synepd.construct.build_release_db as build_mod
 
 from synepd.construct.build_release_db import (
     build_release_database,
     extract_reaction_name,
+    reaction_centers_are_isomorphic,
 )
 
 
@@ -37,7 +39,13 @@ def test_build_release_database_with_clean_records(monkeypatch):
     def fake_extract_graphs(*args, **kwargs):
         graph = nx.Graph()
         graph.add_node(1, element="C", charge=0, atom_map=1)
+        graph.add_node(2, element="O", charge=0, atom_map=2)
+        graph.add_edge(1, 2, order=(1, 1), standard_order=0)
         return graph, graph.copy(), "fake-wlhash"
+
+    class FakeEditor:
+        def apply(self, *args, **kwargs):
+            return SimpleNamespace(step_reports=(), matches_product=True)
 
     monkeypatch.setattr(build_mod, "Standardize", FakeStandardize)
     monkeypatch.setattr(build_mod, "CanonRSMI", FakeCanon)
@@ -45,6 +53,7 @@ def test_build_release_database_with_clean_records(monkeypatch):
     monkeypatch.setattr(build_mod, "check_atom_map_balance", ok_atom_map_balance)
     monkeypatch.setattr(build_mod, "check_single_h_completion", ok_h_completion)
     monkeypatch.setattr(build_mod, "extract_graphs", fake_extract_graphs)
+    monkeypatch.setattr(build_mod, "LWGEditor", FakeEditor)
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
@@ -65,7 +74,7 @@ def test_build_release_database_with_clean_records(monkeypatch):
                             "rsmi": "CCO>>CCO",
                             "epd": [["LP-/Sigma+", [1], [1, 2]]],
                             "epd_representation": {
-                                "mode": "closed_shell_surrogate",
+                                "mode": "exact",
                                 "limitation": "Fixture representation note.",
                             },
                         }
@@ -114,11 +123,15 @@ def test_build_release_database_with_clean_records(monkeypatch):
             encoding="utf-8",
         )
 
-        build_release_database(
+        report = build_release_database(
             json_path=json_path,
             hierarchy_path=hierarchy_path,
             db_path=db_path,
         )
+        assert report.input_count == 1
+        assert report.admitted_count == 1
+        assert report.excluded_count == 0
+        assert not report.enriched
 
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
@@ -144,13 +157,47 @@ def test_build_release_database_with_clean_records(monkeypatch):
 
         cursor.execute("SELECT representation_mode, representation_json FROM epd;")
         mode, representation_json = cursor.fetchone()
-        assert mode == "closed_shell_surrogate"
+        assert mode == "exact"
         assert json.loads(representation_json) == {
-            "mode": "closed_shell_surrogate",
+            "mode": "exact",
             "limitation": "Fixture representation note.",
+            "atom_map_namespace": "curated_aam_key",
         }
 
+        cursor.execute("SELECT DISTINCT graph_format FROM reaction_center;")
+        assert cursor.fetchall() == [("synepd.node-link-json.zlib.v1",)]
+        cursor.execute("SELECT DISTINCT graph_format FROM its;")
+        assert cursor.fetchall() == [("synepd.node-link-json.zlib.v1",)]
+
+        cursor.execute(
+            "SELECT construction_version, graph_format, context_hash, "
+            "events_json, diagnostics_json FROM mechanism_context;"
+        )
+        construction_version, graph_format, context_hash, events, diagnostics = (
+            cursor.fetchone()
+        )
+        assert construction_version == "synepd.mechanistic-center.v1"
+        assert graph_format == "synepd.node-link-json.zlib.v1"
+        assert len(context_hash) == 64
+        assert json.loads(events) == []
+        assert json.loads(diagnostics)["epd_atom_maps"] == [1, 2]
+
         conn.close()
+
+        original_database = db_path.read_bytes()
+
+        class FailingEditor:
+            def apply(self, *args, **kwargs):
+                return SimpleNamespace(step_reports=(), matches_product=False)
+
+        monkeypatch.setattr(build_mod, "LWGEditor", FailingEditor)
+        with pytest.raises(ValueError, match="Curated EPD does not verify"):
+            build_release_database(
+                json_path=json_path,
+                hierarchy_path=hierarchy_path,
+                db_path=db_path,
+            )
+        assert db_path.read_bytes() == original_database
 
 
 def test_extract_reaction_name():
@@ -181,3 +228,19 @@ def test_extract_reaction_name():
     )
     # Verify fallback behavior for short case IDs
     assert extract_reaction_name("simple_case") == "Simple case"
+
+
+def test_reaction_center_isomorphism_uses_chemical_attributes():
+    first = nx.Graph()
+    first.add_node(
+        1, element=("C", "C"), charge=(0, 1), lone_pairs=(0, 0), hcount=(3, 3)
+    )
+    second = nx.Graph()
+    second.add_node(
+        9, element=("N", "N"), charge=(0, 1), lone_pairs=(1, 0), hcount=(2, 2)
+    )
+
+    assert not reaction_centers_are_isomorphic(first, second)
+
+    second.nodes[9].update(first.nodes[1])
+    assert reaction_centers_are_isomorphic(first, second)

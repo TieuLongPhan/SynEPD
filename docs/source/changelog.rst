@@ -3,6 +3,29 @@ Changelog
 
 All notable changes to SynEPD are documented here.
 
+0.2.0 - 2026-07-15
+------------------
+
+* Rebuilt the offline release database with 1,915 reactions, 1,497
+  chemistry-aware reaction-center templates, 7,303 EPD arrows, and 1,915
+  materialized mechanism contexts.
+* Added context/transition/transient edge roles and product-verified,
+  ambiguity-aware mechanism projection.
+* Preserved curated atom mapping for EPD execution while storing canonical AAM
+  separately.
+* Replaced runtime graph pickles with compressed typed JSON and restricted
+  legacy decoding to the migration command.
+* Added transactional source-assisted migration, atomic builds, admission
+  reporting, download checksums, and a checksummed release manifest.
+* Hardened health/admin endpoints and repaired reaction-center bulk export.
+* Added stable ``/api/v1`` routes, bounded rate and request-body limits for
+  costly public operations, consistent role-bearing mechanism payloads, and
+  canonical AAM fields in reaction/export responses.
+* Added an explorer toggle between the full ITS and the EPD-aware mechanistic
+  center, with distinct context/transition styling and explicit ambiguity.
+* Added a typed read-only release repository, manifest verification command,
+  and CI gates for formatting, the full EPD corpus, and release integrity.
+
 0.1.0 - 2026-07-07
 ------------------
 

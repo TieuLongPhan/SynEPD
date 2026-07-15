@@ -1,6 +1,7 @@
 import json
 import re
 import gzip
+import networkx as nx
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -13,6 +14,25 @@ from synkit.Graph.Feature.wl_hash import WLHash
 HEADING_RE = re.compile(
     r"^#{1,4}\s+((?:POLAR\.)?\d{2}(?:\.\d{2})?(?:\.\d{3})?|POLAR)\s+[—–-]\s+(.+?)\s*$"
 )
+
+RC_NODE_MATCH = nx.algorithms.isomorphism.categorical_node_match(
+    ["element", "charge", "lone_pairs", "hcount"],
+    [None, None, None, None],
+)
+RC_EDGE_MATCH = nx.algorithms.isomorphism.categorical_edge_match(
+    ["order", "kekule_order", "standard_order"],
+    [None, None, None],
+)
+
+
+def reaction_centers_are_isomorphic(first: nx.Graph, second: nx.Graph) -> bool:
+    """Compare RCs using their chemically meaningful paired attributes."""
+    return nx.is_isomorphic(
+        first,
+        second,
+        node_match=RC_NODE_MATCH,
+        edge_match=RC_EDGE_MATCH,
+    )
 
 
 def clean_taxon_name(name: str) -> str:

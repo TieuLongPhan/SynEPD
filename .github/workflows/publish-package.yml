@@ -44,6 +44,11 @@ jobs:
         run: |
           python -m twine check dist/*
 
+      - name: Verify release manifest
+        run: >-
+          python -m synepd.construct.release_manifest data/epdb.sqlite
+          --verify data/release-manifest.json
+
       - name: Show built artifacts
         run: |
           ls -lh dist/

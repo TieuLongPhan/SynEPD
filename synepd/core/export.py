@@ -2,10 +2,10 @@ import json
 from pathlib import Path
 from typing import Dict, Any
 
-from synepd.database.models import SynEPDDatabase
+from synepd.database.models import ReleaseDatabase
 
 
-def export_taxonomy_tree(db: SynEPDDatabase) -> Dict[str, Any]:
+def export_taxonomy_tree(db: ReleaseDatabase) -> Dict[str, Any]:
     """Export the entire taxonomy and attached reactions as a nested JSON tree."""
     cursor = db.connection.cursor()
 
@@ -60,7 +60,7 @@ def export_taxonomy_tree(db: SynEPDDatabase) -> Dict[str, Any]:
 
 
 def write_export_to_file(db_path: Path, output_path: Path) -> None:
-    db = SynEPDDatabase(db_path)
+    db = ReleaseDatabase(db_path)
     tree = export_taxonomy_tree(db)
     db.close()
 

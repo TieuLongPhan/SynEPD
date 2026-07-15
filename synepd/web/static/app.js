@@ -1,5 +1,6 @@
 // Global functions for SynEPD explorer application logic
 const API_BASE = window.SYNEPD_API_BASE || window.location.origin;
+const API_V1 = `${API_BASE}/api/v1`;
 let legendCollapsed = false;
 
 // JSME load callback
@@ -105,7 +106,7 @@ function searchFromSketcher() {
 
 async function checkConnection() {
     try {
-        const res = await fetch(`${API_BASE}/api/health`);
+        const res = await fetch(`${API_V1}/health`);
         if (res.ok) {
             document.getElementById('db-badge').innerText = "Online";
             document.getElementById('db-badge').style.borderColor = "var(--accent-green)";
@@ -270,7 +271,7 @@ async function triggerSearch() {
     try {
         let res;
         if (val.includes(">>")) {
-            res = await fetch(`${API_BASE}/api/query-epd`, {
+            res = await fetch(`${API_V1}/query-epd`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ rsmi: val })
@@ -313,7 +314,7 @@ async function fetchMoreSearchResults() {
     const resultsContainer = document.getElementById('search-results');
     const limit = RESULTS_PER_PAGE;
     try {
-        const res = await fetch(`${API_BASE}/api/reactions/search?query=${encodeURIComponent(currentQuery)}&limit=${limit}&offset=${resultOffset}`);
+        const res = await fetch(`${API_V1}/reactions/search?query=${encodeURIComponent(currentQuery)}&limit=${limit}&offset=${resultOffset}`);
         const data = await res.json();
         
         const total = data.total;
@@ -393,7 +394,7 @@ function escapeHtml(value) {
 async function loadTaxonomyTree() {
     const container = document.getElementById('taxonomy-tree-container');
     try {
-        const res = await fetch(`${API_BASE}/api/taxonomy`);
+        const res = await fetch(`${API_V1}/taxonomy`);
         const data = await res.json();
         container.innerHTML = '';
         buildTreeNode(data.taxonomy, container);
@@ -435,7 +436,7 @@ async function loadTaxonReactions(node, nodeDiv, childrenDiv) {
     childrenDiv.appendChild(list);
 
     try {
-        const res = await fetch(`${API_BASE}/api/taxonomy/${encodeURIComponent(node.code)}/reactions?limit=50`);
+        const res = await fetch(`${API_V1}/taxonomy/${encodeURIComponent(node.code)}/reactions?limit=50`);
         const data = await res.json();
         list.innerHTML = '';
         (data.results || []).forEach(rxn => list.appendChild(makeTaxonomyReactionItem(rxn)));
@@ -549,9 +550,14 @@ function loadQueryEPDResult(data) {
         name: data.name || (data.case_id ? data.case_id : "Projected Query"),
         canonical_rsmi: data.canonical_rsmi || (data.mapped_rsmi ? data.mapped_rsmi.replace(/:\d+/g, '') : ''),
         aam_key: data.mapped_rsmi,
+        canonical_aam_key: data.canonical_aam_key || null,
         taxonomy: data.taxonomy || { code: "DYNAMIC", name: "Custom EPD Projection", level: 4 },
         arrows: data.arrows,
         its_graph: data.its_graph,
+        mechanism_context: data.mechanism_context || null,
+        mechanism_ambiguous: data.mechanism_ambiguous || false,
+        mechanism_candidate_count: data.mechanism_candidate_count || 0,
+        mechanism_candidates: data.mechanism_candidates || [],
         balanced_from_imbalanced: data.balanced_from_imbalanced || false,
         original_imbalanced_query: data.original_imbalanced_query || null
     };
@@ -567,7 +573,7 @@ async function loadReaction(rxnId) {
     reactionLoadAbort = new AbortController();
     showRightPanelSkeleton();
     try {
-        const res = await fetch(`${API_BASE}/api/reactions/${rxnId}`, {
+        const res = await fetch(`${API_V1}/reactions/${rxnId}`, {
             signal: reactionLoadAbort.signal,
         });
         if (!res.ok) throw new Error(`Reaction request failed: ${res.status}`);
@@ -609,7 +615,7 @@ function downloadReaction() {
     try {
         if (activeReaction.id) {
             const a = document.createElement('a');
-            a.href = `${API_BASE}/api/reactions/${activeReaction.id}/export`;
+            a.href = `${API_V1}/reactions/${activeReaction.id}/export`;
             a.download = `${activeReaction.case_id}_epd.json`;
             document.body.appendChild(a);
             a.click();
@@ -715,6 +721,14 @@ function renderReactionDetails() {
             <!-- SMILES change summary diff -->
             <div id="change-summary" style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.75rem;"></div>
 
+            <div class="section-collapsible" id="mechanism-context-section" style="display:none;">
+                <button class="section-toggle" onclick="toggleSection('mechanism-context-body')">Mechanistic Center ▾</button>
+                <div id="mechanism-context-body" class="section-toggle-body">
+                    <div id="mechanism-context-summary" style="font-size:0.78rem; color:var(--text-secondary); line-height:1.55;"></div>
+                    <button id="mechanism-view-toggle" class="download-btn" onclick="toggleMechanismView()" style="margin-top:0.65rem;">Show mechanistic center</button>
+                </div>
+            </div>
+
             <div class="section-collapsible" id="epd-steps-section">
                 <button class="section-toggle" onclick="toggleSection('epd-steps-body')">EPD Arrow Steps ▾</button>
                 <div id="epd-steps-body" class="section-toggle-body">
@@ -788,6 +802,7 @@ function renderReactionDetails() {
     markTransitionBonds(activeReaction.its_graph, activeReaction.arrows);
     const summary = computeChangeSummary(activeReaction.its_graph);
     renderChangeSummary(summary);
+    renderMechanismContextSummary();
 
     // Update steps list
     const stepsContainer = document.getElementById('detail-step-list');
@@ -846,6 +861,57 @@ function renderReactionDetails() {
     renderCDKDepict();
 }
 
+function renderMechanismContextSummary() {
+    const section = document.getElementById('mechanism-context-section');
+    const summary = document.getElementById('mechanism-context-summary');
+    const toggle = document.getElementById('mechanism-view-toggle');
+    if (!section || !summary || !toggle) return;
+
+    const context = activeReaction.mechanism_context;
+    if (!context) {
+        section.style.display = activeReaction.mechanism_ambiguous ? 'block' : 'none';
+        if (activeReaction.mechanism_ambiguous) {
+            summary.textContent = `${activeReaction.mechanism_candidate_count} product-verified mechanisms remain. No candidate was guessed; inspect the candidate payload through the API.`;
+            toggle.style.display = 'none';
+        }
+        return;
+    }
+
+    section.style.display = 'block';
+    toggle.style.display = 'inline-block';
+    const diagnostics = context.diagnostics || {};
+    const nodeRoles = Object.values(diagnostics.node_roles || {}).flat();
+    const edgeRoles = Object.values(diagnostics.edge_roles || {}).flat();
+    const count = (values, role) => values.filter(value => value === role).length;
+    const eventCount = (context.events || []).length;
+    summary.textContent = [
+        `${count(nodeRoles, 'net_center')} net-center atoms`,
+        `${count(nodeRoles, 'epd_context')} EPD-context atoms`,
+        `${count(edgeRoles, 'net_change')} net-change edges`,
+        `${count(edgeRoles, 'transition')} transition edges`,
+        `${count(edgeRoles, 'transient_only')} transient-only edges`,
+        `${eventCount} ordered edit events`,
+    ].join(' · ');
+    toggle.textContent = activeReaction._showMechanismContext
+        ? 'Show full ITS'
+        : 'Show mechanistic center';
+}
+
+function toggleMechanismView() {
+    const anchor = activeReaction?.mechanism_context?.anchor_graph;
+    if (!anchor) return;
+    if (!activeReaction._endpointItsGraph) {
+        activeReaction._endpointItsGraph = activeReaction.its_graph;
+    }
+    activeReaction._showMechanismContext = !activeReaction._showMechanismContext;
+    activeReaction.its_graph = activeReaction._showMechanismContext
+        ? anchor
+        : activeReaction._endpointItsGraph;
+    renderMechanismContextSummary();
+    markTransitionBonds(activeReaction.its_graph, activeReaction.arrows);
+    drawGraph();
+}
+
 function toggleSection(bodyId) {
     const body = document.getElementById(bodyId);
     if (!body) return;
@@ -873,7 +939,7 @@ function toggleLegend() {
 let _cdkGen = 0; // generation counter to drop stale onerror callbacks
 
 function rdkitDepictUrl(smiles, kind = 'auto') {
-    return `${API_BASE}/api/render/rdkit.svg?smi=${encodeURIComponent(smiles)}&kind=${encodeURIComponent(kind)}`;
+    return `${API_V1}/render/rdkit.svg?smi=${encodeURIComponent(smiles)}&kind=${encodeURIComponent(kind)}`;
 }
 
 function renderCDKDepict() {
@@ -1003,7 +1069,7 @@ function goHome() {
 
 async function loadRandomReaction() {
     try {
-        const res = await fetch(`${API_BASE}/api/reactions/random`);
+        const res = await fetch(`${API_V1}/reactions/random`);
         const data = await res.json();
         if (data.reaction_id) {
             loadReaction(data.reaction_id);
@@ -1018,7 +1084,7 @@ async function loadRandomReaction() {
 // Arrow types vocab cache (FE-03)
 async function fetchArrowTypes() {
     try {
-        const res = await fetch(`${API_BASE}/api/arrow-types`);
+        const res = await fetch(`${API_V1}/arrow-types`);
         const data = await res.json();
         arrowTypeVocab = Object.fromEntries(data.map(t => [t.code, t]));
     } catch (e) {
@@ -1029,7 +1095,7 @@ async function fetchArrowTypes() {
 // Database stats for dashboard (FE-05)
 async function fetchStats() {
     try {
-        const res = await fetch(`${API_BASE}/api/stats`);
+        const res = await fetch(`${API_V1}/stats`);
         const data = await res.json();
         const insightsSec = document.getElementById('db-insights-section');
         if (insightsSec) insightsSec.style.display = 'block';
@@ -1609,7 +1675,7 @@ function toggleTheme() {
 // Similar reactions loading (FE-01)
 async function loadNeighbors(reactionId) {
     try {
-        const res = await fetch(`${API_BASE}/api/reactions/${reactionId}/neighbors?limit=6`);
+        const res = await fetch(`${API_V1}/reactions/${reactionId}/neighbors?limit=6`);
         const data = await res.json();
         const container = document.getElementById('neighbors-list');
         if (!container) return;
@@ -1667,7 +1733,7 @@ async function fetchDbInfo() {
         if (el) el.innerText = '—';
     });
     try {
-        const res = await fetch(`${API_BASE}/api/db-info`);
+        const res = await fetch(`${API_V1}/db-info`);
         const data = await res.json();
         const setText = (id, text) => {
             const el = document.getElementById(id);
@@ -1773,7 +1839,7 @@ function onSubmitRxnInput() {
 
     submitBalanceDebounce = setTimeout(async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/check-balance`, {
+            const res = await fetch(`${API_V1}/check-balance`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({rsmi: val})
@@ -1833,7 +1899,7 @@ async function sendSubmission() {
         button.innerText = 'Submitting...';
     }
     try {
-        const res = await fetch(`${API_BASE}/api/submissions`, {
+        const res = await fetch(`${API_V1}/submissions`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({type: submitType, label, rsmi, epd_lw: epd, note})
@@ -1939,7 +2005,7 @@ if (searchInputEl) {
         balanceDebounce = setTimeout(async () => {
             balanceAbortController = new AbortController();
             try {
-                const res = await fetch(`${API_BASE}/api/check-balance`, {
+                const res = await fetch(`${API_V1}/check-balance`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({rsmi: val}),

@@ -25,6 +25,7 @@ from synkit.Graph.Mech.electron_accounting import atom_map_to_node
 from synkit.Graph.Mech.lwg_ops import normalize_lwg_graph
 
 DEFAULT_DATA_PATH = Path("data/polar.json")
+ISSUE_STATUSES = frozenset({"mismatch", "error"})
 
 
 def _verification_rsmi(record: dict[str, Any]) -> str:
@@ -188,6 +189,11 @@ def verify_records(records: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
     return [verify_record(record, editor) for record in records]
 
 
+def _is_issue(result: dict[str, Any]) -> bool:
+    """Return whether a verification result is a mismatch or execution error."""
+    return result.get("status") in ISSUE_STATUSES
+
+
 def _print_summary(results: list[dict[str, Any]], include_passes: bool) -> None:
     counts = {
         status: sum(result["status"] == status for result in results)
@@ -281,7 +287,7 @@ def main() -> int:
 
     if args.output:
         report_results = (
-            [result for result in results if result["status"] != "pass"]
+            [result for result in results if _is_issue(result)]
             if args.issues_only
             else results
         )
@@ -291,9 +297,7 @@ def main() -> int:
                 {
                     "data": str(args.data),
                     "verified_record_count": len(results),
-                    "issue_count": sum(
-                        result["status"] != "pass" for result in results
-                    ),
+                    "issue_count": sum(_is_issue(result) for result in results),
                     "results": report_results,
                 },
                 indent=2,
@@ -303,7 +307,7 @@ def main() -> int:
         )
         print(f"Wrote report: {args.output}")
 
-    has_issues = any(result["status"] != "pass" for result in results)
+    has_issues = any(_is_issue(result) for result in results)
     return 1 if args.strict and has_issues else 0
 
 

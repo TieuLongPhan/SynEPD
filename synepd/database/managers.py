@@ -1,12 +1,12 @@
-import zlib
-import pickle
+import json
 from typing import List, Dict, Any, Optional
 
-from synepd.database.models import SynEPDDatabase
+from synepd.core.graph_codec import decode_graph
+from synepd.database.models import ReleaseDatabase
 
 
 class ReactionManager:
-    def __init__(self, db: SynEPDDatabase):
+    def __init__(self, db: ReleaseDatabase):
         self.db = db
 
     def get_by_case_id(self, case_id: str) -> Optional[Dict[str, Any]]:
@@ -73,7 +73,7 @@ class ReactionManager:
 
 
 class MoleculeManager:
-    def __init__(self, db: SynEPDDatabase):
+    def __init__(self, db: ReleaseDatabase):
         self.db = db
 
     def get_by_smiles(self, canonical_smiles: str) -> Optional[Dict[str, Any]]:
@@ -111,7 +111,7 @@ class MoleculeManager:
 
 
 class TaxonomyManager:
-    def __init__(self, db: SynEPDDatabase):
+    def __init__(self, db: ReleaseDatabase):
         self.db = db
 
     def get_reactions_by_taxon(self, taxon_code: str) -> List[Dict[str, Any]]:
@@ -159,7 +159,7 @@ class TaxonomyManager:
 
 
 class EPDManager:
-    def __init__(self, db: SynEPDDatabase):
+    def __init__(self, db: ReleaseDatabase):
         self.db = db
 
     def get_reactions_by_first_arrow(
@@ -235,7 +235,7 @@ class EPDManager:
 
 
 class MechanismManager:
-    def __init__(self, db: SynEPDDatabase):
+    def __init__(self, db: ReleaseDatabase):
         self.db = db
 
     def get_reaction_center(self, wlhash: str) -> Optional[Dict[str, Any]]:
@@ -246,9 +246,9 @@ class MechanismManager:
         if not row:
             return None
         data = dict(row)
-        if data.get("graph_format") == "pickle.gz" and data.get("template_graph"):
-            data["template_graph"] = pickle.loads(
-                zlib.decompress(data["template_graph"])
+        if data.get("template_graph"):
+            data["template_graph"] = decode_graph(
+                data["template_graph"], data["graph_format"]
             )
         return data
 
@@ -260,8 +260,24 @@ class MechanismManager:
         if not row:
             return None
         data = dict(row)
-        if data.get("graph_format") == "pickle.gz" and data.get("graph_data"):
-            data["graph_data"] = pickle.loads(zlib.decompress(data["graph_data"]))
+        if data.get("graph_data"):
+            data["graph_data"] = decode_graph(data["graph_data"], data["graph_format"])
+        return data
+
+    def get_mechanism_context(self, reaction_id: int) -> Optional[Dict[str, Any]]:
+        """Retrieve the materialized EPD-aware center for one reaction."""
+        cursor = self.db.connection.cursor()
+        cursor.execute(
+            "SELECT * FROM mechanism_context WHERE reaction_id = ?",
+            (reaction_id,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            return None
+        data = dict(row)
+        data["anchor_graph"] = decode_graph(data["anchor_graph"], data["graph_format"])
+        data["events"] = json.loads(data.pop("events_json"))
+        data["diagnostics"] = json.loads(data.pop("diagnostics_json"))
         return data
 
     def predict_atom_map(self, unmapped_rsmi: str) -> list:
@@ -298,17 +314,14 @@ class MechanismManager:
             "SELECT id, wlhash, template_graph, graph_format FROM reaction_center"
         )
 
-        import pickle
-        import zlib
-
         predictions = []
         for row in cursor.fetchall():
             rc_id, wlhash, raw_data, fmt = row
-            if raw_data is None or fmt != "pickle.gz":
+            if raw_data is None:
                 continue
 
             try:
-                rc_graph = pickle.loads(zlib.decompress(raw_data))
+                rc_graph = decode_graph(raw_data, fmt)
                 reactor = SynReactor(
                     substrate=r_input,
                     template=rc_graph,
