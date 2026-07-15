@@ -9,7 +9,7 @@
 //        ->  double-click / "Open" a reaction to hand off to loadReaction().
 // ===========================================================================
 
-const KG_API = () => (window.SYNEPD_API_BASE || window.location.origin);
+const KG_API = () => `${window.SYNEPD_API_BASE || window.location.origin}/api/v1`;
 
 // live graph state (string-keyed maps for O(1) de-dup on uid)
 const kgNodes = new Map();   // uid -> node object
@@ -112,7 +112,7 @@ async function kgSearchSeed() {
 
     listEl.innerHTML = '<p class="kg-hint">Searching…</p>';
     try {
-        const res = await fetch(`${KG_API()}/api/kg/search?q=${encodeURIComponent(q)}&limit=15`);
+        const res = await fetch(`${KG_API()}/kg/search?q=${encodeURIComponent(q)}&limit=15`);
         const data = await res.json();
         if (!data.results || !data.results.length) {
             listEl.innerHTML = '<p class="kg-hint">No molecules or reactions matched.</p>';
@@ -144,7 +144,7 @@ async function kgFindRoute() {
     if (listEl) listEl.innerHTML = '<p class="kg-hint">Searching for shortest path…</p>';
 
     try {
-        const url = `${KG_API()}/api/kg/path`
+        const url = `${KG_API()}/kg/path`
             + `?start=${encodeURIComponent(start)}`
             + `&end=${encodeURIComponent(end)}`
             + `&mode=${mode}&max_depth=${depth}`;
@@ -204,7 +204,7 @@ async function kgFetchSimilarReactions(rsmi, { fromSearch = false, topK = 15 } =
     if (fromSearch) kgCloseInfo();
     try {
         const res = await fetch(
-            `${KG_API()}/api/kg/similar-reactions?rsmi=${encodeURIComponent(rsmi)}&top_k=${topK}`
+            `${KG_API()}/kg/similar-reactions?rsmi=${encodeURIComponent(rsmi)}&top_k=${topK}`
         );
         if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
         const data = await res.json();
@@ -224,7 +224,7 @@ async function kgFetchBySmarts(smarts) {
     if (listEl) listEl.innerHTML = '<p class="kg-hint">Searching substructure…</p>';
     try {
         const res = await fetch(
-            `${KG_API()}/api/kg/substructure-search?smarts=${encodeURIComponent(smarts)}&max_hits=50`
+            `${KG_API()}/kg/substructure-search?smarts=${encodeURIComponent(smarts)}&max_hits=50`
         );
         if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
         const data = await res.json();
@@ -246,7 +246,7 @@ async function kgFetchByWlhash(wlhash) {
     kgCloseInfo();
     try {
         const res = await fetch(
-            `${KG_API()}/api/kg/reactions-by-wlhash?wlhash=${encodeURIComponent(wlhash)}&max_reactions=30`
+            `${KG_API()}/kg/reactions-by-wlhash?wlhash=${encodeURIComponent(wlhash)}&max_reactions=30`
         );
         if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
         const data = await res.json();
@@ -285,7 +285,7 @@ function kgOptions() {
 
 async function kgExpandNode(type, refId, { center = false, seed = false } = {}) {
     const { maxReactions, includeTaxonomy } = kgOptions();
-    const url = `${KG_API()}/api/kg/expand?type=${encodeURIComponent(type)}`
+    const url = `${KG_API()}/kg/expand?type=${encodeURIComponent(type)}`
         + `&id=${encodeURIComponent(refId)}`
         + `&max_reactions=${maxReactions}`
         + `&include_taxonomy=${includeTaxonomy}`;
@@ -637,7 +637,7 @@ function kgCdkUrl(smiles, withMap) {
 }
 
 function kgRdkitUrl(smiles, kind = 'auto') {
-    return `${KG_API()}/api/render/rdkit.svg?smi=${encodeURIComponent(smiles)}&kind=${encodeURIComponent(kind)}`;
+    return `${KG_API()}/render/rdkit.svg?smi=${encodeURIComponent(smiles)}&kind=${encodeURIComponent(kind)}`;
 }
 
 function kgFallbackToRdkit(img) {
@@ -685,7 +685,7 @@ async function kgShowMoleculeInfo(d) {
     body.innerHTML = '<p class="kg-hint">Loading…</p>';
     let info = null;
     try {
-        const res = await fetch(`${KG_API()}/api/kg/molecule-info/${d.ref_id}`);
+        const res = await fetch(`${KG_API()}/kg/molecule-info/${d.ref_id}`);
         if (res.ok) info = await res.json();
     } catch (e) {}
     const smiles = (info && info.canonical_smiles) || d.smiles || '';
@@ -721,7 +721,7 @@ async function kgShowReactionInfo(d) {
     body.innerHTML = '<p class="kg-hint">Loading…</p>';
     let rxn = null;
     try {
-        const res = await fetch(`${KG_API()}/api/reactions/${d.ref_id}`);
+        const res = await fetch(`${KG_API()}/reactions/${d.ref_id}`);
         if (res.ok) rxn = await res.json();
     } catch (e) {}
     if (!rxn) { body.innerHTML = '<p class="kg-hint">Could not load reaction.</p>'; return; }
@@ -737,6 +737,11 @@ async function kgShowReactionInfo(d) {
     // Trust badges
     if (rxn.balanced === true)  html += `<span class="kg-trust-badge kg-trust-ok">⚖ Balanced</span>`;
     if (rxn.balanced === false) html += `<span class="kg-trust-badge kg-trust-warn">⚠ Unbalanced</span>`;
+    if (rxn.mechanism_context) {
+        const eventCount = (rxn.mechanism_context.events || []).length;
+        const shortHash = (rxn.mechanism_context.context_hash || '').slice(0, 12);
+        html += `<div class="kg-info-meta">Mechanistic context: ${eventCount} edits · ${escapeHtml(shortHash)}…</div>`;
+    }
 
     html += `<div class="kg-info-struct">${kgDepictImgHtml(depictSmiles, 'reaction', 'reaction')}</div>`;
 
@@ -763,7 +768,7 @@ async function kgShowReactionInfo(d) {
     if (d.rc_id != null) html += `<button class="kg-mini-btn" onclick="kgExpandNode('template','${d.rc_id}')">Reactions sharing this template</button>`;
     html += `<button class="kg-mini-btn" onclick="kgExpandNode('reaction','${d.ref_id}')">Show reactants / products</button>`;
     if (kgLastInspectedRsmi)   html += `<button class="kg-mini-btn" onclick="kgFetchSimilarReactions(kgLastInspectedRsmi)">🔍 Find similar reactions</button>`;
-    if (kgLastInspectedWlhash) html += `<button class="kg-mini-btn" onclick="kgFetchByWlhash(kgLastInspectedWlhash)">⚙ Same mechanism</button>`;
+    if (kgLastInspectedWlhash) html += `<button class="kg-mini-btn" onclick="kgFetchByWlhash(kgLastInspectedWlhash)">⚙ Same net center</button>`;
     html += `</div>`;
     body.innerHTML = html;
 }
@@ -819,7 +824,7 @@ async function kgExportReactionsJSON() {
             button.innerText = "Downloading...";
         }
         
-        const res = await fetch(`${KG_API()}/api/reactions/export-bulk`, {
+        const res = await fetch(`${KG_API()}/reactions/export-bulk`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

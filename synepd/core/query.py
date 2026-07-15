@@ -1,7 +1,5 @@
 import json
 import sqlite3
-import zlib
-import pickle
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -11,7 +9,18 @@ from synkit.Chem.Reaction.standardize import Standardize
 from synkit.Synthesis.Reactor.syn_reactor import SynReactor
 from synkit.IO import rsmi_to_its
 from synkit.Graph.Matcher.subgraph_matcher import SubgraphSearchEngine
-from synepd.core.ingest import extract_graphs
+from synkit.Graph.Mech import LWGEditor
+from synepd.core.ingest import extract_graphs, reaction_centers_are_isomorphic
+from synepd.core.graph_codec import decode_graph
+from synepd.core.representation import (
+    remap_representation,
+    representation_verification_rsmi,
+)
+
+MAX_DIRECT_RC_MAPPINGS = 64
+MAX_REFERENCE_RC_MAPPINGS = 32
+MAX_CONTEXT_MAPPINGS = 64
+MAX_VERIFIED_MAPPINGS_PER_REFERENCE = 16
 
 
 def _resolve_query_db_path(
@@ -93,6 +102,278 @@ def standardize_side(side_smiles: str) -> str:
     return ".".join(flat_parts)
 
 
+def _typed_epd_from_rows(rows) -> list[list[Any]]:
+    return [
+        [code, json.loads(source_json), json.loads(target_json)]
+        for _, code, source_json, target_json in rows
+    ]
+
+
+def _project_endpoint(endpoint: list[int], mapping: dict[int, int]) -> list[int] | None:
+    """Project an endpoint without silently changing its cardinality."""
+    projected = []
+    for atom in endpoint:
+        if atom not in mapping:
+            return None
+        projected.append(mapping[atom])
+    return projected
+
+
+def _stable_node_atom_map(graph: nx.Graph, node: Any) -> int:
+    """Read an atom map before third-party matchers annotate graph attributes."""
+    value = graph.nodes[node].get("atom_map", node)
+    if isinstance(value, (tuple, list)):
+        values = [item for item in value if item is not None]
+        if values and all(item == values[0] for item in values):
+            value = values[0]
+        elif isinstance(node, int):
+            value = node
+        elif values:
+            value = values[0]
+    return int(value)
+
+
+def _mapping_agrees_with_direct_center(
+    context_mapping: dict[int, int],
+    reference_rc_mapping: dict[int, int],
+    query_rc_mappings: list[dict[int, int]],
+) -> bool:
+    """Check that an anchor mapping extends a selected direct-RC embedding."""
+    try:
+        composed = {
+            rc_node: context_mapping[reference_node]
+            for rc_node, reference_node in reference_rc_mapping.items()
+        }
+    except KeyError:
+        return False
+    return any(composed == mapping for mapping in query_rc_mappings)
+
+
+def _project_mechanism_candidates(
+    conn,
+    is_pg: bool,
+    *,
+    matched_rc_id: int,
+    matched_rc: nx.Graph,
+    new_its: nx.Graph,
+    query_rc_mappings: list[dict[int, int]],
+    mapped_rsmi: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Project and product-verify every mechanism sharing a direct RC."""
+    cur = _execute_query(
+        conn,
+        is_pg,
+        """
+        SELECT i.reaction_id, r.case_id, r.name, r.aam_key,
+               e.signature, e.representation_mode, e.representation_json,
+               mc.anchor_graph, mc.graph_format
+        FROM its i
+        JOIN reaction r ON r.id = i.reaction_id
+        JOIN epd e ON e.reaction_id = i.reaction_id
+        JOIN mechanism_context mc ON mc.reaction_id = i.reaction_id
+        WHERE i.rc_id = ?
+        ORDER BY i.reaction_id
+        """,
+        (matched_rc_id,),
+    )
+    references = cur.fetchall()
+    editor = LWGEditor()
+    verified: list[dict[str, Any]] = []
+    diagnostics: list[dict[str, Any]] = []
+
+    for (
+        reaction_id,
+        case_id,
+        name,
+        reference_rsmi,
+        signature,
+        representation_mode,
+        representation_json,
+        anchor_blob,
+        anchor_format,
+    ) in references:
+        arrow_cursor = _execute_query(
+            conn,
+            is_pg,
+            """
+            SELECT arrow_index, arrow_type_code, source_atoms, target_atoms
+            FROM epd_arrow
+            WHERE reaction_id = ?
+            ORDER BY arrow_index
+            """,
+            (reaction_id,),
+        )
+        arrow_rows = arrow_cursor.fetchall()
+        typed_epd = _typed_epd_from_rows(arrow_rows)
+        diagnostic = {
+            "reference_reaction_id": reaction_id,
+            "reference_case_id": case_id,
+            "signature": signature,
+        }
+
+        try:
+            anchor_graph = decode_graph(anchor_blob, anchor_format)
+        except Exception as exc:
+            diagnostic.update(status="invalid_context", reason=str(exc))
+            diagnostics.append(diagnostic)
+            continue
+
+        reference_atom_maps = {
+            node: _stable_node_atom_map(anchor_graph, node)
+            for node in anchor_graph.nodes
+        }
+        query_atom_maps = {
+            node: _stable_node_atom_map(new_its, node) for node in new_its.nodes
+        }
+
+        reference_rc_mappings = SubgraphSearchEngine().find_subgraph_mappings(
+            host=anchor_graph,
+            pattern=matched_rc,
+            node_attrs=["element", "charge"],
+            edge_attrs=["order"],
+            max_results=MAX_REFERENCE_RC_MAPPINGS,
+            threshold=MAX_REFERENCE_RC_MAPPINGS * 4,
+            strict_cc_count=False,
+        )
+        if not reference_rc_mappings:
+            diagnostic.update(status="reference_rc_unmapped")
+            diagnostics.append(diagnostic)
+            continue
+
+        context_mappings = SubgraphSearchEngine().find_subgraph_mappings(
+            host=new_its,
+            pattern=anchor_graph,
+            node_attrs=["element", "charge"],
+            edge_attrs=["order"],
+            max_results=MAX_CONTEXT_MAPPINGS,
+            threshold=MAX_CONTEXT_MAPPINGS * 4,
+            strict_cc_count=False,
+        )
+        if not context_mappings:
+            diagnostic.update(status="context_unmapped")
+            diagnostics.append(diagnostic)
+            continue
+
+        reference_verified = 0
+        for reference_rc_mapping in reference_rc_mappings:
+            for context_mapping in context_mappings:
+                if reference_verified >= MAX_VERIFIED_MAPPINGS_PER_REFERENCE:
+                    break
+                if not _mapping_agrees_with_direct_center(
+                    context_mapping,
+                    reference_rc_mapping,
+                    query_rc_mappings,
+                ):
+                    continue
+
+                projected_epd: list[list[Any]] = []
+                complete = True
+                for action, source, target in typed_epd:
+                    projected_source = _project_endpoint(source, context_mapping)
+                    projected_target = _project_endpoint(target, context_mapping)
+                    if projected_source is None or projected_target is None:
+                        complete = False
+                        break
+                    projected_epd.append([action, projected_source, projected_target])
+                if not complete:
+                    continue
+
+                representation = None
+                if representation_json:
+                    try:
+                        representation = json.loads(representation_json)
+                    except (TypeError, json.JSONDecodeError):
+                        representation = {"mode": representation_mode}
+                elif representation_mode and representation_mode != "exact":
+                    representation = {"mode": representation_mode}
+
+                projection_atom_map = {
+                    reference_atom_maps[source]: query_atom_maps[target]
+                    for source, target in context_mapping.items()
+                }
+                projected_representation = remap_representation(
+                    representation,
+                    projection_atom_map,
+                    namespace="projected_query",
+                )
+                try:
+                    verification_rsmi = representation_verification_rsmi(
+                        mapped_rsmi, projected_representation
+                    )
+                    verification = editor.apply(verification_rsmi, projected_epd)
+                except Exception:
+                    continue
+                if not verification.matches_product:
+                    continue
+
+                verified.append(
+                    {
+                        "reference_reaction_id": reaction_id,
+                        "reference_case_id": case_id,
+                        "name": name,
+                        "signature": signature,
+                        "representation": projected_representation,
+                        "arrows": [
+                            {
+                                "arrow_index": index,
+                                "arrow_type_code": action,
+                                "source_atoms": source,
+                                "target_atoms": target,
+                            }
+                            for index, (action, source, target) in enumerate(
+                                projected_epd, start=1
+                            )
+                        ],
+                        "verification": {
+                            "matches_product": True,
+                            "structural_match": verification.structural_match,
+                            "charge_match": verification.charge_match,
+                            "smiles_match": verification.smiles_match,
+                        },
+                    }
+                )
+                reference_verified += 1
+            if reference_verified >= MAX_VERIFIED_MAPPINGS_PER_REFERENCE:
+                break
+
+        diagnostic.update(
+            status="verified" if reference_verified else "product_mismatch",
+            verified_mapping_count=reference_verified,
+        )
+        diagnostics.append(diagnostic)
+
+    return _deduplicate_mechanism_candidates(verified), diagnostics
+
+
+def _deduplicate_mechanism_candidates(
+    candidates: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Collapse symmetry/reference duplicates while retaining provenance."""
+    grouped: dict[str, dict[str, Any]] = {}
+    for candidate in candidates:
+        key = json.dumps(candidate["arrows"], sort_keys=True, separators=(",", ":"))
+        existing = grouped.get(key)
+        if existing is None:
+            candidate = dict(candidate)
+            candidate["reference_reaction_ids"] = [candidate["reference_reaction_id"]]
+            candidate["reference_case_ids"] = [candidate["reference_case_id"]]
+            grouped[key] = candidate
+            continue
+        if candidate["reference_reaction_id"] not in existing["reference_reaction_ids"]:
+            existing["reference_reaction_ids"].append(
+                candidate["reference_reaction_id"]
+            )
+        if candidate["reference_case_id"] not in existing["reference_case_ids"]:
+            existing["reference_case_ids"].append(candidate["reference_case_id"])
+    return sorted(
+        grouped.values(),
+        key=lambda candidate: (
+            candidate["signature"] or "",
+            candidate["reference_reaction_id"],
+        ),
+    )
+
+
 def find_reactions_by_template(
     template: Union[str, nx.Graph],
     db_path: Optional[Union[str, Path]] = None,
@@ -128,17 +409,17 @@ def find_reactions_by_template(
     cur = _execute_query(
         conn,
         is_pg,
-        "SELECT id, wlhash, template_graph FROM reaction_center WHERE wlhash LIKE ?",
+        "SELECT id, wlhash, template_graph, graph_format "
+        "FROM reaction_center WHERE wlhash LIKE ?",
         (f"{wlhash}%",),
     )
     rc_candidates = cur.fetchall()
 
     rc_id = None
-    for candidate_id, db_wlhash, template_bytes in rc_candidates:
+    for candidate_id, db_wlhash, template_bytes, graph_format in rc_candidates:
         try:
-            rc_pkl = zlib.decompress(_read_bytes(template_bytes))
-            db_rc_graph = pickle.loads(rc_pkl)
-            if nx.is_isomorphic(rc_graph, db_rc_graph):
+            db_rc_graph = decode_graph(template_bytes, graph_format)
+            if reaction_centers_are_isomorphic(rc_graph, db_rc_graph):
                 rc_id = candidate_id
                 break
         except Exception:
@@ -265,14 +546,14 @@ def query_epd_by_reaction(
             cur = _execute_query(
                 conn,
                 is_pg,
-                "SELECT id, wlhash, template_graph FROM reaction_center WHERE wlhash LIKE ?",
+                "SELECT id, wlhash, template_graph, graph_format "
+                "FROM reaction_center WHERE wlhash LIKE ?",
                 (f"{wlhash}%",),
             )
-            for rc_id, db_wlhash, template_bytes in cur.fetchall():
+            for rc_id, db_wlhash, template_bytes, graph_format in cur.fetchall():
                 try:
-                    rc_pkl = zlib.decompress(_read_bytes(template_bytes))
-                    db_rc_graph = pickle.loads(rc_pkl)
-                    if nx.is_isomorphic(rc_graph, db_rc_graph):
+                    db_rc_graph = decode_graph(template_bytes, graph_format)
+                    if reaction_centers_are_isomorphic(rc_graph, db_rc_graph):
                         matched_rc = db_rc_graph
                         matched_smart = rsmi
                         matched_rc_id = rc_id
@@ -293,17 +574,18 @@ def query_epd_by_reaction(
             pass
 
         cur = _execute_query(
-            conn, is_pg, "SELECT id, wlhash, template_graph FROM reaction_center"
+            conn,
+            is_pg,
+            "SELECT id, wlhash, template_graph, graph_format FROM reaction_center",
         )
         rc_rows = cur.fetchall()
 
         if is_balanced:
             p_std = standardize_side(p_query)
 
-            for rc_id, wlhash, template_bytes in rc_rows:
+            for rc_id, wlhash, template_bytes, graph_format in rc_rows:
                 try:
-                    rc_pkl = zlib.decompress(_read_bytes(template_bytes))
-                    rc_graph = pickle.loads(rc_pkl)
+                    rc_graph = decode_graph(template_bytes, graph_format)
                 except Exception:
                     continue
 
@@ -352,10 +634,9 @@ def query_epd_by_reaction(
                         res_list.append(item)
                 return res_list
 
-            for rc_id, wlhash, template_bytes in rc_rows:
+            for rc_id, wlhash, template_bytes, graph_format in rc_rows:
                 try:
-                    rc_pkl = zlib.decompress(_read_bytes(template_bytes))
-                    rc_graph = pickle.loads(rc_pkl)
+                    rc_graph = decode_graph(template_bytes, graph_format)
                 except Exception:
                     continue
 
@@ -413,6 +694,9 @@ def query_epd_by_reaction(
         pattern=matched_rc,
         node_attrs=["element", "charge"],
         edge_attrs=["order"],
+        max_results=MAX_DIRECT_RC_MAPPINGS,
+        threshold=MAX_DIRECT_RC_MAPPINGS * 4,
+        strict_cc_count=False,
     )
 
     if not mappings:
@@ -422,95 +706,45 @@ def query_epd_by_reaction(
             "error": "Could not map reaction center template to query reaction ITS",
         }
 
-    atom_map = mappings[0]
-
-    # Find a reference reaction ID sharing this rc_id to fetch template EPD arrows
-    cur = _execute_query(
+    candidates, projection_diagnostics = _project_mechanism_candidates(
         conn,
         is_pg,
-        "SELECT reaction_id FROM its WHERE rc_id = ? LIMIT 1",
-        (matched_rc_id,),
+        matched_rc_id=matched_rc_id,
+        matched_rc=matched_rc,
+        new_its=new_its,
+        query_rc_mappings=mappings,
+        mapped_rsmi=matched_smart,
     )
-    ref_row = cur.fetchone()
-    if not ref_row:
+
+    if not candidates:
         conn.close()
         return {
             "success": False,
-            "error": "Could not find reference reaction sharing this reaction center",
+            "error": (
+                "No complete product-verifying EPD mechanism could be projected "
+                "for the matched reaction center"
+            ),
+            "reaction_center_id": matched_rc_id,
+            "reaction_center_wlhash": matched_wlhash,
+            "projection_diagnostics": projection_diagnostics,
         }
 
-    ref_reaction_id = ref_row[0]
-
-    # Get the mapping from the reference reaction to the RC template
-    cur = _execute_query(
-        conn, is_pg, "SELECT aam_key FROM reaction WHERE id = ?", (ref_reaction_id,)
-    )
-    ref_aam_key = cur.fetchone()[0]
-    ref_its, _, _ = extract_graphs(ref_aam_key)
-
-    ref_mappings = SubgraphSearchEngine().find_subgraph_mappings(
-        host=ref_its,
-        pattern=matched_rc,
-        node_attrs=["element", "charge"],
-        edge_attrs=["order"],
-    )
-
-    if not ref_mappings:
-        conn.close()
-        return {
-            "success": False,
-            "error": "Could not map reference reaction to template RC",
-        }
-
-    ref_to_rc = {v: k for k, v in ref_mappings[0].items()}
-
-    # Query template EPD arrows
-    cur = _execute_query(
-        conn,
-        is_pg,
-        "SELECT arrow_index, arrow_type_code, source_atoms, target_atoms FROM epd_arrow WHERE reaction_id = ?",
-        (ref_reaction_id,),
-    )
-    ref_arrows = cur.fetchall()
-
-    projected_arrows = []
-    for idx, code, src_json, tgt_json in ref_arrows:
-        src = json.loads(src_json)
-        tgt = json.loads(tgt_json)
-
-        # Project source atoms: ref_its -> rc -> new_its
-        src_mapped = []
-        for s in src:
-            rc_atom = ref_to_rc.get(s)
-            if rc_atom is not None:
-                new_atom = atom_map.get(rc_atom)
-                if new_atom is not None:
-                    src_mapped.append(new_atom)
-
-        # Project target atoms: ref_its -> rc -> new_its
-        tgt_mapped = []
-        for t in tgt:
-            rc_atom = ref_to_rc.get(t)
-            if rc_atom is not None:
-                new_atom = atom_map.get(rc_atom)
-                if new_atom is not None:
-                    tgt_mapped.append(new_atom)
-
-        projected_arrows.append(
-            {
-                "arrow_index": idx,
-                "arrow_type_code": code,
-                "source_atoms": src_mapped,
-                "target_atoms": tgt_mapped,
-            }
-        )
+    selected = candidates[0] if len(candidates) == 1 else None
 
     conn.close()
     return {
         "success": True,
         "path": 2,
+        "reference_reaction_id": (
+            selected["reference_reaction_id"] if selected else None
+        ),
+        "reference_case_id": selected["reference_case_id"] if selected else None,
+        "name": selected["name"] if selected else None,
         "reaction_center_id": matched_rc_id,
         "reaction_center_wlhash": matched_wlhash,
         "mapped_rsmi": matched_smart,
-        "arrows": projected_arrows,
+        "arrows": selected["arrows"] if selected else [],
+        "mechanism_ambiguous": len(candidates) > 1,
+        "mechanism_candidate_count": len(candidates),
+        "mechanism_candidates": candidates,
     }

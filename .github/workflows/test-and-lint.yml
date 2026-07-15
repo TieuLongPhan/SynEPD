@@ -26,10 +26,23 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
-          python -m pip install -e .
+          python -m pip install -e ".[dev]"
+
+      - name: Check source formatting
+        run: python -m black --check --workers 1 synepd test
 
       - name: Lint and check formatting
         run: ./lint.sh
 
       - name: Run tests
         run: ./pytest.sh
+
+      - name: Verify the full curated EPD corpus
+        if: matrix.python-version == '3.12'
+        run: python -m synepd.precheck.epd_verification --strict
+
+      - name: Verify the checked-in release artifact
+        if: matrix.python-version == '3.12'
+        run: >-
+          python -m synepd.construct.release_manifest data/epdb.sqlite
+          --verify data/release-manifest.json

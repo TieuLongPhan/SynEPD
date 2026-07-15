@@ -1,4 +1,5 @@
 import pytest
+from fastapi import HTTPException
 from synepd.web.server import (
     get_db_info,
     get_taxonomy,
@@ -17,6 +18,7 @@ from synepd.web.server import (
     get_rc_reactions,
     get_random_reaction,
     render_rdkit_svg,
+    list_submissions,
 )
 
 
@@ -65,11 +67,33 @@ def test_query_epd_endpoint():
     assert "name" in data
     assert data["name"]
     assert data["arrows"]
+    assert data["mechanism_context"]
+    assert data["canonical_aam_key"]
 
 
 def test_health_endpoint():
     data = health_check()
     assert data["status"] == "ok"
+    assert data["database_backend"] in {"sqlite", "postgresql"}
+    assert "db" not in data
+
+
+def test_submission_admin_fails_closed_without_token(monkeypatch):
+    monkeypatch.delenv("SYNEPD_ADMIN_TOKEN", raising=False)
+
+    with pytest.raises(HTTPException) as error:
+        list_submissions()
+
+    assert error.value.status_code == 503
+
+
+def test_submission_admin_rejects_wrong_token(monkeypatch):
+    monkeypatch.setenv("SYNEPD_ADMIN_TOKEN", "correct-token")
+
+    with pytest.raises(HTTPException) as error:
+        list_submissions(x_admin_token="wrong-token")
+
+    assert error.value.status_code == 403
 
 
 def test_neighbors_endpoint():

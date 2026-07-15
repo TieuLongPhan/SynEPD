@@ -1,11 +1,9 @@
 import json
-import pickle
-import zlib
-
 import networkx as nx
 import pytest
 
 from synepd.database.models import SynEPDDatabase
+from synepd.core.graph_codec import GRAPH_FORMAT, encode_graph
 from synepd.database.managers import (
     EPDManager,
     MechanismManager,
@@ -25,7 +23,7 @@ def setup_db(tmp_path):
     graph.add_node(1, element="C", charge=0, atom_map=1)
     graph.add_node(2, element="O", charge=-1, atom_map=2)
     graph.add_edge(1, 2, order=1)
-    graph_blob = zlib.compress(pickle.dumps(graph, protocol=pickle.HIGHEST_PROTOCOL))
+    graph_blob = encode_graph(graph)
 
     with db.connection:
         db.connection.executemany(
@@ -75,12 +73,12 @@ def setup_db(tmp_path):
         )
         cursor = db.connection.execute(
             "INSERT INTO reaction_center (wlhash, template_graph, graph_format) VALUES (?, ?, ?)",
-            ("fake-wlhash", graph_blob, "pickle.gz"),
+            ("fake-wlhash", graph_blob, GRAPH_FORMAT),
         )
         rc_id = cursor.lastrowid
         db.connection.execute(
             "INSERT INTO its (reaction_id, rc_id, wlhash, graph_data, graph_format) VALUES (?, ?, ?, ?, ?)",
-            (reaction_id, rc_id, "fake-wlhash", graph_blob, "pickle.gz"),
+            (reaction_id, rc_id, "fake-wlhash", graph_blob, GRAPH_FORMAT),
         )
         db.connection.execute(
             "INSERT INTO epd (reaction_id, number_arrows) VALUES (?, ?)",
@@ -93,6 +91,23 @@ def setup_db(tmp_path):
         db.connection.execute(
             "INSERT INTO epd_arrow (reaction_id, arrow_index, arrow_type_code, source_atoms, target_atoms) VALUES (?, ?, ?, ?, ?)",
             (reaction_id, 2, "LP-/Sigma+", json.dumps([2]), json.dumps([1])),
+        )
+        db.connection.execute(
+            """
+            INSERT INTO mechanism_context (
+                reaction_id, construction_version, context_hash, anchor_graph,
+                graph_format, events_json, diagnostics_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                reaction_id,
+                "test.v1",
+                "abc123",
+                encode_graph(graph),
+                GRAPH_FORMAT,
+                '[{"action_index":1}]',
+                '{"epd_atom_maps":[1,2]}',
+            ),
         )
 
     yield db
@@ -181,3 +196,10 @@ def test_mechanism_manager(setup_db):
     rc_data = mech_mgr.get_reaction_center(its_data["wlhash"])
     assert rc_data is not None
     assert type(rc_data["template_graph"]).__name__ == "Graph"
+
+    context = mech_mgr.get_mechanism_context(reaction["id"])
+    assert context is not None
+    assert type(context["anchor_graph"]).__name__ == "Graph"
+    assert context["construction_version"] == "test.v1"
+    assert context["events"] == [{"action_index": 1}]
+    assert context["diagnostics"]["epd_atom_maps"] == [1, 2]

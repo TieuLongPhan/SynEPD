@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "synepd"
-version = "0.1.0"
+version = "0.2.0"
 description = "Hierarchical reaction templates"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -12,7 +12,7 @@ license = { file = "LICENSE" }
 dependencies = [
     "fastapi",
     "pydantic",
-    "synkit>=1.1.2",
+    "synkit==1.5.0",
     "synrfp>=0.0.3",
     "uvicorn",
     "networkx",
@@ -22,11 +22,12 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "black",
     "flake8",
     "pytest",
 ]
 scripts = [
-    "tmap2==0.1.0",
+    "tmap2==0.2.2",
 ]
 
 [tool.setuptools.packages.find]

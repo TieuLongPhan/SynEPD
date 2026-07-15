@@ -65,6 +65,7 @@
 
                 <!-- Taxonomy Tab Pane -->
                 <div id="tab-taxonomy" class="tab-pane" role="tabpanel" aria-labelledby="tab-taxonomy">
+                    <button id="taxonomy-overview-open-btn" class="search-btn" style="width:100%; margin-bottom:0.5rem; font-size:0.82rem;" onclick="taxonomyOverviewEnterMode()">Taxonomy Overview</button>
                     <button id="tmap-open-btn" class="search-btn" style="width:100%; margin-bottom:0.75rem; font-size:0.82rem;" onclick="tmapEnterMode()">🗺 Chemical Space Map</button>
                     <input id="tax-filter" class="search-input" placeholder="Filter taxonomy..."
                            style="margin-bottom: 0.75rem; font-size: 0.85rem;"
@@ -372,6 +373,28 @@
                     <span style="font-size:0.75rem; color:var(--text-secondary);">1 887 reactions · POLAR taxonomy colours</span>
                 </div>
                 <iframe id="tmap-frame" src="about:blank" style="flex:1; border:none; width:100%; height:100%;" onload="tmapOnFrameLoad()" title="TMAP chemical space map"></iframe>
+            </div>
+
+            <!-- POLAR taxonomy overview (overlays the ITS viewport when active) -->
+            <div id="taxonomy-overview-viewport" class="taxonomy-overview-viewport" aria-hidden="true">
+                <div class="kg-toolbar">
+                    <strong style="font-size:0.85rem; color:var(--text-primary);">POLAR Taxonomy Overview</strong>
+                    <span class="taxonomy-overview-badge">8 families · 84 subclasses · 958 leaves</span>
+                    <button id="tax-view-btn-diagram" class="kg-mini-btn active taxonomy-toolbar-link-first" onclick="switchTaxonomyView('diagram')">Diagram</button>
+                    <button id="tax-view-btn-tree" class="kg-mini-btn" onclick="switchTaxonomyView('tree')">Interactive Tree</button>
+                    <a class="kg-mini-btn taxonomy-toolbar-link" href="/static/taxonomy.html" target="_blank" rel="noopener" title="Open interactive tree in a new tab">External Tree ↗</a>
+                    <button class="kg-mini-btn" onclick="taxonomyOverviewExitMode()">← Back</button>
+                </div>
+                <div class="taxonomy-overview-canvas" id="taxonomy-overview-canvas" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+                    <!-- Diagram view -->
+                    <div id="taxonomy-view-diagram" class="taxonomy-view-pane" style="flex: 1; overflow: auto; padding: 1rem; background: var(--bg-primary);">
+                        <img src="/static/taxonomy_overview.svg" alt="SynEPD POLAR taxonomy with eight top-level families and their 84 subclasses" style="display: block; width: max(100%, 1180px); max-width: 2360px; height: auto; margin: 0 auto; border: 1px solid var(--border); border-radius: 10px;">
+                    </div>
+                    <!-- Interactive Tree view -->
+                    <div id="taxonomy-view-tree" class="taxonomy-view-pane" style="flex: 1; display: none; overflow: hidden; position: relative; background: var(--bg-primary);">
+                        <iframe id="taxonomy-tree-frame" src="about:blank" style="width: 100%; height: 100%; border: none;" title="POLAR Interactive Taxonomy Tree"></iframe>
+                    </div>
+                </div>
             </div>
         </div>
 

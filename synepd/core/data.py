@@ -1,4 +1,6 @@
 import json
+import hashlib
+import hmac
 import os
 import shutil
 import tempfile
@@ -67,6 +69,15 @@ def get_github_archive_url(version: str | None = None) -> str:
     return f"https://github.com/{DEFAULT_GITHUB_REPOSITORY}/archive/refs/tags/{tag}.zip"
 
 
+def get_github_release_api_url(version: str | None = None) -> str:
+    """Return the GitHub API endpoint for a tagged SynEPD release."""
+    tag = quote(version_tag(version), safe="")
+    return (
+        f"https://api.github.com/repos/{DEFAULT_GITHUB_REPOSITORY}/releases/"
+        f"tags/{tag}"
+    )
+
+
 def get_zenodo_api_url(version: str | None = None, record_id: str | None = None) -> str:
     """Return the Zenodo API URL for a SynEPD release record."""
     release_record_id = record_id or get_zenodo_record_id(version)
@@ -92,7 +103,11 @@ def get_default_db_path(
     return db_path
 
 
-def _download_url_to_file(url: str, dest_path: Path) -> None:
+def _download_url_to_file(
+    url: str,
+    dest_path: Path,
+    expected_checksum: str | None = None,
+) -> None:
     """Download a URL to ``dest_path`` using a temporary file."""
     print(f"Destination: {dest_path}")
 
@@ -103,7 +118,8 @@ def _download_url_to_file(url: str, dest_path: Path) -> None:
         percent = min(100.0, downloaded * 100.0 / total_size)
         # Print progress carriage-return
         print(
-            f"\rProgress: {percent:.1f}% ({downloaded / (1024*1024):.2f} MB of {total_size / (1024*1024):.2f} MB)",
+            f"\rProgress: {percent:.1f}% ({downloaded / (1024 * 1024):.2f} MB "
+            f"of {total_size / (1024 * 1024):.2f} MB)",
             end="",
             flush=True,
         )
@@ -111,6 +127,8 @@ def _download_url_to_file(url: str, dest_path: Path) -> None:
     temp_dest = dest_path.with_suffix(".tmp")
     try:
         urllib.request.urlretrieve(url, temp_dest, reporthook=progress_hook)
+        if expected_checksum:
+            _verify_checksum(temp_dest, expected_checksum)
         temp_dest.replace(dest_path)
         print("\nDownload complete!")
     except Exception:
@@ -147,17 +165,48 @@ def _copy_archive_member(archive_path: Path, dest_path: Path) -> None:
     print(f"Extracted {member} to {dest_path}")
 
 
-def _download_archive_database(url: str, dest_path: Path) -> None:
+def _download_archive_database(
+    url: str,
+    dest_path: Path,
+    expected_checksum: str | None = None,
+) -> None:
     """Download a release ZIP and extract the packaged SQLite database."""
     with tempfile.TemporaryDirectory(prefix="synepd-download-") as tmp_dir:
         archive_path = Path(tmp_dir) / "release.zip"
-        _download_url_to_file(url, archive_path)
+        _download_url_to_file(
+            url,
+            archive_path,
+            expected_checksum=expected_checksum,
+        )
         _copy_archive_member(archive_path, dest_path)
+
+
+def _verify_checksum(path: Path, expected_checksum: str) -> None:
+    """Verify a Zenodo-style ``algorithm:hex-digest`` checksum."""
+    try:
+        algorithm, expected = expected_checksum.lower().split(":", 1)
+    except ValueError as exc:
+        raise ValueError("Checksum must use the form 'algorithm:hex-digest'") from exc
+    if algorithm not in {"md5", "sha256"}:
+        raise ValueError(f"Unsupported checksum algorithm: {algorithm}")
+
+    digest = hashlib.new(algorithm)
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    if not hmac.compare_digest(digest.hexdigest(), expected):
+        raise ValueError(f"Downloaded file failed {algorithm} checksum validation")
 
 
 def _load_zenodo_record(record_id: str) -> dict:
     api_url = f"https://zenodo.org/api/records/{record_id}"
     with urllib.request.urlopen(api_url) as response:
+        return json.load(response)
+
+
+def _load_github_release(version: str | None = None) -> dict:
+    """Load metadata for a tagged GitHub release."""
+    with urllib.request.urlopen(get_github_release_api_url(version)) as response:
         return json.load(response)
 
 
@@ -181,7 +230,11 @@ def _download_zenodo_database(
         url = direct_file["links"]["self"]
         print("Downloading SynEPD SQLite database from Zenodo...")
         print(f"URL: {url}")
-        _download_url_to_file(url, dest_path)
+        _download_url_to_file(
+            url,
+            dest_path,
+            expected_checksum=direct_file.get("checksum"),
+        )
         return
 
     archive_file = next(
@@ -201,7 +254,54 @@ def _download_zenodo_database(
     url = archive_file["links"]["self"]
     print("Downloading SynEPD release archive from Zenodo...")
     print(f"URL: {url}")
-    _download_archive_database(url, dest_path)
+    _download_archive_database(
+        url,
+        dest_path,
+        expected_checksum=archive_file.get("checksum"),
+    )
+
+
+def _download_github_database(dest_path: Path, version: str | None = None) -> None:
+    """Download a database asset from GitHub Release, then fall back to its ZIP."""
+    try:
+        release = _load_github_release(version)
+        assets = release.get("assets", [])
+        direct_file = next(
+            (
+                asset
+                for asset in assets
+                if Path(asset.get("name", "")).name == DEFAULT_DB_FILENAME
+            ),
+            None,
+        )
+        if direct_file is not None:
+            url = direct_file["browser_download_url"]
+            print("Downloading SynEPD SQLite database from GitHub Release...")
+            print(f"URL: {url}")
+            _download_url_to_file(url, dest_path)
+            return
+
+        archive_file = next(
+            (
+                asset
+                for asset in assets
+                if asset.get("name", "").lower().endswith(".zip")
+            ),
+            None,
+        )
+        if archive_file is not None:
+            url = archive_file["browser_download_url"]
+            print("Downloading SynEPD release archive from GitHub Release...")
+            print(f"URL: {url}")
+            _download_archive_database(url, dest_path)
+            return
+    except Exception as error:
+        print(f"GitHub Release asset lookup failed ({error}); using tag archive.")
+
+    archive_url = get_github_archive_url(version)
+    print("Downloading SynEPD tag archive from GitHub...")
+    print(f"URL: {archive_url}")
+    _download_archive_database(archive_url, dest_path)
 
 
 def download_database(
@@ -210,12 +310,14 @@ def download_database(
     source: str = "zenodo",
     version: str | None = None,
     record_id: str | None = None,
+    checksum: str | None = None,
 ) -> None:
     """Download and cache the SynEPD SQLite database.
 
-    ``source`` can be ``"zenodo"`` or ``"github"``. Zenodo downloads use the
-    configured release record for ``version`` and extract ``data/epdb.sqlite``
-    if the record stores a source ZIP archive.
+    ``source`` can be ``"zenodo"``, ``"github"``, or ``"auto"``. Zenodo
+    downloads use the configured release record for ``version``; GitHub uses a
+    tagged Release asset before falling back to the matching source archive.
+    ``"auto"`` prefers the archival Zenodo record and falls back to GitHub.
     """
     dest_path = Path(dest_path)
     dest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -225,9 +327,17 @@ def download_database(
             print("Downloading SynEPD database from custom URL...")
             print(f"URL: {url}")
             if url.split("?", 1)[0].lower().endswith(".zip"):
-                _download_archive_database(url, dest_path)
+                _download_archive_database(
+                    url,
+                    dest_path,
+                    expected_checksum=checksum,
+                )
             else:
-                _download_url_to_file(url, dest_path)
+                _download_url_to_file(
+                    url,
+                    dest_path,
+                    expected_checksum=checksum,
+                )
             return
 
         normalized_source = source.lower()
@@ -236,13 +346,20 @@ def download_database(
             return
 
         if normalized_source == "github":
-            archive_url = get_github_archive_url(version)
-            print("Downloading SynEPD release archive from GitHub...")
-            print(f"URL: {archive_url}")
-            _download_archive_database(archive_url, dest_path)
+            _download_github_database(dest_path, version=version)
             return
 
-        raise ValueError('source must be either "zenodo" or "github"')
+        if normalized_source == "auto":
+            try:
+                _download_zenodo_database(
+                    dest_path, version=version, record_id=record_id
+                )
+            except Exception as zenodo_error:
+                print(f"Zenodo download failed ({zenodo_error}); trying GitHub.")
+                _download_github_database(dest_path, version=version)
+            return
+
+        raise ValueError('source must be "zenodo", "github", or "auto"')
     except Exception as e:
         raise RuntimeError(
             f"Failed to download SynEPD database: {e}\n"

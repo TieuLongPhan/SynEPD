@@ -220,10 +220,11 @@ __marimo__/
 
 
 plan/*
-scripts/*
+scripts/
 data/raw/*
 data/old/*
+data/check/
+data/precheck/
 test.ipynb
 synepd.egg-info/*
 paper/*
-CHANGELOG.md

@@ -15,9 +15,13 @@ class DatasetRelease:
 
 
 DEFAULT_RELEASE = DatasetRelease(
-    version="v0.1.0",
-    release_date="2026-07-07",
+    version="v0.2.0",
+    release_date="2026-07-15",
     license="CC BY 4.0",
+)
+CURRENT_SCHEMA_VERSION = "002_mechanism_context"
+CURRENT_SCHEMA_CHECKSUM = (
+    "sha256:87a9d2414a7c49132c4299077b515609da899a047d795f9eaa05ef3464374d27"
 )
 
 
@@ -26,6 +30,7 @@ class Reaction:
     case_id: str
     canonical_rsmi: str
     aam_key: str
+    canonical_aam_key: Optional[str] = None
     name: Optional[str] = None
     id: Optional[int] = None
     components: List[ReactionComponent] = field(default_factory=list)
@@ -102,6 +107,8 @@ class EPD:
     reaction_id: int
     number_arrows: int
     signature: Optional[str] = None
+    representation_mode: str = "exact"
+    representation_json: Optional[str] = None
     arrows: List[EPDArrow] = field(default_factory=list)
 
 
@@ -124,7 +131,18 @@ class EPDArrow:
     id: Optional[int] = None
 
 
-class SynEPDDatabase:
+@dataclass
+class MechanismContext:
+    reaction_id: int
+    construction_version: str
+    context_hash: str
+    anchor_graph: bytes
+    graph_format: str
+    events_json: str
+    diagnostics_json: str
+
+
+class ReleaseDatabase:
     def __init__(self, path: Path | str):
         self.path = Path(path)
         self.connection = sqlite3.connect(self.path)
@@ -134,7 +152,7 @@ class SynEPDDatabase:
     def close(self) -> None:
         self.connection.close()
 
-    def __enter__(self) -> SynEPDDatabase:
+    def __enter__(self) -> ReleaseDatabase:
         return self
 
     def __exit__(self, *exc_info: object) -> None:
@@ -149,11 +167,18 @@ class SynEPDDatabase:
                     license TEXT
                 );
 
+                CREATE TABLE IF NOT EXISTS schema_migration (
+                    version TEXT PRIMARY KEY,
+                    applied_at TEXT NOT NULL,
+                    checksum TEXT NOT NULL
+                );
+
                 CREATE TABLE IF NOT EXISTS reaction (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     case_id TEXT NOT NULL UNIQUE,
                     canonical_rsmi TEXT NOT NULL,
                     aam_key TEXT NOT NULL UNIQUE,
+                    canonical_aam_key TEXT,
                     name TEXT,
                     balanced INTEGER,
                     reactant_atom_count INTEGER,
@@ -230,6 +255,8 @@ class SynEPDDatabase:
                     reaction_id INTEGER PRIMARY KEY,
                     number_arrows INTEGER NOT NULL,
                     signature TEXT,
+                    representation_mode TEXT NOT NULL DEFAULT 'exact',
+                    representation_json TEXT,
                     FOREIGN KEY (reaction_id) REFERENCES its(reaction_id) ON DELETE CASCADE,
                     CHECK (number_arrows >= 1)
                 );
@@ -256,6 +283,17 @@ class SynEPDDatabase:
                     UNIQUE (reaction_id, arrow_index)
                 );
 
+                CREATE TABLE IF NOT EXISTS mechanism_context (
+                    reaction_id INTEGER PRIMARY KEY,
+                    construction_version TEXT NOT NULL,
+                    context_hash TEXT NOT NULL,
+                    anchor_graph BLOB NOT NULL,
+                    graph_format TEXT NOT NULL,
+                    events_json TEXT NOT NULL,
+                    diagnostics_json TEXT NOT NULL,
+                    FOREIGN KEY (reaction_id) REFERENCES epd(reaction_id) ON DELETE CASCADE
+                );
+
                 CREATE INDEX IF NOT EXISTS idx_reaction_case_id ON reaction(case_id);
                 CREATE INDEX IF NOT EXISTS idx_reaction_aam_key ON reaction(aam_key);
                 CREATE INDEX IF NOT EXISTS idx_reaction_component_reaction ON reaction_component(reaction_id);
@@ -264,6 +302,7 @@ class SynEPDDatabase:
                 CREATE INDEX IF NOT EXISTS idx_its_rc_id ON its(rc_id);
                 CREATE INDEX IF NOT EXISTS idx_epd_number_arrows ON epd(number_arrows);
                 CREATE INDEX IF NOT EXISTS idx_epd_arrow_type ON epd_arrow(arrow_type_code);
+                CREATE INDEX IF NOT EXISTS idx_mechanism_context_hash ON mechanism_context(context_hash);
                 CREATE INDEX IF NOT EXISTS idx_epd_arrow_index_type ON epd_arrow(arrow_index, arrow_type_code);
                 CREATE INDEX IF NOT EXISTS idx_epd_arrow_reaction ON epd_arrow(reaction_id);
                 CREATE INDEX IF NOT EXISTS idx_molecule_inchikey ON molecule(inchikey);
@@ -308,6 +347,13 @@ class SynEPDDatabase:
                     DEFAULT_RELEASE.license,
                 ),
             )
+            self.connection.execute(
+                """
+                INSERT OR IGNORE INTO schema_migration (version, applied_at, checksum)
+                VALUES (?, datetime('now'), ?)
+                """,
+                (CURRENT_SCHEMA_VERSION, CURRENT_SCHEMA_CHECKSUM),
+            )
 
             # Populate FTS if empty and reaction table has rows
             self.connection.execute("""
@@ -334,3 +380,7 @@ class SynEPDDatabase:
                     "INSERT OR IGNORE INTO epd_arrow_type (code, source_type, target_type, electron_count, arrow_style) VALUES (?, ?, ?, ?, ?)",
                     arrow,
                 )
+
+
+# Backward-compatible import for the v0.1 API.
+SynEPDDatabase = ReleaseDatabase

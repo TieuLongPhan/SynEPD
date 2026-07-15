@@ -20,12 +20,13 @@ The current local build uses the cleaned POLAR dataset:
 
 | Item | Count |
 | --- | ---: |
-| Clean records | 1,901 |
-| Database reactions | 1,887 |
-| RC templates | 1,501 |
-| EPD arrows | 7,095 |
-| Taxon rows | 1,112 |
-| Molecules | 2,125 |
+| Curated records | 1,915 |
+| Database reactions | 1,915 |
+| RC templates | 1,497 |
+| EPD arrows | 7,303 |
+| Mechanism contexts | 1,915 |
+| Taxon rows | 1,051 |
+| Molecules | 2,179 |
 
 Important files:
 
@@ -34,6 +35,7 @@ Important files:
 | `data/polar.json` | Clean reaction records, IDs starting at 1 |
 | `data/hierarchy.md` | Clean hierarchy consumed by the database builder 
 | `data/epdb.sqlite` | Built SQLite database used by the app |
+| `data/release-manifest.json` | Current artifact checksums, semantic version, and counts |
 
 ## Environment
 
@@ -68,6 +70,13 @@ PYTHONPATH=. python synepd/construct/build_release_db.py
 
 The builder writes `data/epdb.sqlite`.
 
+Verify the checked-in artifact against its release manifest:
+
+```bash
+python -m synepd.construct.release_manifest data/epdb.sqlite \
+  --verify data/release-manifest.json
+```
+
 ## Run The Explorer
 
 Use the hosted explorer at:
@@ -87,6 +96,9 @@ Open:
 ```text
 http://127.0.0.1:8000/
 ```
+
+Stable service routes are exposed under `/api/v1`; the original `/api`
+routes remain compatibility aliases for v0.1 clients.
 
 By default the server reads:
 
@@ -131,7 +143,7 @@ for arrow in result.get("arrows", []):
     print(arrow["arrow_index"], arrow["arrow_type_code"], arrow["source_atoms"], "->", arrow["target_atoms"])
 ```
 
-Query directly from the published 0.1.0 release on Zenodo:
+Query directly from a published release on Zenodo:
 
 ```python
 from synepd.core import query_epd_by_reaction
@@ -140,16 +152,27 @@ rsmi = "CC[O-].[NH4+]>>CCO"
 result = query_epd_by_reaction(
     rsmi,
     db_source="zenodo",
-    db_version="0.1.0",
+    db_version="0.1.0",  # latest configured Zenodo record until v0.2 is published
 )
 ```
 
-Use the matching GitHub release archive instead:
+Use the matching GitHub Release asset instead (with a tag-archive fallback):
 
 ```python
 from synepd.core import get_default_db_path
 
 db_path = get_default_db_path(version="0.1.0", source="github")
+```
+
+For a portable client, prefer Zenodo and fall back to the matching GitHub
+release automatically:
+
+```python
+result = query_epd_by_reaction(
+    rsmi,
+    db_source="auto",
+    db_version="0.1.0",
+)
 ```
 
 ## Checks
@@ -164,7 +187,11 @@ python -m pip check
 
 ## Database Architecture
 
-SynEPD stores reaction metadata, molecules, taxonomy assignments, reaction-center templates, ITS graphs, and EPD arrows in a normalized SQLite database.
+SynEPD v0.2 stores 1,915 reactions, 1,497 chemistry-aware reaction-center
+templates, 7,303 EPD arrows, ITS graphs, and one materialized mechanistic
+context per reaction in a normalized SQLite database. Mechanistic contexts
+combine an ITS-derived anchor graph with ordered transition and transient-edge
+events.
 
 ![Database Architecture Schema](synepd/web/static/data_arch.png)
 

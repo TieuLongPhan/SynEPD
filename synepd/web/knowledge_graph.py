@@ -27,6 +27,7 @@ and avoids hairballs on highly-connected hubs.
 from __future__ import annotations
 
 import os
+import json
 import threading
 from collections import deque
 from pathlib import Path
@@ -36,7 +37,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from synepd.core.query import _get_connection, _execute_query
 
-router = APIRouter(prefix="/api/kg", tags=["knowledge-graph"])
+router = APIRouter(prefix="/kg", tags=["knowledge-graph"])
 
 # --------------------------------------------------------------------------- #
 # Config / helpers
@@ -188,6 +189,8 @@ def _reaction_node(
     rc_id: Optional[int] = None,
     wlhash: Optional[str] = None,
     rsmi: Optional[str] = None,
+    context_hash: Optional[str] = None,
+    mechanism_event_count: Optional[int] = None,
 ) -> Dict[str, Any]:
     """The CRN "reaction" node. It is keyed per reaction (so reactant/product
     pairing stays correct) but is *presented* as its mechanistic template:
@@ -208,6 +211,8 @@ def _reaction_node(
         "name": name,
         "taxon": taxon,
         "rsmi": rsmi,
+        "mechanism_context_hash": context_hash,
+        "mechanism_event_count": mechanism_event_count,
         "ref_id": rxn_id,
         "expandable": True,
         "openable": True,
@@ -340,8 +345,25 @@ def _expand_reactions(
         if rsmi:
             rsmi_map[r_id] = rsmi
 
+    context_map: Dict[int, Tuple[Optional[str], Optional[int]]] = {}
+    cur = _execute_query(
+        conn,
+        is_pg,
+        f"""SELECT reaction_id, context_hash, events_json
+            FROM mechanism_context
+            WHERE reaction_id IN ({placeholders})""",
+        tuple(reaction_ids),
+    )
+    for r_id, context_hash, events_json in cur.fetchall():
+        try:
+            event_count = len(json.loads(events_json))
+        except (TypeError, json.JSONDecodeError):
+            event_count = 0
+        context_map[r_id] = (context_hash, event_count)
+
     for rxn_id, case_id, name in reaction_rows:
         rc_id, wlhash = rc_map.get(rxn_id, (None, None))
+        context_hash, event_count = context_map.get(rxn_id, (None, None))
         acc.add_node(
             _reaction_node(
                 rxn_id,
@@ -351,6 +373,8 @@ def _expand_reactions(
                 rc_id=rc_id,
                 wlhash=wlhash,
                 rsmi=rsmi_map.get(rxn_id),
+                context_hash=context_hash,
+                mechanism_event_count=event_count,
             )
         )
 
@@ -814,9 +838,7 @@ def kg_reactions_by_wlhash(
     wlhash: str = Query(..., description="WL-hash of the reaction centre"),
     max_reactions: int = DEFAULT_MAX_REACTIONS,
 ):
-    """Return all reactions whose ITS reaction centre matches the given WL-hash.
-    This is an exact reaction-centre match — identical mechanism, different
-    substrates.  Free: no fingerprinting, direct index lookup."""
+    """Return reactions with the same direct (net-change) reaction center."""
     max_reactions = _clamp(max_reactions, 1, HARD_MAX_REACTIONS)
     conn, is_pg = _get_connection(_db_path())
     try:
@@ -844,6 +866,42 @@ def kg_reactions_by_wlhash(
         results = [_reaction_node(r[0], r[1], r[2]) for r in cur.fetchall()]
         return {
             "wlhash": wlhash,
+            "results": results,
+            "total": total,
+            "truncated": total > max_reactions,
+        }
+    finally:
+        conn.close()
+
+
+@router.get("/reactions-by-context-hash")
+def kg_reactions_by_context_hash(
+    context_hash: str = Query(..., min_length=64, max_length=64),
+    max_reactions: int = DEFAULT_MAX_REACTIONS,
+):
+    """Return reactions sharing one exact EPD-aware mechanistic context."""
+    max_reactions = _clamp(max_reactions, 1, HARD_MAX_REACTIONS)
+    conn, is_pg = _get_connection(_db_path())
+    try:
+        total = _execute_query(
+            conn,
+            is_pg,
+            "SELECT COUNT(*) FROM mechanism_context WHERE context_hash = ?",
+            (context_hash,),
+        ).fetchone()[0]
+        cur = _execute_query(
+            conn,
+            is_pg,
+            """SELECT r.id, r.case_id, r.name
+               FROM mechanism_context mc
+               JOIN reaction r ON r.id = mc.reaction_id
+               WHERE mc.context_hash = ?
+               ORDER BY r.case_id LIMIT ?""",
+            (context_hash, max_reactions),
+        )
+        results = [_reaction_node(row[0], row[1], row[2]) for row in cur.fetchall()]
+        return {
+            "context_hash": context_hash,
             "results": results,
             "total": total,
             "truncated": total > max_reactions,

@@ -1,0 +1,58 @@
+{
+  "database": {
+    "bytes": 19853312,
+    "counts": {
+      "epd": 1915,
+      "epd_arrow": 7303,
+      "its": 1915,
+      "mechanism_context": 1915,
+      "molecule": 2179,
+      "reaction": 1915,
+      "reaction_center": 1497,
+      "taxon": 1051
+    },
+    "foreign_key_violations": 0,
+    "graph_formats": {
+      "its": {
+        "synepd.node-link-json.zlib.v1": 1915
+      },
+      "mechanism_context": {
+        "synepd.node-link-json.zlib.v1": 1915
+      },
+      "reaction_center": {
+        "synepd.node-link-json.zlib.v1": 1497
+      }
+    },
+    "integrity_check": "ok",
+    "mechanism_context_versions": {
+      "synepd.mechanistic-center.v1": 1915
+    },
+    "name": "epdb.sqlite",
+    "sha256": "dea811c906c2a73c564c69536ab061cacc8e210cdd4a56977ea2a8943261a802"
+  },
+  "dataset_release": {
+    "license": "CC BY 4.0",
+    "release_date": "2026-07-15",
+    "version": "v0.2.0"
+  },
+  "manifest_version": "synepd.release-manifest.v1",
+  "schema_migrations": [
+    {
+      "applied_at": "2026-07-15 14:13:11",
+      "checksum": "sha256:87a9d2414a7c49132c4299077b515609da899a047d795f9eaa05ef3464374d27",
+      "version": "002_mechanism_context"
+    }
+  ],
+  "sources": [
+    {
+      "bytes": 57928,
+      "name": "hierarchy.md",
+      "sha256": "502f337abaac09b37ebb4700b3439e48091075638e63f9047aabe6be05f086a4"
+    },
+    {
+      "bytes": 2063121,
+      "name": "polar.json",
+      "sha256": "883a8437b987872639d0b86c14f0911bbb25c7ebc4058974f8fdd24e31157a8c"
+    }
+  ]
+}

@@ -458,6 +458,54 @@
         .graph-viewport:active {
             cursor: grabbing;
         }
+        .taxonomy-overview-viewport {
+            display: none;
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            flex-direction: column;
+            min-width: 0;
+            background: var(--bg-primary);
+        }
+        .taxonomy-overview-badge {
+            padding: 0.1rem 0.5rem;
+            border: 1px solid var(--accent-green);
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--accent-green) 12%, transparent);
+            color: var(--accent-green);
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .taxonomy-toolbar-link {
+            display: inline-block;
+            text-decoration: none;
+        }
+        .taxonomy-toolbar-link-first {
+            margin-left: auto;
+        }
+        .kg-mini-btn.active {
+            background-color: var(--accent-cyan) !important;
+            color: #08131a !important;
+            border-color: var(--accent-cyan) !important;
+            font-weight: 600;
+        }
+        .taxonomy-overview-canvas {
+            flex: 1;
+            overflow: auto;
+            padding: 1rem;
+            background: var(--bg-primary);
+        }
+        .taxonomy-overview-canvas img {
+            display: block;
+            width: max(100%, 1180px);
+            max-width: 2360px;
+            height: auto;
+            margin: 0 auto;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+        }
         .graph-controls {
             position: absolute;
             bottom: 2rem;
@@ -1449,7 +1497,7 @@
             fill: var(--text-secondary);
             font-weight: 400;
         }
-        .link {
+.link {
             stroke-opacity: 0.6;
             transition: stroke 0.3s, stroke-width 0.3s;
         }
@@ -1470,6 +1518,25 @@
         .link.unchanged {
             stroke: #4b5563;
             stroke-width: 2px;
+        }
+        .link.mechanism-transition {
+            stroke: var(--accent-pink);
+            stroke-width: 3px;
+            stroke-dasharray: 7 4;
+        }
+        .link.mechanism-context {
+            stroke: var(--text-secondary);
+            stroke-width: 1.5px;
+            stroke-dasharray: 2 5;
+        }
+        .node.mechanism-epd_context circle {
+            stroke: var(--accent-cyan) !important;
+            stroke-width: 3px !important;
+            stroke-dasharray: 4 3 !important;
+        }
+        .node.mechanism-normalization_context circle {
+            stroke: var(--accent-orange) !important;
+            stroke-width: 2.5px !important;
         }
 
         /* EPD Arrow representation */

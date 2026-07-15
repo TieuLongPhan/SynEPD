@@ -152,7 +152,10 @@ function drawGraph() {
     linkGroup = container.append("g").selectAll("line")
         .data(graphData.links)
         .join("line")
-        .attr("class", d => `link ${d.status}`);
+        .attr("class", d => {
+            const roles = (d.mechanistic_roles || []).map(role => `mechanism-${role}`);
+            return `link ${d.status} ${roles.join(' ')}`;
+        });
 
     linkLabelGroup = container.append("g").selectAll("text")
         .data(graphData.links.filter(l => ['breaking', 'forming'].includes(l.status)))
@@ -166,7 +169,10 @@ function drawGraph() {
     nodeGroup = container.append("g").selectAll(".node")
         .data(graphData.nodes)
         .join("g")
-        .attr("class", "node")
+        .attr("class", d => {
+            const roles = (d.mechanistic_roles || []).map(role => `mechanism-${role}`);
+            return `node ${roles.join(' ')}`;
+        })
         .call(d3.drag()
             .on("start", dragstarted)
             .on("drag", dragged)

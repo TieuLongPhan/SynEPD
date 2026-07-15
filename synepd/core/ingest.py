@@ -1,6 +1,7 @@
 import json
 import re
 import gzip
+import networkx as nx
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -13,6 +14,25 @@ from synkit.Graph.Feature.wl_hash import WLHash
 HEADING_RE = re.compile(
     r"^#{1,4}\s+((?:POLAR\.)?\d{2}(?:\.\d{2})?(?:\.\d{3})?|POLAR)\s+[—–-]\s+(.+?)\s*$"
 )
+
+RC_NODE_MATCH = nx.algorithms.isomorphism.categorical_node_match(
+    ["element", "charge", "lone_pairs", "hcount"],
+    [None, None, None, None],
+)
+RC_EDGE_MATCH = nx.algorithms.isomorphism.categorical_edge_match(
+    ["order", "kekule_order", "standard_order"],
+    [None, None, None],
+)
+
+
+def reaction_centers_are_isomorphic(first: nx.Graph, second: nx.Graph) -> bool:
+    """Compare RCs using their chemically meaningful paired attributes."""
+    return nx.is_isomorphic(
+        first,
+        second,
+        node_match=RC_NODE_MATCH,
+        edge_match=RC_EDGE_MATCH,
+    )
 
 
 def clean_taxon_name(name: str) -> str:
@@ -125,18 +145,53 @@ def strip_atom_map(smiles: str) -> str:
     return Chem.MolToSmiles(mol, canonical=True)
 
 
-def extract_graphs(rsmi: str) -> Optional[Tuple[Any, Any, str]]:
+def extract_graphs(
+    rsmi: str, *, reaction_center_bond_order: str = "kekule_order"
+) -> Optional[Tuple[Any, Any, str]]:
+    """Extract ITS and reaction-center graphs from a mapped reaction SMILES.
+
+    Reaction-center membership is derived from Kekulé bond orders by default.
+    This avoids treating a representation-only aromatic ``1.5`` to ``1`` or
+    ``2`` bond change as a reaction-center change. Pass ``"order"`` to retain
+    the legacy aromatic-order behavior.
+    """
+    if reaction_center_bond_order not in {"kekule_order", "order"}:
+        raise ValueError("reaction_center_bond_order must be 'kekule_order' or 'order'")
     try:
         r_graph, p_graph = rsmi_to_graph(rsmi, drop_non_aam=True)
         if r_graph is None or p_graph is None:
             return None
 
         its_graph = ITSConstruction().construct(r_graph, p_graph)
+        _set_reaction_center_standard_order(its_graph, reaction_center_bond_order)
         rc_graph = RCExtractor().extract(its_graph)
+        rc_graph.graph["reaction_center_bond_order"] = reaction_center_bond_order
         wlhash = WLHash(iterations=3).weisfeiler_lehman_graph_hash(rc_graph)
         return its_graph, rc_graph, wlhash
     except Exception:
         return None
+
+
+def _set_reaction_center_standard_order(
+    its_graph: Any, bond_order_attribute: str
+) -> None:
+    """Set ITS bond-change values from the requested paired bond order.
+
+    Two aromatic bonds can receive different arbitrary Kekulé assignments while
+    retaining the same aromatic bond order on both reaction sides. Such a
+    ``1.5 -> 1.5`` change is representational, not chemical, and must not add
+    its ring atoms to the reaction center.
+    """
+    for _, _, attributes in its_graph.edges(data=True):
+        reactant_order, product_order = attributes[bond_order_attribute]
+        standard_order = reactant_order - product_order
+        if bond_order_attribute == "kekule_order" and attributes.get("order") == (
+            1.5,
+            1.5,
+        ):
+            standard_order = 0.0
+        attributes["standard_order"] = standard_order
+    its_graph.graph["reaction_center_bond_order"] = bond_order_attribute
 
 
 def parse_epd(ground_truth: List[list]) -> List[Dict[str, Any]]:

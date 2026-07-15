@@ -13,7 +13,7 @@ from synepd.models import Case
 SCHEMA_VERSION = 1
 
 
-class SQLiteSynEPDDatabase:
+class CaseSQLiteStore:
     """Persistent SQLite view of SynEPD cases."""
 
     def __init__(self, path: Path | str):
@@ -22,7 +22,7 @@ class SQLiteSynEPDDatabase:
         self.connection.row_factory = sqlite3.Row
 
     @classmethod
-    def connect(cls, path: Path | str) -> "SQLiteSynEPDDatabase":
+    def connect(cls, path: Path | str) -> "CaseSQLiteStore":
         """Open an existing SQLite SynEPD database."""
         return cls(path)
 
@@ -30,7 +30,7 @@ class SQLiteSynEPDDatabase:
         """Close the underlying SQLite connection."""
         self.connection.close()
 
-    def __enter__(self) -> "SQLiteSynEPDDatabase":
+    def __enter__(self) -> "CaseSQLiteStore":
         return self
 
     def __exit__(self, *exc_info: object) -> None:
@@ -217,7 +217,7 @@ def write_sqlite_database(
     summary: Mapping[str, object] | None = None,
     *,
     overwrite: bool = True,
-) -> SQLiteSynEPDDatabase:
+) -> CaseSQLiteStore:
     """Write cases to SQLite and return an opened database connection."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -241,7 +241,7 @@ def write_sqlite_database(
     finally:
         connection.close()
 
-    return SQLiteSynEPDDatabase(path)
+    return CaseSQLiteStore(path)
 
 
 def _initialize_schema(connection: sqlite3.Connection) -> None:
@@ -459,3 +459,7 @@ def _node_from_row(row: sqlite3.Row) -> HierarchyNode:
         parent_code=row["parent_code"],
         case_count=int(row["case_count"]),
     )
+
+
+# Backward-compatible public name; new code should use ``CaseSQLiteStore``.
+SQLiteSynEPDDatabase = CaseSQLiteStore
