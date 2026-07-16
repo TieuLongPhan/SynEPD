@@ -3,6 +3,22 @@ Changelog
 
 All notable changes to SynEPD are documented here.
 
+0.3.0 - 2026-07-16
+------------------
+
+* Added ``scripts/build_rxno_mapping.py``, a deterministic pipeline that maps
+  the taxonomy onto the RSC Name Reaction Ontology (RXNO) and Molecular Process
+  Ontology (MOP), committing a SKOS crosswalk (``data/rxno_crosswalk.tsv`` and
+  ``data/rxno_crosswalk.ttl``) plus scored review candidates, and
+  ``scripts/compare_taxonomy_rxno.py`` for coverage and divergence reporting.
+* Added ``synepd/render_epd_pdf.py``, a reaction-diagram PDF generator that
+  renders polar records through the CDK Depict service (matching the web 2D
+  reaction diagram) with atom-map indices, fully explicit atoms, and
+  SMILES-explicit hydrogens, falling back to RDKit when CDK Depict is
+  unreachable.
+* Redacted backend exception text from client-visible 4xx responses in the
+  balance-check, similarity-search, and substructure-search endpoints.
+
 0.2.0 - 2026-07-15
 ------------------
 
