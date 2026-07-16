@@ -220,7 +220,12 @@ __marimo__/
 
 
 plan/*
-scripts/
+# Scripts are working tools and stay untracked, except the RXNO/MOP crosswalk
+# generator and its comparison report, which the committed crosswalk derives
+# from and must stay reproducible.
+scripts/*
+!scripts/build_rxno_mapping.py
+!scripts/compare_taxonomy_rxno.py
 data/raw/*
 data/old/*
 data/check/
@@ -228,3 +233,4 @@ data/precheck/
 test.ipynb
 synepd.egg-info/*
 paper/*
+rendered/polar_rsmi.pdf

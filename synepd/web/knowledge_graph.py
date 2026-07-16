@@ -26,6 +26,7 @@ and avoids hairballs on highly-connected hubs.
 
 from __future__ import annotations
 
+import logging
 import os
 import json
 import threading
@@ -38,6 +39,8 @@ from fastapi import APIRouter, HTTPException, Query
 from synepd.core.query import _get_connection, _execute_query
 
 router = APIRouter(prefix="/kg", tags=["knowledge-graph"])
+
+logger = logging.getLogger("synepd.kg")
 
 # --------------------------------------------------------------------------- #
 # Config / helpers
@@ -809,8 +812,12 @@ def kg_similar_reactions(
     try:
         hits = _top_k_similar(rsmi, top_k)
     except Exception as exc:
+        # The failure may come from the cached fingerprint matrix rather than
+        # the user's SMILES; log the cause and return a fixed message so
+        # backend details never reach the client.
+        logger.warning("Reaction similarity search failed: %s", exc)
         raise HTTPException(
-            status_code=422, detail=f"Could not fingerprint reaction SMILES: {exc}"
+            status_code=422, detail="Could not fingerprint reaction SMILES"
         )
 
     if not hits:
@@ -922,8 +929,8 @@ def kg_substructure_search(
     max_hits = _clamp(max_hits, 1, 200)
     try:
         pat = Chem.MolFromSmarts(smarts)
-    except Exception as exc:
-        raise HTTPException(status_code=422, detail=f"Invalid SMARTS: {exc}")
+    except Exception:
+        pat = None
     if pat is None:
         raise HTTPException(status_code=422, detail="Invalid SMARTS pattern")
 

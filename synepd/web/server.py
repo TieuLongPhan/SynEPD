@@ -59,7 +59,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="SynEPD Mechanistic Web Service",
     description="REST backend and interactive explorer for reaction EPD mechanisms",
-    version="0.2.0",
+    version="0.3.0",
     lifespan=lifespan,
 )
 
@@ -1677,8 +1677,13 @@ def check_balance_smiles(req: BalanceCheckRequest):
             "reactant_formal_charge": bal.reactant_formal_charge,
             "product_formal_charge": bal.product_formal_charge,
         }
-    except Exception as e:
+    except ValueError as e:
+        # check_reaction_balance raises ValueError with authored messages
+        # describing problems in the submitted SMILES; safe to echo.
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        # Unexpected failures are logged and redacted by the 500 handler.
+        raise HTTPException(status_code=500, detail=f"Balance check failed: {e}")
 
 
 @app.get("/api/taxonomy/{code}/reactions")
