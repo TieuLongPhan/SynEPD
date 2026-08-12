@@ -12,6 +12,9 @@ from typing import Any
 
 COUNT_TABLES = (
     "reaction",
+    "reaction_component",
+    "reaction_taxonomy",
+    "reaction_entry_code",
     "molecule",
     "taxon",
     "reaction_center",
@@ -19,6 +22,7 @@ COUNT_TABLES = (
     "epd",
     "epd_arrow",
     "mechanism_context",
+    "mechanistic_center",
 )
 
 
@@ -37,7 +41,8 @@ def generate_release_manifest(
 ) -> dict[str, Any]:
     """Describe one built artifact using stable semantic and byte digests."""
     database_path = Path(database_path)
-    with sqlite3.connect(database_path) as connection:
+    database_uri = f"{database_path.resolve().as_uri()}?mode=ro&immutable=1"
+    with sqlite3.connect(database_uri, uri=True) as connection:
         release_row = connection.execute("""
             SELECT version, release_date, license
             FROM dataset_release ORDER BY version DESC LIMIT 1
@@ -65,7 +70,12 @@ def generate_release_manifest(
                     f"SELECT graph_format, COUNT(*) FROM {table} GROUP BY graph_format"
                 )
             }
-            for table in ("reaction_center", "its", "mechanism_context")
+            for table in (
+                "reaction_center",
+                "its",
+                "mechanism_context",
+                "mechanistic_center",
+            )
             if _table_exists(connection, table)
         }
         context_versions = {row[0]: row[1] for row in connection.execute("""
@@ -86,6 +96,26 @@ def generate_release_manifest(
                 "sha256": sha256_file(source),
             }
         )
+    crosswalk_paths = tuple(
+        path
+        for path in (
+            database_path.parent / "rxno_crosswalk.tsv",
+            database_path.parent.parent
+            / "docs"
+            / "source"
+            / "_static"
+            / "rxno_crosswalk.ttl",
+        )
+        if path.is_file()
+    )
+    crosswalks = [
+        {
+            "name": path.name,
+            "bytes": path.stat().st_size,
+            "sha256": sha256_file(path),
+        }
+        for path in crosswalk_paths
+    ]
     return {
         "manifest_version": "synepd.release-manifest.v1",
         "dataset_release": {
@@ -105,6 +135,7 @@ def generate_release_manifest(
         },
         "schema_migrations": migrations,
         "sources": sources,
+        "crosswalks": crosswalks,
     }
 
 
@@ -120,9 +151,17 @@ def write_release_manifest(manifest: dict[str, Any], output_path: Path | str) ->
 
 
 def verify_release_manifest(
-    database_path: Path | str, manifest_path: Path | str
+    database_path: Path | str,
+    manifest_path: Path | str,
+    *,
+    source_paths: tuple[Path | str, ...] = (),
 ) -> list[str]:
-    """Return deterministic verification errors for a release artifact."""
+    """Return deterministic verification errors for a release artifact.
+
+    When ``source_paths`` is omitted, sources are resolved beside the manifest
+    by their recorded basenames. Callers may pass explicit paths when sources
+    live elsewhere.
+    """
     database_path = Path(database_path)
     manifest_path = Path(manifest_path)
     try:
@@ -157,6 +196,59 @@ def verify_release_manifest(
             errors.append(f"database semantic field mismatch: {field}")
     if manifest.get("dataset_release") != current.get("dataset_release"):
         errors.append("dataset release metadata mismatch")
+    if manifest.get("crosswalks", []) != current.get("crosswalks", []):
+        errors.append("crosswalk artifact mismatch")
+
+    expected_sources = manifest.get("sources", [])
+    if not isinstance(expected_sources, list):
+        errors.append("manifest sources field is not a list")
+        expected_sources = []
+
+    if source_paths:
+        resolved_sources = [Path(path) for path in source_paths]
+    else:
+        resolved_sources = [
+            manifest_path.parent / source["name"]
+            for source in expected_sources
+            if isinstance(source, dict) and isinstance(source.get("name"), str)
+        ]
+
+    actual_by_name: dict[str, Path] = {}
+    for source in resolved_sources:
+        if source.name in actual_by_name:
+            errors.append(f"duplicate source basename supplied: {source.name}")
+            continue
+        actual_by_name[source.name] = source
+
+    expected_names = {
+        source.get("name")
+        for source in expected_sources
+        if isinstance(source, dict) and isinstance(source.get("name"), str)
+    }
+    for extra_name in sorted(actual_by_name.keys() - expected_names):
+        errors.append(f"unexpected source supplied: {extra_name}")
+
+    for expected in expected_sources:
+        if not isinstance(expected, dict) or not isinstance(expected.get("name"), str):
+            errors.append("manifest contains an invalid source entry")
+            continue
+        name = expected["name"]
+        source_path = actual_by_name.get(name)
+        if source_path is None or not source_path.is_file():
+            errors.append(f"source missing: {name}")
+            continue
+        actual_bytes = source_path.stat().st_size
+        if expected.get("bytes") != actual_bytes:
+            errors.append(
+                f"source size mismatch for {name}: "
+                f"expected {expected.get('bytes')}, got {actual_bytes}"
+            )
+        actual_source_hash = sha256_file(source_path)
+        if expected.get("sha256") != actual_source_hash:
+            errors.append(
+                f"source sha256 mismatch for {name}: "
+                f"expected {expected.get('sha256')}, got {actual_source_hash}"
+            )
     return errors
 
 
@@ -179,7 +271,11 @@ def main() -> int:
     mode.add_argument("--verify", type=Path, metavar="MANIFEST")
     args = parser.parse_args()
     if args.verify:
-        errors = verify_release_manifest(args.database, args.verify)
+        errors = verify_release_manifest(
+            args.database,
+            args.verify,
+            source_paths=tuple(args.source),
+        )
         if errors:
             for error in errors:
                 print(error)

@@ -280,6 +280,25 @@ class MechanismManager:
         data["diagnostics"] = json.loads(data.pop("diagnostics_json"))
         return data
 
+    def get_mechanistic_center(self, reaction_id: int) -> Optional[Dict[str, Any]]:
+        """Retrieve the reusable induced-RC + EPD-transition MC template."""
+        row = self.db.connection.execute(
+            """
+            SELECT mc.*
+            FROM its
+            JOIN mechanistic_center mc ON mc.id = its.mc_id
+            WHERE its.reaction_id = ?
+            """,
+            (reaction_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        data = dict(row)
+        data["template_graph"] = decode_graph(
+            data["template_graph"], data["graph_format"]
+        )
+        return data
+
     def predict_atom_map(self, unmapped_rsmi: str) -> list:
         from synkit.Synthesis.Reactor.syn_reactor import SynReactor
         from synkit.Chem.Reaction.standardize import Standardize

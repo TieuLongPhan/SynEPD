@@ -41,6 +41,10 @@ jobs:
         if: matrix.python-version == '3.12'
         run: python -m synepd.precheck.epd_verification --strict
 
+      - name: Verify the SynEPD to RXNO crosswalk
+        if: matrix.python-version == '3.12'
+        run: python scripts/build_rxno_mapping.py --check --obo data/rxno.obo
+
       - name: Verify the checked-in release artifact
         if: matrix.python-version == '3.12'
         run: >-

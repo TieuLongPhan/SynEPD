@@ -24,12 +24,14 @@ def test_create_tables():
                 "reaction_component",
                 "taxon",
                 "reaction_taxonomy",
+                "reaction_entry_code",
                 "reaction_center",
                 "its",
                 "epd",
                 "epd_arrow_type",
                 "epd_arrow",
                 "mechanism_context",
+                "mechanistic_center",
                 "sqlite_sequence",
             }
             assert expected_tables.issubset(tables)
@@ -37,7 +39,17 @@ def test_create_tables():
             cursor.execute(
                 "SELECT version, release_date, license FROM dataset_release;"
             )
-            assert tuple(cursor.fetchone()) == ("v0.2.0", "2026-07-15", "CC BY 4.0")
+            assert tuple(cursor.fetchone()) == ("v0.4.0", "2026-08-12", "CC BY 4.0")
+
+            cursor.execute("SELECT version FROM schema_migration ORDER BY version;")
+            assert [row[0] for row in cursor.fetchall()] == [
+                "002_mechanism_context",
+                "003_taxon_xref",
+                "004_reaction_metadata",
+                "005_mechanistic_center",
+                "006_its_mechanistic_center",
+                "007_core_release",
+            ]
 
             cursor.execute("PRAGMA table_info(epd);")
             epd_columns = {row[1] for row in cursor.fetchall()}
@@ -57,6 +69,30 @@ def test_create_tables():
                 "events_json",
                 "diagnostics_json",
             }.issubset(context_columns)
+
+            cursor.execute("PRAGMA table_info(mechanistic_center);")
+            mc_columns = {row[1] for row in cursor.fetchall()}
+            assert {
+                "rc_id",
+                "wlhash",
+                "template_graph",
+                "graph_format",
+                "transition_edge_count",
+                "rc_extension_edge_count",
+                "transient_only_edge_count",
+            }.issubset(mc_columns)
+
+            cursor.execute("PRAGMA table_info(its);")
+            its_columns = {row[1] for row in cursor.fetchall()}
+            assert "mc_id" in its_columns
+            assert "reaction_mechanistic_center" not in tables
+
+            assert {
+                "ontology_release",
+                "taxon_xref",
+                "reaction_alias",
+                "reaction_relation",
+            }.isdisjoint(tables)
 
 
 def test_init_vocabulary():

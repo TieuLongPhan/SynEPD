@@ -10,6 +10,8 @@ ENV_NAME="${SYNEPD_CONDA_ENV:-synepd}"
 HOST="${SYNEPD_HOST:-127.0.0.1}"
 PORT="${SYNEPD_PORT:-8000}"
 DB_PATH="${SYNEPD_DATABASE_URL:-data/epdb.sqlite}"
+WORKERS="${SYNEPD_WORKERS:-4}"
+BACKLOG="${SYNEPD_BACKLOG:-2048}"
 RELOAD=1
 FORCE_ENV=0
 FORCE_DEPS=0
@@ -30,6 +32,8 @@ Options:
   --host HOST       Server host. Default: ${HOST}
   --port PORT       Server port. Default: ${PORT}
   --db PATH         Database path or URL. Default: ${DB_PATH}
+  --workers NUMBER  Uvicorn workers without reload. Default: ${WORKERS}
+  --backlog NUMBER  Pending connection queue. Default: ${BACKLOG}
   --no-reload       Disable uvicorn reload.
   --reload          Enable uvicorn reload. Default.
   --force-env       Run conda env update even if the env exists.
@@ -43,6 +47,7 @@ Examples:
   ./run_server.sh run
   ./run_server.sh full --skip-build
   ./run_server.sh build --env-name synepd
+  SYNEPD_THREAD_TOKENS=64 ./run_server.sh run --no-reload --workers 4
 EOF
 }
 
@@ -105,6 +110,14 @@ while [[ $# -gt 0 ]]; do
             DB_PATH="$2"
             shift 2
             ;;
+        --workers)
+            WORKERS="$2"
+            shift 2
+            ;;
+        --backlog)
+            BACKLOG="$2"
+            shift 2
+            ;;
         --no-reload)
             RELOAD=0
             shift
@@ -144,6 +157,11 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+if [[ ! "$WORKERS" =~ ^[1-9][0-9]*$ ]] || [[ ! "$BACKLOG" =~ ^[1-9][0-9]*$ ]]; then
+    echo "--workers and --backlog must be positive integers" >&2
+    exit 2
+fi
 
 log() {
     printf '\n==> %s\n' "$1"
@@ -242,7 +260,7 @@ ensure_deps() {
 
 build_database() {
     log "Building data/epdb.sqlite"
-    run_in_env python synepd/construct/build_release_db.py
+    run_in_env python -m synepd.construct.build_release_db
 }
 
 start_server() {
@@ -253,10 +271,15 @@ start_server() {
     echo "Conda environment: ${ENV_NAME}"
     echo "Database location: ${SYNEPD_DATABASE_URL}"
     echo "URL: http://${HOST}:${PORT}"
+    echo "Connection backlog: ${BACKLOG}"
 
-    uvicorn_args=(python -m uvicorn synepd.web.server:app --host "$HOST" --port "$PORT")
+    uvicorn_args=(python -m uvicorn synepd.web.server:app --host "$HOST" --port "$PORT" --backlog "$BACKLOG")
     if [[ "$RELOAD" -eq 1 ]]; then
         uvicorn_args+=(--reload)
+        echo "Workers: reload process (development mode)"
+    else
+        uvicorn_args+=(--workers "$WORKERS")
+        echo "Workers: ${WORKERS}"
     fi
 
     if conda_env_exists; then

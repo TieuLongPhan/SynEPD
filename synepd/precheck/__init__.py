@@ -14,6 +14,18 @@ from synepd.precheck.check_h_completion import (
     validate_h_completion,
     check_single_h_completion,
 )
+from synepd.precheck.check_entry_codes import (
+    EntryCodeUniquenessCheck,
+    check_entry_code_uniqueness,
+)
+from synepd.precheck.check_alpha_elimination_arrow_order import (
+    AlphaEliminationArrowOrderCheck,
+    check_alpha_elimination_arrow_order,
+)
+from synepd.precheck.check_carbocation_shift_adjacency import (
+    CarbocationShiftAdjacencyCheck,
+    check_carbocation_shift_adjacency,
+)
 from synepd.precheck.report import ValidationResult, format_summary
 
 __all__ = [
@@ -29,4 +41,10 @@ __all__ = [
     "check_unimolecular_arrow_order",
     "validate_h_completion",
     "check_single_h_completion",
+    "EntryCodeUniquenessCheck",
+    "check_entry_code_uniqueness",
+    "AlphaEliminationArrowOrderCheck",
+    "check_alpha_elimination_arrow_order",
+    "CarbocationShiftAdjacencyCheck",
+    "check_carbocation_shift_adjacency",
 ]

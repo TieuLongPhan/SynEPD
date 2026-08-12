@@ -5,6 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import networkx as nx
+import pytest
 
 import synepd.construct.build_release_db as build_mod
 import synepd.core.query as query_mod
@@ -228,3 +229,76 @@ def test_surrogate_projection_reports_real_mechanistic_ambiguity(tmp_path):
         candidate["representation"]["mode"] == "closed_shell_surrogate"
         for candidate in result["mechanism_candidates"]
     )
+
+
+def test_imbalanced_acylation_preserves_input_chemistry():
+    result = query_epd_by_reaction(
+        "CC(=O)Cl.CCO>>CC(=O)OCC",
+        REPOSITORY_ROOT / "data" / "epdb.sqlite",
+    )
+
+    assert result["success"]
+    assert result["path"] == 1
+    assert result["case_id"] == "polar_001321"
+    assert result["name"] == "O-Acylation of alcohols"
+    assert "Cl" in result["canonical_rsmi"]
+    assert "Br" not in result["canonical_rsmi"]
+    assert result["arrows"]
+    assert result["balanced_from_imbalanced"]
+    assert result["original_imbalanced_query"] == "CC(=O)Cl.CCO>>CC(=O)OCC"
+
+
+def test_sqlite_query_connection_keeps_release_artifact_unchanged(tmp_path):
+    db_path = tmp_path / "release.sqlite"
+    shutil.copyfile(REPOSITORY_ROOT / "data" / "epdb.sqlite", db_path)
+    before = db_path.read_bytes()
+
+    connection, is_postgres = query_mod._get_connection(db_path)
+    try:
+        assert not is_postgres
+        assert connection.execute("PRAGMA query_only").fetchone()[0] == 1
+        assert connection.execute("SELECT COUNT(*) FROM reaction").fetchone()[0]
+        with pytest.raises(sqlite3.OperationalError, match="readonly"):
+            connection.execute("DELETE FROM reaction")
+    finally:
+        connection.close()
+
+    assert db_path.read_bytes() == before
+
+
+def test_checked_in_release_uses_immutable_mode(monkeypatch):
+    monkeypatch.delenv("SYNEPD_SQLITE_IMMUTABLE", raising=False)
+    release_path = (REPOSITORY_ROOT / "data" / "epdb.sqlite").resolve()
+    custom_path = (REPOSITORY_ROOT / "data" / "custom.sqlite").resolve()
+
+    assert query_mod._use_immutable_sqlite(release_path)
+    assert not query_mod._use_immutable_sqlite(custom_path)
+
+    monkeypatch.setenv("SYNEPD_SQLITE_IMMUTABLE", "0")
+    assert not query_mod._use_immutable_sqlite(release_path)
+
+
+def test_query_closes_connection_when_database_query_raises(monkeypatch):
+    class FailingConnection:
+        closed = False
+
+        def close(self):
+            self.closed = True
+
+    connection = FailingConnection()
+    monkeypatch.setattr(query_mod, "Standardize", FakeStandardize)
+    monkeypatch.setattr(
+        query_mod,
+        "_get_connection",
+        lambda _db_path: (connection, False),
+    )
+
+    def fail_query(*_args, **_kwargs):
+        raise RuntimeError("forced query failure")
+
+    monkeypatch.setattr(query_mod, "_execute_query", fail_query)
+
+    with pytest.raises(RuntimeError, match="forced query failure"):
+        query_epd_by_reaction(UNMAPPED_RSMI, "unused.sqlite")
+
+    assert connection.closed

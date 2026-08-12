@@ -1,0 +1,219 @@
+taxon_code	taxon_level	taxon_name	relation	match_type	score	ontology_id	ontology_name
+POLAR.01.06.003	4	Halide–Lewis-acid adduct formation	skos:broadMatch	token-superset	0.8	MOP:0000739	Lewis adduct formation
+POLAR.01.06.009	4	Phosphine–borane adduct formation	skos:broadMatch	curated	1.0	MOP:0000739	Lewis adduct formation
+POLAR.02	2	Substitution	skos:exactMatch	token	0.97	MOP:0000790	substitution reaction
+POLAR.02.01.002	4	Williamson ether synthesis	skos:exactMatch	exact	1.0	RXNO:0000090	Williamson ether synthesis
+POLAR.02.01.003	4	Finkelstein reaction	skos:exactMatch	exact	1.0	RXNO:0000155	Finkelstein reaction
+POLAR.02.01.004	4	Gabriel synthesis	skos:exactMatch	exact	1.0	RXNO:0000103	Gabriel synthesis
+POLAR.02.01.020	4	Mitsunobu reaction	skos:exactMatch	curated	1.0	RXNO:0000034	Mitsunobu reaction
+POLAR.02.04.012	4	C-Azo coupling of enolates	skos:broadMatch	token-superset	0.8	RXNO:0000096	azo coupling
+POLAR.02.05	3	Electrophilic aromatic and heteroaromatic substitution	skos:broadMatch	token-superset	0.8	MOP:0000791	aromatic substitution
+POLAR.02.05.006	4	Friedel–Crafts alkylation	skos:exactMatch	exact	1.0	RXNO:0000046	Friedel-Crafts alkylation
+POLAR.02.05.007	4	Friedel–Crafts acylation	skos:exactMatch	exact	1.0	RXNO:0000045	Friedel-Crafts acylation
+POLAR.02.05.008	4	Vilsmeier–Haack formylation	skos:exactMatch	exact	1.0	RXNO:0000055	Vilsmeier-Haack reaction
+POLAR.02.05.010	4	Reimer–Tiemann reaction	skos:exactMatch	exact	1.0	RXNO:0000072	Reimer-Tiemann reaction
+POLAR.02.05.011	4	Duff formylation	skos:exactMatch	curated	1.0	RXNO:0000447	Duff reaction
+POLAR.02.05.012	4	Kolbe–Schmitt carboxylation	skos:broadMatch	token-superset	0.8	RXNO:0000182	Kolbe-Schmitt reaction
+POLAR.02.05.015	4	Pechmann-type aromatic substitution	skos:broadMatch	token-superset	0.8	MOP:0000791	aromatic substitution
+POLAR.02.05.016	4	Azo coupling	skos:exactMatch	exact	1.0	RXNO:0000096	azo coupling
+POLAR.02.07.002	4	Balz–Schiemann fluorination	skos:broadMatch	token-superset	0.8	RXNO:0000127	Balz-Schiemann reaction
+POLAR.02.08.004	4	Tsuji–Trost allylic substitution	skos:broadMatch	token-superset	0.8	RXNO:0000311	Tsuji-Trost reaction
+POLAR.02.08.010	4	Allylic rearrangement substitution	skos:broadMatch	token-superset	0.8	MOP:0000792	allylic rearrangement
+POLAR.02.09.027	4	Atherton–Todd rearrangement	skos:broadMatch	token-superset	0.8	RXNO:0000690	Atherton-Todd reaction
+POLAR.03	2	Addition	skos:exactMatch	token	0.97	MOP:0000642	addition reaction
+POLAR.03.01.005	4	Barbier reaction	skos:exactMatch	exact	1.0	RXNO:0000084	Barbier reaction
+POLAR.03.01.006	4	Reformatsky reaction	skos:exactMatch	exact	1.0	RXNO:0000036	Reformatsky reaction
+POLAR.03.02.003	4	Aza-Henry reaction	skos:exactMatch	exact	1.0	RXNO:0000235	aza-Henry reaction
+POLAR.03.02.005	4	Mannich-type C–C addition to imines or iminium ions	dcterms:isPartOf	curated	1.0	RXNO:0000032	Mannich reaction
+POLAR.03.02.011	4	Reductive-amination iminium capture step	dcterms:isPartOf	curated	1.0	RXNO:0000335	reductive amination
+POLAR.03.03.001	4	Aldol addition	skos:exactMatch	exact	1.0	RXNO:0000016	aldol addition
+POLAR.03.03.002	4	Mukaiyama aldol addition	skos:exactMatch	exact	1.0	RXNO:0000061	Mukaiyama aldol condensation
+POLAR.03.03.003	4	Evans aldol addition	skos:broadMatch	token-superset	0.8	RXNO:0000016	aldol addition
+POLAR.03.03.004	4	Boron aldol addition	skos:broadMatch	token-superset	0.8	RXNO:0000016	aldol addition
+POLAR.03.03.005	4	Zimmerman–Traxler aldol addition	skos:broadMatch	token-superset	0.8	RXNO:0000016	aldol addition
+POLAR.03.03.006	4	Mukaiyama–Mannich addition	skos:broadMatch	curated	1.0	RXNO:0000032	Mannich reaction
+POLAR.03.03.007	4	Vinylogous aldol addition	skos:broadMatch	token-superset	0.8	RXNO:0000016	aldol addition
+POLAR.03.03.008	4	Direct organocatalytic aldol addition	skos:broadMatch	token-superset	0.8	RXNO:0000016	aldol addition
+POLAR.03.03.009	4	Asymmetric proline aldol addition	skos:broadMatch	token-superset	0.8	RXNO:0000016	aldol addition
+POLAR.03.03.011	4	Crossed aldol addition	skos:broadMatch	token-superset	0.8	RXNO:0000016	aldol addition
+POLAR.03.03.012	4	TiCl4-mediated aldol addition	skos:broadMatch	token-superset	0.8	RXNO:0000016	aldol addition
+POLAR.03.03.013	4	Intramolecular aldol addition	skos:broadMatch	token-superset	0.8	RXNO:0000016	aldol addition
+POLAR.03.04	3	Conjugate addition	skos:exactMatch	exact	1.0	RXNO:0000008	conjugate addition
+POLAR.03.04.001	4	Michael addition	skos:exactMatch	exact	1.0	RXNO:0000009	Michael addition
+POLAR.03.04.006	4	Mukaiyama–Michael addition	skos:broadMatch	token-superset	0.8	RXNO:0000009	Michael addition
+POLAR.03.04.008	4	Conjugate nitroalkane addition	skos:broadMatch	token-superset	0.8	RXNO:0000008	conjugate addition
+POLAR.03.04.009	4	Conjugate enolate addition	skos:broadMatch	token-superset	0.8	RXNO:0000008	conjugate addition
+POLAR.03.04.012	4	Nazarov reagent conjugate addition	skos:broadMatch	token-superset	0.8	RXNO:0000008	conjugate addition
+POLAR.03.04.013	4	Phospha-Michael addition	skos:broadMatch	token-superset	0.8	RXNO:0000009	Michael addition
+POLAR.03.04.014	4	Vinylogous Michael addition	skos:broadMatch	token-superset	0.8	RXNO:0000009	Michael addition
+POLAR.03.04.015	4	Conjugate addition to an iminium-activated alkene	skos:broadMatch	token-superset	0.8	RXNO:0000008	conjugate addition
+POLAR.03.04.016	4	Conjugate addition to an electron-poor quinone	skos:broadMatch	token-superset	0.8	RXNO:0000008	conjugate addition
+POLAR.03.04.017	4	Conjugate addition to a coumarin / α-pyrone system	skos:broadMatch	token-superset	0.8	RXNO:0000008	conjugate addition
+POLAR.03.04.018	4	Intramolecular Michael addition	skos:broadMatch	token-superset	0.8	RXNO:0000009	Michael addition
+POLAR.03.05.008	4	Iodolactonization	skos:exactMatch	exact	1.0	RXNO:0000582	iodolactonization
+POLAR.03.05.009	4	Bromolactonization	skos:exactMatch	exact	1.0	RXNO:0000636	bromolactonization
+POLAR.03.05.012	4	Hydroboration addition followed optionally by protonolysis	skos:broadMatch	curated	1.0	RXNO:0000292	hydroboration
+POLAR.03.06.003	4	Pictet–Spengler cyclization	skos:broadMatch	token-superset	0.8	RXNO:0000059	Pictet-Spengler reaction
+POLAR.03.07.003	4	Nitrile alcohol addition step	skos:broadMatch	token-superset	0.8	RXNO:0000041	addition reaction step
+POLAR.04.01.001	4	Fischer esterification	skos:exactMatch	exact	1.0	RXNO:0000167	Fischer-Speier esterification
+POLAR.04.01.011	4	N-Acylation of amines	skos:broadMatch	token-superset	0.8	MOP:0002479	N-acylation
+POLAR.04.01.012	4	O-Acylation of alcohols	skos:broadMatch	token-superset	0.8	MOP:0003479	O-acylation
+POLAR.04.01.014	4	Steglich esterification	skos:exactMatch	exact	1.0	RXNO:0000586	Steglich esterification
+POLAR.04.01.015	4	Yamaguchi esterification	skos:exactMatch	exact	1.0	RXNO:0000309	Yamaguchi esterification
+POLAR.04.03.001	4	Aldol condensation	skos:exactMatch	exact	1.0	RXNO:0000017	aldol condensation
+POLAR.04.03.002	4	Claisen–Schmidt condensation	skos:exactMatch	exact	1.0	RXNO:0000595	Claisen-Schmidt condensation
+POLAR.04.03.003	4	Knoevenagel condensation	skos:exactMatch	exact	1.0	RXNO:0000044	Knoevenagel condensation
+POLAR.04.03.005	4	Perkin reaction	skos:exactMatch	exact	1.0	RXNO:0000003	Perkin reaction
+POLAR.04.03.008	4	Benzoin condensation dehydration variant	skos:broadMatch	token-superset	0.8	RXNO:0000138	benzoin condensation
+POLAR.04.04	3	Acyl-enolate and ester condensation	skos:broadMatch	token-superset	0.8	RXNO:0000317	ester condensation reaction
+POLAR.04.04.001	4	Claisen condensation	skos:exactMatch	exact	1.0	RXNO:0000043	Claisen condensation
+POLAR.04.04.002	4	Crossed Claisen condensation	skos:broadMatch	token-superset	0.8	RXNO:0000043	Claisen condensation
+POLAR.04.04.003	4	Dieckmann condensation	skos:exactMatch	exact	1.0	RXNO:0000065	Dieckmann cyclisation
+POLAR.04.04.006	4	Blaise reaction	skos:exactMatch	exact	1.0	RXNO:0000237	Blaise reaction
+POLAR.04.04.009	4	Darzens condensation	skos:exactMatch	exact	1.0	RXNO:0000077	Darzens reaction
+POLAR.04.04.011	4	Acyloin-type acyl-enolate condensation	skos:broadMatch	token-superset	0.8	RXNO:0000085	acyloin condensation
+POLAR.04.04.012	4	Lactone-forming Claisen condensation	skos:broadMatch	token-superset	0.8	RXNO:0000043	Claisen condensation
+POLAR.04.05.001	4	Morita–Baylis–Hillman reaction	skos:exactMatch	exact	1.0	RXNO:0000076	Baylis-Hillman reaction
+POLAR.04.05.004	4	β-Elimination after conjugate addition	dcterms:isPartOf	curated	1.0	RXNO:0000008	conjugate addition
+POLAR.04.06.004	4	Paal–Knorr pyrrole formation	skos:broadMatch	token-superset	0.8	RXNO:0000161	Paal-Knorr synthesis
+POLAR.04.06.004	4	Paal–Knorr pyrrole formation	skos:broadMatch	token-superset	0.8	RXNO:0000164	Paal-Knorr pyrrole synthesis
+POLAR.04.06.005	4	Paal–Knorr furan formation	skos:broadMatch	token-superset	0.8	RXNO:0000161	Paal-Knorr synthesis
+POLAR.04.06.005	4	Paal–Knorr furan formation	skos:broadMatch	token-superset	0.8	RXNO:0000162	Paal-Knorr furan synthesis
+POLAR.04.06.006	4	Paal–Knorr thiophene formation	skos:broadMatch	token-superset	0.8	RXNO:0000161	Paal-Knorr synthesis
+POLAR.04.06.006	4	Paal–Knorr thiophene formation	skos:broadMatch	token-superset	0.8	RXNO:0000163	Paal-Knorr thiophene synthesis
+POLAR.05.01.006	4	Hofmann elimination	skos:exactMatch	exact	1.0	RXNO:0000166	Hofmann elimination
+POLAR.05.04.003	4	Reimer–Tiemann carbene generation	dcterms:isPartOf	curated	1.0	RXNO:0000072	Reimer-Tiemann reaction
+POLAR.05.04.005	4	Simmons–Smith carbenoid formation step	dcterms:isPartOf	curated	1.0	RXNO:0000258	Simmons-Smith reaction
+POLAR.05.05.001	4	Cope (amine-oxide) elimination	skos:broadMatch	token-superset	0.8	RXNO:0000539	Cope elimination
+POLAR.05.06.001	4	Retro-aldol reaction	skos:exactMatch	exact	1.0	RXNO:0000274	retro-aldol addition
+POLAR.05.06.003	4	Grob fragmentation	skos:exactMatch	exact	1.0	RXNO:0000111	Grob fragmentation
+POLAR.05.07.003	4	Krapcho decarboxylation	skos:exactMatch	exact	1.0	RXNO:0000507	Krapcho decarboxylation
+POLAR.06.01.005	4	Meerwein–Ponndorf–Verley reduction	skos:exactMatch	exact	1.0	RXNO:0000089	Meerwein-Ponndorf-Verley reduction
+POLAR.06.02	3	Hydride abstraction and activated alcohol oxidation	skos:broadMatch	token-superset	0.8	MOP:0000572	alcohol oxidation
+POLAR.06.02.001	4	Oppenauer oxidation	skos:exactMatch	exact	1.0	RXNO:0000047	Oppenauer oxidation
+POLAR.06.02.002	4	Swern oxidation	skos:exactMatch	exact	1.0	RXNO:0000154	Swern oxidation
+POLAR.06.02.006	4	Jones oxidation	skos:exactMatch	exact	1.0	RXNO:0000356	Jones oxidation
+POLAR.06.03.001	4	Prilezhaev epoxidation	skos:exactMatch	exact	1.0	RXNO:0000405	Prilezhaev epoxidation
+POLAR.06.03.002	4	Baeyer–Villiger oxidation and rearrangement	skos:broadMatch	token-superset	0.8	RXNO:0000031	Baeyer-Villiger oxidation
+POLAR.06.03.003	4	Rubottom oxidation	skos:exactMatch	exact	1.0	RXNO:0000669	Rubottom oxidation
+POLAR.06.03.007	4	Sharpless asymmetric dihydroxylation	skos:exactMatch	exact	1.0	RXNO:0000142	Sharpless asymmetric dihydroxylation
+POLAR.06.03.008	4	Jacobsen epoxidation	skos:exactMatch	exact	1.0	RXNO:0000686	Jacobsen epoxidation
+POLAR.06.03.009	4	Shi epoxidation	skos:exactMatch	exact	1.0	RXNO:0000687	Shi epoxidation
+POLAR.06.04.002	4	Imine-to-amine reduction	skos:exactMatch	token	0.97	RXNO:0000343	imine reduction to amine
+POLAR.06.04.003	4	Nitrile-to-amine reduction	skos:exactMatch	token	0.97	RXNO:0000342	nitrile reduction to amine
+POLAR.06.04.004	4	Ester-to-alcohol reduction	skos:broadMatch	token-superset	0.8	MOP:0000577	ester reduction
+POLAR.06.04.005	4	Amide-to-amine reduction	skos:exactMatch	token	0.97	RXNO:0000338	amide reduction to amine
+POLAR.06.04.007	4	Nitro-to-amine reduction	skos:exactMatch	token	0.97	RXNO:0000337	nitro reduction to amine
+POLAR.06.04.011	4	Wolff–Kishner reduction	skos:exactMatch	exact	1.0	RXNO:0000226	Wolff-Kishner reduction
+POLAR.06.04.012	4	Clemmensen reduction	skos:exactMatch	exact	1.0	RXNO:0000038	Clemmensen reduction
+POLAR.06.05.001	4	Alcohol-to-aldehyde oxidation	skos:broadMatch	token-superset	0.8	MOP:0000572	alcohol oxidation
+POLAR.06.05.002	4	Alcohol-to-ketone oxidation	skos:broadMatch	token-superset	0.8	MOP:0000572	alcohol oxidation
+POLAR.06.05.004	4	Amine-to-imine oxidation	skos:broadMatch	token-superset	0.8	MOP:0000575	amine oxidation
+POLAR.06.05.008	4	Benzylic oxidation	skos:exactMatch	exact	1.0	RXNO:0000354	benzylic oxidation
+POLAR.06.05.009	4	Allylic oxidation	skos:exactMatch	exact	1.0	RXNO:0000355	allylic oxidation
+POLAR.06.05.010	4	Pinnick (Lindgren) chlorite oxidation	skos:exactMatch	curated	1.0	RXNO:0000287	Lindgren oxidation
+POLAR.06.05.011	4	Tamao–Fleming oxidation	skos:exactMatch	exact	1.0	RXNO:0000210	Fleming-Tamao oxidation
+POLAR.06.06.001	4	Cannizzaro reaction	skos:exactMatch	exact	1.0	RXNO:0000218	Cannizzaro reaction
+POLAR.06.06.002	4	Crossed Cannizzaro reaction	skos:exactMatch	exact	1.0	RXNO:0000219	crossed Cannizzaro reaction
+POLAR.06.06.003	4	Tishchenko reaction	skos:exactMatch	exact	1.0	RXNO:0000187	Tishchenko reaction
+POLAR.06.08.002	4	Lemieux–Johnson oxidation	skos:exactMatch	exact	1.0	RXNO:0000649	Lemieux-Johnson oxidation
+POLAR.06.11.001	4	IBX oxidation	skos:exactMatch	exact	1.0	RXNO:0000673	IBX oxidation
+POLAR.07.01.002	4	Pinacol rearrangement	skos:exactMatch	exact	1.0	RXNO:0000050	pinacol rearrangement
+POLAR.07.01.006	4	Meyer–Schuster rearrangement	skos:exactMatch	exact	1.0	RXNO:0000476	Meyer-Schuster rearrangement
+POLAR.07.01.007	4	Rupe rearrangement	skos:exactMatch	exact	1.0	RXNO:0000477	Rupe rearrangement
+POLAR.07.01.018	4	Ring-expansion migration	skos:broadMatch	token-superset	0.8	RXNO:0000108	ring expansion
+POLAR.07.02.001	4	Favorskii rearrangement	skos:exactMatch	exact	1.0	RXNO:0000385	Favorskii rearrangement
+POLAR.07.02.002	4	Payne rearrangement	skos:exactMatch	exact	1.0	RXNO:0000120	Payne rearrangement
+POLAR.07.02.006	4	[1,2]-Wittig rearrangement	skos:exactMatch	exact	1.0	RXNO:0000260	[1,2]-Wittig rearrangement
+POLAR.07.02.007	4	[2,3]-Wittig rearrangement	skos:exactMatch	exact	1.0	RXNO:0000261	[2,3]-Wittig rearrangement
+POLAR.07.02.009	4	α-Halosulfone ring-contraction rearrangement	skos:broadMatch	token-superset	0.8	RXNO:0000202	ring rearrangement
+POLAR.07.02.009	4	α-Halosulfone ring-contraction rearrangement	skos:broadMatch	token-superset	0.8	RXNO:0000206	ring contraction
+POLAR.07.02.010	4	Anionic Fries rearrangement	skos:broadMatch	token-superset	0.8	RXNO:0000444	Fries rearrangement
+POLAR.07.02.011	4	Anionic oxy-Cope rearrangement	skos:broadMatch	token-superset	0.8	RXNO:0000028	Cope rearrangement
+POLAR.07.02.011	4	Anionic oxy-Cope rearrangement	skos:broadMatch	token-superset	0.8	RXNO:0000029	oxy-Cope rearrangement
+POLAR.07.03.001	4	Fries rearrangement	skos:exactMatch	exact	1.0	RXNO:0000444	Fries rearrangement
+POLAR.07.03.002	4	Baker–Venkataraman rearrangement	skos:exactMatch	exact	1.0	RXNO:0000122	Baker-Venkataraman rearrangement
+POLAR.07.03.003	4	Benzilic acid rearrangement	skos:exactMatch	exact	1.0	RXNO:0000075	benzilic acid rearrangement
+POLAR.07.03.004	4	Brook rearrangement	skos:exactMatch	exact	1.0	RXNO:0000113	Brook rearrangement
+POLAR.07.03.007	4	Chapman rearrangement	skos:exactMatch	exact	1.0	RXNO:0000514	Chapman rearrangement
+POLAR.07.03.008	4	Mumm rearrangement	skos:exactMatch	exact	1.0	RXNO:0000513	Mumm rearrangement
+POLAR.07.04.001	4	Beckmann rearrangement	skos:exactMatch	exact	1.0	RXNO:0000026	Beckmann rearrangement
+POLAR.07.04.002	4	Hofmann rearrangement	skos:exactMatch	exact	1.0	RXNO:0000410	Hofmann rearrangement
+POLAR.07.04.003	4	Curtius rearrangement	skos:exactMatch	exact	1.0	RXNO:0000054	Curtius rearrangement
+POLAR.07.04.004	4	Lossen rearrangement	skos:exactMatch	exact	1.0	RXNO:0000156	Lossen rearrangement
+POLAR.07.04.006	4	Neber rearrangement	skos:exactMatch	exact	1.0	RXNO:0000189	Neber rearrangement
+POLAR.07.04.008	4	Wolff rearrangement precursor conversion	dcterms:isPartOf	curated	1.0	RXNO:0000051	Wolff rearrangement
+POLAR.07.04.010	4	Boulton–Katritzky rearrangement	skos:exactMatch	exact	1.0	RXNO:0000502	Boulton-Katritzky rearrangement
+POLAR.07.04.011	4	Dimroth rearrangement	skos:exactMatch	exact	1.0	RXNO:0000069	Dimroth rearrangement
+POLAR.07.05	3	Ring expansion and contraction	skos:broadMatch	token-superset	0.8	RXNO:0000108	ring expansion
+POLAR.07.05	3	Ring expansion and contraction	skos:broadMatch	token-superset	0.8	RXNO:0000206	ring contraction
+POLAR.07.05.001	4	Demjanov rearrangement	skos:exactMatch	exact	1.0	RXNO:0000382	Demjanov rearrangement
+POLAR.07.05.002	4	Tiffeneau–Demjanov rearrangement	skos:exactMatch	exact	1.0	RXNO:0000381	Tiffeneau-Demjanov rearrangement
+POLAR.07.05.003	4	Cyclobutanone ring contraction	skos:broadMatch	token-superset	0.8	RXNO:0000206	ring contraction
+POLAR.07.05.004	4	Azetidine ring expansion	skos:broadMatch	token-superset	0.8	RXNO:0000108	ring expansion
+POLAR.07.05.005	4	Epoxide ring expansion	skos:broadMatch	token-superset	0.8	RXNO:0000108	ring expansion
+POLAR.07.06.002	4	Ramberg–Bäcklund fragmentation	skos:broadMatch	token-superset	0.8	RXNO:0000094	Ramberg-Bäcklund reaction
+POLAR.07.08.001	4	Ferrier rearrangement	skos:exactMatch	exact	1.0	RXNO:0000229	Ferrier rearrangement
+POLAR.07.08.018	4	Glycal allylic rearrangement	skos:broadMatch	token-superset	0.8	MOP:0000792	allylic rearrangement
+POLAR.07.09.001	4	Pummerer rearrangement	skos:exactMatch	exact	1.0	RXNO:0000220	Pummerer rearrangement
+POLAR.07.10.001	4	Stevens rearrangement of ammonium ylides	skos:broadMatch	token-superset	0.8	RXNO:0000194	Stevens rearrangement
+POLAR.07.10.001	4	Stevens rearrangement of ammonium ylides	skos:broadMatch	token-superset	0.8	RXNO:0000195	Stevens rearrangement, ammonium
+POLAR.07.10.002	4	Stevens rearrangement of sulfonium ylides	skos:broadMatch	token-superset	0.8	RXNO:0000194	Stevens rearrangement
+POLAR.07.10.003	4	Sulfur-ylide allylic rearrangement	skos:broadMatch	token-superset	0.8	MOP:0000792	allylic rearrangement
+POLAR.07.10.004	4	Sommelet–Hauser rearrangement of ammonium ylides	skos:broadMatch	token-superset	0.8	RXNO:0000174	Sommelet-Hauser rearrangement
+POLAR.07.11.002	4	Allylic alcohol rearrangement under acid	skos:broadMatch	token-superset	0.8	MOP:0000792	allylic rearrangement
+POLAR.07.11.006	4	Cationic ring-contraction rearrangement	skos:broadMatch	token-superset	0.8	RXNO:0000202	ring rearrangement
+POLAR.07.11.006	4	Cationic ring-contraction rearrangement	skos:broadMatch	token-superset	0.8	RXNO:0000206	ring contraction
+POLAR.07.11.007	4	Cationic ring-expansion rearrangement	skos:broadMatch	token-superset	0.8	RXNO:0000108	ring expansion
+POLAR.07.11.007	4	Cationic ring-expansion rearrangement	skos:broadMatch	token-superset	0.8	RXNO:0000202	ring rearrangement
+POLAR.08.01.001	4	Robinson annulation	skos:exactMatch	exact	1.0	RXNO:0000380	Robinson annulation
+POLAR.08.01.002	4	Mannich reaction	skos:exactMatch	exact	1.0	RXNO:0000032	Mannich reaction
+POLAR.08.01.003	4	Benzoin condensation	skos:exactMatch	exact	1.0	RXNO:0000138	benzoin condensation
+POLAR.08.01.005	4	Darzens reaction	skos:exactMatch	exact	1.0	RXNO:0000077	Darzens reaction
+POLAR.08.01.006	4	Japp–Klingemann reaction	skos:exactMatch	exact	1.0	RXNO:0000158	Japp-Klingemann reaction
+POLAR.08.01.011	4	Pictet–Spengler net condensation	skos:broadMatch	token-superset	0.8	RXNO:0000059	Pictet-Spengler reaction
+POLAR.08.02.001	4	Boc protection	skos:exactMatch	exact	1.0	RXNO:0000079	Boc protection
+POLAR.08.02.002	4	Boc deprotection	skos:exactMatch	exact	1.0	RXNO:0000326	Boc deprotection
+POLAR.08.02.005	4	Fmoc protection	skos:exactMatch	exact	1.0	RXNO:0000160	Fmoc protection
+POLAR.08.02.006	4	Silyl ether protection	skos:broadMatch	token-superset	0.8	RXNO:0000328	silyl protection
+POLAR.08.02.008	4	Acetal protection	skos:exactMatch	exact	1.0	RXNO:0000658	acetal protection
+POLAR.08.03.008	4	Diazotization	skos:exactMatch	exact	1.0	RXNO:0000013	diazotisation
+POLAR.08.03.009	4	Mitsunobu azo-dicarboxylate alcohol-activation stage	dcterms:isPartOf	curated	1.0	RXNO:0000034	Mitsunobu reaction
+POLAR.08.03.010	4	Appel bromination with tetrabromomethane	skos:exactMatch	curated	1.0	RXNO:0000554	Appel bromination with tetrabromomethane
+POLAR.08.04.001	4	Ugi reaction	skos:exactMatch	exact	1.0	RXNO:0000129	Ugi reaction
+POLAR.08.04.002	4	Passerini reaction	skos:exactMatch	exact	1.0	RXNO:0000244	Passerini reaction
+POLAR.08.04.003	4	Biginelli reaction	skos:exactMatch	exact	1.0	RXNO:0000236	Biginelli reaction
+POLAR.08.04.004	4	Hantzsch 1,4-dihydropyridine synthesis	skos:exactMatch	curated	1.0	RXNO:0000268	Hantzsch pyridine synthesis
+POLAR.08.04.005	4	Gewald reaction	skos:exactMatch	exact	1.0	RXNO:0000578	Gewald reaction
+POLAR.08.04.006	4	Kabachnik–Fields reaction	skos:exactMatch	exact	1.0	RXNO:0000676	Kabachnik-Fields reaction
+POLAR.08.04.007	4	Groebke–Blackburn–Bienaymé reaction	skos:exactMatch	exact	1.0	RXNO:0000670	Groebke-Blackburn-Bienaymé reaction
+POLAR.08.04.009	4	Asinger reaction	skos:exactMatch	exact	1.0	RXNO:0000688	Asinger reaction
+POLAR.08.04.013	4	Betti reaction	skos:exactMatch	exact	1.0	RXNO:0000522	Betti reaction
+POLAR.08.05.006	4	Pictet–Spengler cascade	skos:broadMatch	token-superset	0.8	RXNO:0000059	Pictet-Spengler reaction
+POLAR.08.07.001	4	Alcohol-to-halide conversion	skos:exactMatch	token	0.97	RXNO:0000364	alcohol to halide conversion
+POLAR.08.07.005	4	Arndt–Eistert homologation	skos:broadMatch	token-superset	0.8	RXNO:0000063	Arndt-Eistert reaction
+POLAR.08.07.006	4	Hofmann rearrangement/degradation (overall sequence)	skos:broadMatch	token-superset	0.8	RXNO:0000410	Hofmann rearrangement
+POLAR.08.07.008	4	Nitrile-to-carboxylic-acid conversion	skos:broadMatch	token-superset	0.8	RXNO:0000366	nitrile to acid conversion
+POLAR.08.08.001	4	Wittig reaction	skos:exactMatch	exact	1.0	RXNO:0000015	Wittig reaction
+POLAR.08.08.002	4	Horner–Wadsworth–Emmons reaction	skos:exactMatch	exact	1.0	RXNO:0000056	Horner-Wadsworth-Emmons reaction
+POLAR.08.08.005	4	Julia olefination	skos:exactMatch	exact	1.0	RXNO:0000117	Julia olefination
+POLAR.08.08.006	4	Julia–Kocienski olefination	skos:exactMatch	exact	1.0	RXNO:0000304	Julia-Kocienski olefination
+POLAR.08.08.007	4	Peterson olefination sequence	skos:broadMatch	token-superset	0.8	RXNO:0000080	Peterson olefination
+POLAR.08.08.008	4	Corey–Fuchs reaction	skos:exactMatch	curated	1.0	RXNO:0000146	Corey-Fuchs reaction
+POLAR.08.08.009	4	Seyferth–Gilbert homologation	skos:exactMatch	exact	1.0	RXNO:0000387	Seyferth-Gilbert homologation
+POLAR.08.08.013	4	Corey–Fuchs terminal dibromoolefination stage	skos:exactMatch	curated	1.0	RXNO:0000556	Corey-Fuchs terminal dibromoolefination
+POLAR.08.09.001	4	Fischer indole synthesis	skos:exactMatch	exact	1.0	RXNO:0000064	Fischer indole synthesis
+POLAR.08.09.002	4	Bischler–Napieralski reaction	skos:exactMatch	exact	1.0	RXNO:0000053	Bischler-Napieralski reaction
+POLAR.08.09.003	4	Skraup synthesis	skos:exactMatch	token	0.97	RXNO:0000062	Skraup reaction
+POLAR.08.09.004	4	Friedländer quinoline synthesis	skos:exactMatch	exact	1.0	RXNO:0000577	Friedlander quinoline synthesis
+POLAR.08.09.005	4	Doebner–Miller quinoline synthesis	skos:broadMatch	token-superset	0.8	RXNO:0000159	Doebner-Miller reaction
+POLAR.08.09.006	4	Pomeranz–Fritsch reaction	skos:exactMatch	exact	1.0	RXNO:0000585	Pomeranz–Fritsch reaction
+POLAR.08.09.007	4	Knorr pyrazole synthesis	skos:exactMatch	exact	1.0	RXNO:0000391	Knorr pyrazole synthesis
+POLAR.08.09.010	4	Pinner synthesis	skos:exactMatch	token	0.97	RXNO:0000361	Pinner reaction
+POLAR.08.09.011	4	Niementowski quinazoline synthesis	skos:exactMatch	exact	1.0	RXNO:0000583	Niementowski quinazoline synthesis
+POLAR.08.09.012	4	Leimgruber–Batcho indole synthesis	skos:exactMatch	exact	1.0	RXNO:0000672	Leimgruber-Batcho indole synthesis
+POLAR.08.09.013	4	Bischler–Möhlau indole synthesis	skos:exactMatch	exact	1.0	RXNO:0000523	Bischler-Möhlau indole synthesis
+POLAR.08.09.014	4	Combes quinoline synthesis	skos:exactMatch	exact	1.0	RXNO:0000642	Combes quinoline synthesis
+POLAR.08.10.002	4	N-Glycosylation by glycosyl-halide substitution	skos:broadMatch	token-superset	0.8	MOP:0000793	N-substitution
+POLAR.08.10.003	4	O-Glycosylation by glycosyl-halide substitution	skos:broadMatch	token-superset	0.8	MOP:0000794	O-substitution
+POLAR.08.10.004	4	S-Glycosylation by glycosyl-halide substitution	skos:broadMatch	token-superset	0.8	MOP:0000795	S-substitution

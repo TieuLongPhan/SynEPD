@@ -3,6 +3,60 @@ Changelog
 
 All notable changes to SynEPD are documented here.
 
+0.4.0 - 2026-08-12
+------------------
+
+SynEPD 0.4.0 delivers a chemically reviewed polar-mechanism corpus, an expanded
+POLAR taxonomy, reusable EPD-aware mechanistic centres, and a streamlined web
+explorer.
+
+* Released 1,926 reactions, 8,123 electron-pushing arrows, 1,521 reaction-centre
+  templates, 1,540 mechanistic-centre templates, 1,926 ITS graphs, 2,277
+  molecules, and 939 taxonomy nodes.
+* Corrected reaction structures, atom provenance, arrow order, reagent
+  bookkeeping, and incomplete named-reaction endpoints. Complete trajectories
+  now cover Mitsunobu, Reimer–Tiemann, Pinnick/Lindgren, Corey–Fuchs, Duff, and
+  other multi-stage transformations while retaining useful isolated stages.
+* Added reusable mechanistic-centre templates that combine the induced reaction
+  centre with EPD transition edges. Of the 1,540 templates, 284 (18.44%) are
+  EPD-enriched relative to RC and 229 (14.87%) structurally extend the complete
+  induced RC.
+* Linked every ITS directly to its RC and MC templates, retained exact
+  reaction-specific mechanism context as an internal derived cache, and
+  simplified the public database model to its core chemical relations.
+* Expanded and corrected the POLAR hierarchy, added stable taxonomy-linked
+  entry codes and multi-label assignments, and preserved redirects for retired
+  taxonomy concepts.
+* Pinned the RXNO 2021-12-16 ontology and published 218 reviewed RXNO/MOP links
+  covering 209 POLAR taxa. The versioned crosswalk remains an external linkage
+  artifact and is resolved through the taxonomy and reaction APIs without
+  duplicating it in the chemistry database.
+* Updated the explorer with CDK Depict as the primary 2D renderer, an automatic
+  local RDKit fallback, 4x mechanism autoplay, RC/MC comparison, accessible
+  mechanistic insight charts, and an editable TikZ/SVG/PNG database figure.
+* Added atomic release builds, a checksummed manifest, compressed responses,
+  bounded caches and exports, reliable connection handling, and configurable
+  multi-worker deployment controls.
+* Raised the minimum SynKit dependency to 1.6.0 and regenerated the SQLite
+  database, release manifest, taxonomy assets, and documentation from the
+  curated sources.
+
+0.3.0 - 2026-07-16
+------------------
+
+* Added ``scripts/build_rxno_mapping.py``, a deterministic pipeline that maps
+  the taxonomy onto the RSC Name Reaction Ontology (RXNO) and Molecular Process
+  Ontology (MOP), committing a SKOS crosswalk (``data/rxno_crosswalk.tsv`` and
+  ``docs/source/_static/rxno_crosswalk.ttl``) plus scored review candidates, and
+  ``scripts/compare_taxonomy_rxno.py`` for coverage and divergence reporting.
+* Added ``synepd/render_epd_pdf.py``, a reaction-diagram PDF generator that
+  renders polar records through the CDK Depict service (matching the web 2D
+  reaction diagram) with atom-map indices, fully explicit atoms, and
+  SMILES-explicit hydrogens, falling back to RDKit when CDK Depict is
+  unreachable.
+* Redacted backend exception text from client-visible 4xx responses in the
+  balance-check, similarity-search, and substructure-search endpoints.
+
 0.2.0 - 2026-07-15
 ------------------
 

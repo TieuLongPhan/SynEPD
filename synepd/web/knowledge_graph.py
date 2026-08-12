@@ -26,8 +26,8 @@ and avoids hairballs on highly-connected hubs.
 
 from __future__ import annotations
 
+import logging
 import os
-import json
 import threading
 from collections import deque
 from pathlib import Path
@@ -38,6 +38,8 @@ from fastapi import APIRouter, HTTPException, Query
 from synepd.core.query import _get_connection, _execute_query
 
 router = APIRouter(prefix="/kg", tags=["knowledge-graph"])
+
+logger = logging.getLogger("synepd.kg")
 
 # --------------------------------------------------------------------------- #
 # Config / helpers
@@ -189,8 +191,6 @@ def _reaction_node(
     rc_id: Optional[int] = None,
     wlhash: Optional[str] = None,
     rsmi: Optional[str] = None,
-    context_hash: Optional[str] = None,
-    mechanism_event_count: Optional[int] = None,
 ) -> Dict[str, Any]:
     """The CRN "reaction" node. It is keyed per reaction (so reactant/product
     pairing stays correct) but is *presented* as its mechanistic template:
@@ -211,8 +211,6 @@ def _reaction_node(
         "name": name,
         "taxon": taxon,
         "rsmi": rsmi,
-        "mechanism_context_hash": context_hash,
-        "mechanism_event_count": mechanism_event_count,
         "ref_id": rxn_id,
         "expandable": True,
         "openable": True,
@@ -345,25 +343,8 @@ def _expand_reactions(
         if rsmi:
             rsmi_map[r_id] = rsmi
 
-    context_map: Dict[int, Tuple[Optional[str], Optional[int]]] = {}
-    cur = _execute_query(
-        conn,
-        is_pg,
-        f"""SELECT reaction_id, context_hash, events_json
-            FROM mechanism_context
-            WHERE reaction_id IN ({placeholders})""",
-        tuple(reaction_ids),
-    )
-    for r_id, context_hash, events_json in cur.fetchall():
-        try:
-            event_count = len(json.loads(events_json))
-        except (TypeError, json.JSONDecodeError):
-            event_count = 0
-        context_map[r_id] = (context_hash, event_count)
-
     for rxn_id, case_id, name in reaction_rows:
         rc_id, wlhash = rc_map.get(rxn_id, (None, None))
-        context_hash, event_count = context_map.get(rxn_id, (None, None))
         acc.add_node(
             _reaction_node(
                 rxn_id,
@@ -373,8 +354,6 @@ def _expand_reactions(
                 rc_id=rc_id,
                 wlhash=wlhash,
                 rsmi=rsmi_map.get(rxn_id),
-                context_hash=context_hash,
-                mechanism_event_count=event_count,
             )
         )
 
@@ -809,8 +788,12 @@ def kg_similar_reactions(
     try:
         hits = _top_k_similar(rsmi, top_k)
     except Exception as exc:
+        # The failure may come from the cached fingerprint matrix rather than
+        # the user's SMILES; log the cause and return a fixed message so
+        # backend details never reach the client.
+        logger.warning("Reaction similarity search failed: %s", exc)
         raise HTTPException(
-            status_code=422, detail=f"Could not fingerprint reaction SMILES: {exc}"
+            status_code=422, detail="Could not fingerprint reaction SMILES"
         )
 
     if not hits:
@@ -874,42 +857,6 @@ def kg_reactions_by_wlhash(
         conn.close()
 
 
-@router.get("/reactions-by-context-hash")
-def kg_reactions_by_context_hash(
-    context_hash: str = Query(..., min_length=64, max_length=64),
-    max_reactions: int = DEFAULT_MAX_REACTIONS,
-):
-    """Return reactions sharing one exact EPD-aware mechanistic context."""
-    max_reactions = _clamp(max_reactions, 1, HARD_MAX_REACTIONS)
-    conn, is_pg = _get_connection(_db_path())
-    try:
-        total = _execute_query(
-            conn,
-            is_pg,
-            "SELECT COUNT(*) FROM mechanism_context WHERE context_hash = ?",
-            (context_hash,),
-        ).fetchone()[0]
-        cur = _execute_query(
-            conn,
-            is_pg,
-            """SELECT r.id, r.case_id, r.name
-               FROM mechanism_context mc
-               JOIN reaction r ON r.id = mc.reaction_id
-               WHERE mc.context_hash = ?
-               ORDER BY r.case_id LIMIT ?""",
-            (context_hash, max_reactions),
-        )
-        results = [_reaction_node(row[0], row[1], row[2]) for row in cur.fetchall()]
-        return {
-            "context_hash": context_hash,
-            "results": results,
-            "total": total,
-            "truncated": total > max_reactions,
-        }
-    finally:
-        conn.close()
-
-
 @router.get("/substructure-search")
 def kg_substructure_search(
     smarts: str = Query(..., description="SMARTS pattern to match against molecules"),
@@ -922,8 +869,8 @@ def kg_substructure_search(
     max_hits = _clamp(max_hits, 1, 200)
     try:
         pat = Chem.MolFromSmarts(smarts)
-    except Exception as exc:
-        raise HTTPException(status_code=422, detail=f"Invalid SMARTS: {exc}")
+    except Exception:
+        pat = None
     if pat is None:
         raise HTTPException(status_code=422, detail="Invalid SMARTS pattern")
 

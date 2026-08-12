@@ -147,13 +147,16 @@ function switchTab(tabId) {
     }
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        const onclickStr = btn.getAttribute('onclick');
-        const isActive = Boolean(onclickStr && onclickStr.includes(`'${tabId}'`));
+        const isActive = btn.dataset.tab === tabId;
         btn.classList.toggle('active', isActive);
         btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        btn.setAttribute('tabindex', isActive ? '0' : '-1');
     });
-    document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-    targetPane.classList.add('active');
+    document.querySelectorAll('.tab-pane').forEach(pane => {
+        const isActive = pane === targetPane;
+        pane.classList.toggle('active', isActive);
+        pane.hidden = !isActive;
+    });
 
     if (tabId === 'history') {
         renderHistory();
@@ -390,6 +393,53 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
+function ontologyTermUrl(ontologyId) {
+    const match = String(ontologyId || '').match(/^([A-Za-z][A-Za-z0-9]*):(\d+)$/);
+    if (!match) return null;
+    return `https://purl.obolibrary.org/obo/${match[1].toUpperCase()}_${match[2]}`;
+}
+
+function readableRelation(value) {
+    const labels = {
+        'skos:exactMatch': 'exact match',
+        'skos:broadMatch': 'broader concept',
+        'skos:closeMatch': 'close match',
+        'dcterms:isPartOf': 'part of',
+    };
+    if (labels[value]) return labels[value];
+    return String(value || '')
+        .replace(/^[^:]+:/, '')
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, character => character.toUpperCase());
+}
+
+function buildOntologyXrefList(xrefs, compact = false) {
+    const entries = Array.isArray(xrefs) ? xrefs : [];
+    if (!entries.length) return null;
+
+    const list = document.createElement('div');
+    list.className = compact ? 'ontology-xrefs compact' : 'ontology-xrefs';
+    entries.forEach(xref => {
+        const url = ontologyTermUrl(xref.ontology_id);
+        const item = document.createElement(url ? 'a' : 'span');
+        item.className = 'ontology-xref';
+        if (url) {
+            item.href = url;
+            item.target = '_blank';
+            item.rel = 'noopener noreferrer';
+            item.addEventListener('click', event => event.stopPropagation());
+        }
+        item.textContent = compact
+            ? `${xref.ontology_id} · ${readableRelation(xref.relation)}`
+            : xref.ontology_id;
+        item.title = [xref.name, readableRelation(xref.relation)]
+            .filter(Boolean)
+            .join(' · ');
+        list.appendChild(item);
+    });
+    return list;
+}
+
 // Load Taxonomy Tree
 async function loadTaxonomyTree() {
     const container = document.getElementById('taxonomy-tree-container');
@@ -398,15 +448,32 @@ async function loadTaxonomyTree() {
         const data = await res.json();
         container.innerHTML = '';
         buildTreeNode(data.taxonomy, container);
+        const releaseBox = document.getElementById('taxonomy-ontology-release');
+        const release = Array.isArray(data.ontology_releases)
+            ? data.ontology_releases[0]
+            : null;
+        if (releaseBox && release) {
+            releaseBox.replaceChildren();
+            const label = document.createElement('span');
+            label.textContent = `External mappings: RXNO ${release.data_version}`;
+            releaseBox.appendChild(label);
+            if (release.version_iri) {
+                const link = document.createElement('a');
+                link.href = release.version_iri;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.textContent = 'release provenance ↗';
+                releaseBox.appendChild(link);
+            }
+            releaseBox.hidden = false;
+        }
     } catch (err) {
         container.innerHTML = '<p style="color: var(--accent-red);">Failed to load taxonomy.</p>';
     }
 }
 
 function countSubtreeReactions(node) {
-    let count = node.reaction_count || 0;
-    if (node.children) node.children.forEach(c => { count += countSubtreeReactions(c); });
-    return count;
+    return node.subtree_reaction_count ?? node.reaction_count ?? 0;
 }
 
 function makeTaxonomyReactionItem(rxn) {
@@ -465,11 +532,28 @@ function buildTreeNode(nodes, container) {
         
         const header = document.createElement('div');
         header.className = "tree-header";
-        header.innerHTML = `
-            <span class="tree-toggle ${hasChildren ? '' : 'leaf'}">${hasChildren ? '▶' : '•'}</span>
-            <span style="font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${node.code} — ${node.name}</span>
-            ${subtreeCount > 0 ? `<span class="tree-count-badge">${subtreeCount}</span>` : ''}
-        `;
+        const toggle = document.createElement('span');
+        toggle.className = `tree-toggle ${hasChildren ? '' : 'leaf'}`;
+        toggle.textContent = hasChildren ? '▶' : '•';
+        header.appendChild(toggle);
+
+        const label = document.createElement('span');
+        label.className = 'taxonomy-node-label';
+        const title = document.createElement('span');
+        title.className = 'taxonomy-node-title';
+        title.textContent = `${node.code} — ${node.name}`;
+        label.appendChild(title);
+        const xrefs = buildOntologyXrefList(node.xrefs, true);
+        if (xrefs) label.appendChild(xrefs);
+        header.appendChild(label);
+
+        if (subtreeCount > 0) {
+            const count = document.createElement('span');
+            count.className = 'tree-count-badge';
+            count.textContent = String(subtreeCount);
+            count.title = 'Distinct reactions in this taxonomy branch';
+            header.appendChild(count);
+        }
         
         nodeDiv.appendChild(header);
 
@@ -527,10 +611,10 @@ function filterTaxonomyTree(query) {
     });
 }
 
-function copyText(elementId) {
+function copyText(elementId, btn) {
     const text = document.getElementById(elementId).innerText;
     navigator.clipboard.writeText(text).then(() => {
-        const btn = event.currentTarget;
+        if (!btn) return;
         const origText = btn.innerText;
         btn.innerText = "✓ Copied";
         btn.style.color = "var(--accent-green)";
@@ -544,6 +628,15 @@ function copyText(elementId) {
 }
 
 function loadQueryEPDResult(data) {
+    stopPlayback();
+    const mechanismCandidates = Array.isArray(data.mechanism_candidates)
+        ? data.mechanism_candidates
+        : [];
+    const projectedArrows = Array.isArray(data.arrows) ? data.arrows : [];
+    const selectedCandidateIndex = (
+        projectedArrows.length === 0 && mechanismCandidates.length > 0
+    ) ? 0 : null;
+
     activeReaction = {
         id: data.id || data.reaction_id || null,
         case_id: data.case_id || "Projected Query",
@@ -552,12 +645,17 @@ function loadQueryEPDResult(data) {
         aam_key: data.mapped_rsmi,
         canonical_aam_key: data.canonical_aam_key || null,
         taxonomy: data.taxonomy || { code: "DYNAMIC", name: "Custom EPD Projection", level: 4 },
-        arrows: data.arrows,
+        arrows: selectedCandidateIndex === null
+            ? projectedArrows
+            : (mechanismCandidates[selectedCandidateIndex].arrows || []),
         its_graph: data.its_graph,
-        mechanism_context: data.mechanism_context || null,
+        mechanistic_center: data.mechanistic_center || null,
         mechanism_ambiguous: data.mechanism_ambiguous || false,
-        mechanism_candidate_count: data.mechanism_candidate_count || 0,
-        mechanism_candidates: data.mechanism_candidates || [],
+        mechanism_candidate_count: data.mechanism_candidate_count || mechanismCandidates.length,
+        mechanism_candidates: mechanismCandidates,
+        selected_mechanism_candidate_index: selectedCandidateIndex,
+        ontology_xrefs: Array.isArray(data.ontology_xrefs) ? data.ontology_xrefs : [],
+        ontology_releases: Array.isArray(data.ontology_releases) ? data.ontology_releases : [],
         balanced_from_imbalanced: data.balanced_from_imbalanced || false,
         original_imbalanced_query: data.original_imbalanced_query || null
     };
@@ -567,7 +665,8 @@ function loadQueryEPDResult(data) {
 let reactionLoadSeq = 0;
 let reactionLoadAbort = null;
 
-async function loadReaction(rxnId) {
+async function loadReaction(rxnId, { historyMode = 'push' } = {}) {
+    stopPlayback();
     const seq = ++reactionLoadSeq;
     if (reactionLoadAbort) reactionLoadAbort.abort();
     reactionLoadAbort = new AbortController();
@@ -583,7 +682,12 @@ async function loadReaction(rxnId) {
         
         addToHistory(activeReaction);
 
-        history.pushState({ reactionId: rxnId }, '', `#reaction/${rxnId}`);
+        const state = { reactionId: Number(rxnId) };
+        if (historyMode === 'replace') {
+            history.replaceState(state, '', `#reaction/${rxnId}`);
+        } else if (historyMode === 'push') {
+            history.pushState(state, '', `#reaction/${rxnId}`);
+        }
         renderReactionDetails();
     } catch (err) {
         if (err.name === 'AbortError') return;
@@ -627,6 +731,10 @@ function downloadReaction() {
                 canonical_smiles: activeReaction.canonical_rsmi,
                 atom_mapped_smiles: activeReaction.aam_key,
                 taxonomy_code: activeReaction.taxonomy ? activeReaction.taxonomy.code : null,
+                mechanism_ambiguous: activeReaction.mechanism_ambiguous,
+                selected_mechanism_candidate_index: activeReaction.selected_mechanism_candidate_index,
+                mechanism_candidates: activeReaction.mechanism_candidates,
+                ontology_xrefs: activeReaction.ontology_xrefs || [],
                 epd_lw: activeReaction.arrows.map(arr => [
                     arr.arrow_type_code,
                     arr.source_atoms,
@@ -678,7 +786,7 @@ function renderReactionDetails() {
             <div class="smiles-box">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
                     <span class="smiles-label">Canonical SMILES</span>
-                    <button class="copy-btn" onclick="copyText('detail-smiles')" title="Copy to Clipboard">📋 Copy</button>
+                    <button class="copy-btn" onclick="copyText('detail-smiles', this)" title="Copy to Clipboard">📋 Copy</button>
                 </div>
                 <div id="detail-smiles">CC[O-]>>CCO</div>
             </div>
@@ -686,45 +794,44 @@ function renderReactionDetails() {
             <div class="smiles-box">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
                     <span class="smiles-label">Atom-Mapped key</span>
-                    <button class="copy-btn" onclick="copyText('detail-aam')" title="Copy to Clipboard">📋 Copy</button>
+                    <button class="copy-btn" onclick="copyText('detail-aam', this)" title="Copy to Clipboard">📋 Copy</button>
                 </div>
                 <div id="detail-aam">AAM Key</div>
             </div>
 
-            <!-- CDK Depict 2D Reaction Diagram -->
-            <div class="section-collapsible" id="cdk-depict-section">
-                <button class="section-toggle" onclick="toggleSection('cdk-depict-body')">2D Reaction Diagram ▾</button>
-                <div id="cdk-depict-body" class="section-toggle-body">
+            <!-- CDK Depict 2D reaction diagram with local RDKit fallback -->
+            <div class="section-collapsible" id="reaction-depict-section">
+                <button class="section-toggle" onclick="toggleSection('reaction-depict-body')">2D Reaction Diagram ▾</button>
+                <div id="reaction-depict-body" class="section-toggle-body">
                     <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.75rem; margin-bottom:0.5rem;">
                         <label style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:var(--text-secondary); cursor:pointer; user-select:none;">
-                            <input type="checkbox" id="cdk-aam-toggle" onchange="renderCDKDepict()" style="cursor:pointer; accent-color:var(--accent-cyan);">
+                            <input type="checkbox" id="depict-aam-toggle" onchange="renderReactionDepict()" style="cursor:pointer; accent-color:var(--accent-cyan);">
                             <span>Atom mapping</span>
                         </label>
                         <label style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:var(--text-secondary); cursor:pointer; user-select:none;">
-                            <input type="checkbox" id="cdk-abbr-toggle" onchange="renderCDKDepict()" style="cursor:pointer; accent-color:var(--accent-cyan);">
-                            <span>Abbreviations</span>
+                            <input type="checkbox" id="depict-local-toggle" onchange="setDepictPreference(this.checked)" style="cursor:pointer; accent-color:var(--accent-cyan);">
+                            <span>Use local RDKit</span>
                         </label>
-                        <div style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:var(--text-secondary);">
-                            <span>H:</span>
-                            <select id="cdk-hdisp" onchange="renderCDKDepict()" style="background:var(--bg-tertiary); border:1px solid var(--border); color:var(--text-primary); border-radius:4px; padding:0.1rem 0.3rem; font-size:0.72rem; cursor:pointer;">
-                                <option value="bridgehead">Bridgehead</option>
-                                <option value="stereo">Stereo</option>
-                                <option value="implicit">Implicit</option>
-                                <option value="all">All</option>
-                            </select>
-                        </div>
                     </div>
-                    <div id="cdk-depict-container"></div>
+                    <p class="depict-privacy-note">CDK Depict is an external service and receives the displayed SMILES. Choose local RDKit to keep rendering on this server.</p>
+                    <div id="reaction-depict-container"></div>
                 </div>
             </div>
 
             <!-- SMILES change summary diff -->
             <div id="change-summary" style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.75rem;"></div>
 
-            <div class="section-collapsible" id="mechanism-context-section" style="display:none;">
-                <button class="section-toggle" onclick="toggleSection('mechanism-context-body')">Mechanistic Center ▾</button>
-                <div id="mechanism-context-body" class="section-toggle-body">
-                    <div id="mechanism-context-summary" style="font-size:0.78rem; color:var(--text-secondary); line-height:1.55;"></div>
+            <div class="section-collapsible" id="linked-data-section" style="display:none;">
+                <button class="section-toggle" onclick="toggleSection('linked-data-body')">External Ontology Links ▾</button>
+                <div id="linked-data-body" class="section-toggle-body">
+                    <div id="linked-data-summary"></div>
+                </div>
+            </div>
+
+            <div class="section-collapsible" id="mechanistic-center-section" style="display:none;">
+                <button class="section-toggle" onclick="toggleSection('mechanistic-center-body')">Mechanistic Center ▾</button>
+                <div id="mechanistic-center-body" class="section-toggle-body">
+                    <div id="mechanistic-center-summary" style="font-size:0.78rem; color:var(--text-secondary); line-height:1.55;"></div>
                     <button id="mechanism-view-toggle" class="download-btn" onclick="toggleMechanismView()" style="margin-top:0.65rem;">Show mechanistic center</button>
                 </div>
             </div>
@@ -802,7 +909,8 @@ function renderReactionDetails() {
     markTransitionBonds(activeReaction.its_graph, activeReaction.arrows);
     const summary = computeChangeSummary(activeReaction.its_graph);
     renderChangeSummary(summary);
-    renderMechanismContextSummary();
+    renderLinkedDataSummary();
+    renderMechanisticCenterSummary();
 
     // Update steps list
     const stepsContainer = document.getElementById('detail-step-list');
@@ -852,26 +960,120 @@ function renderReactionDetails() {
     updateStepNavigation();
     drawGraph();
 
-    const cdkToggle = document.getElementById('cdk-aam-toggle');
-    if (cdkToggle) cdkToggle.checked = false;
-    const cdkAbbrToggle = document.getElementById('cdk-abbr-toggle');
-    if (cdkAbbrToggle) cdkAbbrToggle.checked = false;
-    const cdkHdisp = document.getElementById('cdk-hdisp');
-    if (cdkHdisp) cdkHdisp.value = 'bridgehead';
-    renderCDKDepict();
+    const depictToggle = document.getElementById('depict-aam-toggle');
+    if (depictToggle) depictToggle.checked = false;
+    const localDepictToggle = document.getElementById('depict-local-toggle');
+    if (localDepictToggle) localDepictToggle.checked = prefersLocalDepict();
+    renderReactionDepict();
+    startPlayback();
 }
 
-function renderMechanismContextSummary() {
-    const section = document.getElementById('mechanism-context-section');
-    const summary = document.getElementById('mechanism-context-summary');
+function renderLinkedDataSummary() {
+    const section = document.getElementById('linked-data-section');
+    const summary = document.getElementById('linked-data-summary');
+    if (!section || !summary) return;
+
+    const xrefs = Array.isArray(activeReaction.ontology_xrefs)
+        ? activeReaction.ontology_xrefs
+        : [];
+    summary.replaceChildren();
+    section.style.display = xrefs.length ? 'block' : 'none';
+    if (!xrefs.length) return;
+
+    if (xrefs.length) {
+        const group = document.createElement('section');
+        group.className = 'linked-data-group';
+        const heading = document.createElement('h4');
+        heading.textContent = 'External reaction ontology';
+        group.appendChild(heading);
+
+        const seen = new Set();
+        xrefs.forEach(xref => {
+            const key = [
+                xref.ontology_id,
+                xref.relation,
+                xref.assigned_taxon_code,
+                xref.mapping_taxon_code,
+            ].join('|');
+            if (seen.has(key)) return;
+            seen.add(key);
+
+            const row = document.createElement('div');
+            row.className = 'linked-data-row ontology-row';
+            const linkList = buildOntologyXrefList([xref]);
+            if (linkList) row.appendChild(linkList);
+
+            const description = document.createElement('span');
+            description.className = 'linked-data-description';
+            description.textContent = xref.name || xref.ontology_id;
+            row.appendChild(description);
+
+            const provenance = document.createElement('small');
+            const inheritance = xref.inherited
+                ? `${xref.assigned_taxon_code} via ${xref.mapping_taxon_code}`
+                : xref.mapping_taxon_code;
+            provenance.textContent = `${readableRelation(xref.relation)} · ${inheritance}`;
+            row.appendChild(provenance);
+            group.appendChild(row);
+        });
+
+        const releaseIds = new Set(xrefs.map(xref => xref.ontology_release_id).filter(Boolean));
+        const releases = Array.isArray(activeReaction.ontology_releases)
+            ? activeReaction.ontology_releases
+            : [];
+        releases.filter(release => releaseIds.has(release.id)).forEach(release => {
+            const provenance = document.createElement('a');
+            provenance.className = 'ontology-release-link';
+            provenance.href = release.version_iri;
+            provenance.target = '_blank';
+            provenance.rel = 'noopener noreferrer';
+            provenance.textContent = `Ontology release ${release.data_version} ↗`;
+            group.appendChild(provenance);
+        });
+        summary.appendChild(group);
+    }
+}
+
+function renderMechanisticCenterSummary() {
+    const section = document.getElementById('mechanistic-center-section');
+    const summary = document.getElementById('mechanistic-center-summary');
     const toggle = document.getElementById('mechanism-view-toggle');
     if (!section || !summary || !toggle) return;
 
-    const context = activeReaction.mechanism_context;
-    if (!context) {
+    const mc = activeReaction.mechanistic_center;
+    if (!mc) {
         section.style.display = activeReaction.mechanism_ambiguous ? 'block' : 'none';
         if (activeReaction.mechanism_ambiguous) {
-            summary.textContent = `${activeReaction.mechanism_candidate_count} product-verified mechanisms remain. No candidate was guessed; inspect the candidate payload through the API.`;
+            summary.replaceChildren();
+
+            const status = document.createElement('p');
+            status.className = 'mechanism-candidate-status';
+            status.textContent = `${activeReaction.mechanism_candidate_count} product-verified mechanisms remain. Showing one remapped candidate for inspection; this does not resolve the ambiguity.`;
+            summary.appendChild(status);
+
+            const label = document.createElement('label');
+            label.className = 'mechanism-candidate-label';
+            label.htmlFor = 'mechanism-candidate-select';
+            label.textContent = 'Displayed mechanism';
+
+            const select = document.createElement('select');
+            select.id = 'mechanism-candidate-select';
+            select.className = 'mechanism-candidate-select';
+            activeReaction.mechanism_candidates.forEach((candidate, index) => {
+                const option = document.createElement('option');
+                option.value = String(index);
+                const identity = candidate.name || candidate.reference_case_id || 'Unnamed mechanism';
+                const caseSuffix = candidate.name && candidate.reference_case_id
+                    ? ` · ${candidate.reference_case_id}`
+                    : '';
+                option.textContent = `Candidate ${index + 1}: ${identity}${caseSuffix}`;
+                select.appendChild(option);
+            });
+            select.value = String(activeReaction.selected_mechanism_candidate_index ?? 0);
+            select.onchange = () => selectMechanismCandidate(Number(select.value));
+
+            label.appendChild(select);
+            summary.appendChild(label);
             toggle.style.display = 'none';
         }
         return;
@@ -879,35 +1081,40 @@ function renderMechanismContextSummary() {
 
     section.style.display = 'block';
     toggle.style.display = 'inline-block';
-    const diagnostics = context.diagnostics || {};
-    const nodeRoles = Object.values(diagnostics.node_roles || {}).flat();
-    const edgeRoles = Object.values(diagnostics.edge_roles || {}).flat();
-    const count = (values, role) => values.filter(value => value === role).length;
-    const eventCount = (context.events || []).length;
     summary.textContent = [
-        `${count(nodeRoles, 'net_center')} net-center atoms`,
-        `${count(nodeRoles, 'epd_context')} EPD-context atoms`,
-        `${count(edgeRoles, 'net_change')} net-change edges`,
-        `${count(edgeRoles, 'transition')} transition edges`,
-        `${count(edgeRoles, 'transient_only')} transient-only edges`,
-        `${eventCount} ordered edit events`,
+        `${mc.transition_edge_count ?? 0} transition edges`,
+        `${mc.rc_extension_edge_count ?? 0} RC-extension edges`,
+        `${mc.transient_only_edge_count ?? 0} transient-only edges`,
     ].join(' · ');
     toggle.textContent = activeReaction._showMechanismContext
         ? 'Show full ITS'
         : 'Show mechanistic center';
 }
 
+function selectMechanismCandidate(index) {
+    const candidate = activeReaction?.mechanism_candidates?.[index];
+    if (!candidate) return;
+
+    activeReaction.selected_mechanism_candidate_index = index;
+    activeReaction.arrows = Array.isArray(candidate.arrows) ? candidate.arrows : [];
+    activeReaction.reference_reaction_id = candidate.reference_reaction_id || null;
+    activeReaction.reference_case_id = candidate.reference_case_id || null;
+    activeStepIndex = 1;
+    renderReactionDetails();
+    document.getElementById('mechanism-candidate-select')?.focus();
+}
+
 function toggleMechanismView() {
-    const anchor = activeReaction?.mechanism_context?.anchor_graph;
-    if (!anchor) return;
+    const template = activeReaction?.mechanistic_center?.template_graph;
+    if (!template) return;
     if (!activeReaction._endpointItsGraph) {
         activeReaction._endpointItsGraph = activeReaction.its_graph;
     }
     activeReaction._showMechanismContext = !activeReaction._showMechanismContext;
     activeReaction.its_graph = activeReaction._showMechanismContext
-        ? anchor
+        ? template
         : activeReaction._endpointItsGraph;
-    renderMechanismContextSummary();
+    renderMechanisticCenterSummary();
     markTransitionBonds(activeReaction.its_graph, activeReaction.arrows);
     drawGraph();
 }
@@ -936,67 +1143,112 @@ function toggleLegend() {
     document.getElementById('legend-chevron').innerText = legendCollapsed ? '▸' : '▾';
 }
 
-let _cdkGen = 0; // generation counter to drop stale onerror callbacks
+let _depictGen = 0; // generation counter to drop stale onerror callbacks
+const CDK_DEPICT_BASE = (
+    window.SYNEPD_CDK_DEPICT_BASE || 'https://www.simolecule.com/cdkdepict'
+).replace(/\/$/, '');
+
+function prefersLocalDepict() {
+    try {
+        return localStorage.getItem('synepd_depict_renderer') === 'rdkit';
+    } catch (_) {
+        return false;
+    }
+}
+
+function setDepictPreference(useLocal) {
+    try {
+        localStorage.setItem('synepd_depict_renderer', useLocal ? 'rdkit' : 'cdk');
+    } catch (_) {}
+    renderReactionDepict();
+}
+
+function cdkDepictUrl(smiles, showAtomMapping = false) {
+    const query = new URLSearchParams({
+        smi: smiles,
+        zoom: '1.5',
+        abbr: 'off',
+        hdisp: 'bridgehead',
+        showtitle: 'false',
+        annotate: showAtomMapping ? 'mapidx' : 'none',
+    });
+    return `${CDK_DEPICT_BASE}/depict/cow/svg?${query.toString()}`;
+}
 
 function rdkitDepictUrl(smiles, kind = 'auto') {
     return `${API_V1}/render/rdkit.svg?smi=${encodeURIComponent(smiles)}&kind=${encodeURIComponent(kind)}`;
 }
 
-function renderCDKDepict() {
+function renderReactionDepict() {
     if (!activeReaction) return;
-    const container = document.getElementById('cdk-depict-container');
+    const container = document.getElementById('reaction-depict-container');
     if (!container) return;
 
     // Skip render when the section is collapsed
-    const body = document.getElementById('cdk-depict-body');
+    const body = document.getElementById('reaction-depict-body');
     if (body && body.style.display === 'none') return;
 
-    const showAAM = document.getElementById('cdk-aam-toggle')?.checked ?? false;
+    const showAAM = document.getElementById('depict-aam-toggle')?.checked ?? false;
     const smiles = showAAM && activeReaction.aam_key ? activeReaction.aam_key : activeReaction.canonical_rsmi;
-    // Derive annotate after the smiles ternary so mapidx isn't sent for unmapped SMILES
-    const annotate = (showAAM && smiles === activeReaction.aam_key) ? 'mapidx' : 'none';
 
     if (!smiles) {
         container.innerHTML = '<p style="color:var(--text-secondary); font-size:0.8rem; text-align:center;">No SMILES available</p>';
         return;
     }
 
-    const isDark = !document.body.classList.contains('light-theme');
-    const style = isDark ? 'cod' : 'cow';
-    const abbr = document.getElementById('cdk-abbr-toggle')?.checked ? 'on' : 'off';
-    const hdisp = document.getElementById('cdk-hdisp')?.value || 'bridgehead';
-    const url = `https://www.simolecule.com/cdkdepict/depict/${style}/svg?smi=${encodeURIComponent(smiles)}&zoom=2&abbr=${abbr}&hdisp=${hdisp}&showtitle=false&annotate=${annotate}`;
-    const fallbackUrl = rdkitDepictUrl(smiles, smiles.includes('>') ? 'reaction' : 'molecule');
+    const kind = smiles.includes('>') ? 'reaction' : 'molecule';
+    const cdkUrl = cdkDepictUrl(smiles, showAAM);
+    const fallbackUrl = rdkitDepictUrl(smiles, kind);
+    const useLocal = prefersLocalDepict();
 
     container.innerHTML = '';
-    const gen = ++_cdkGen;
+    const gen = ++_depictGen;
 
     const img = document.createElement('img');
     img.alt = '2D reaction diagram';
     img.style.cssText = 'max-width:100%; border-radius:4px; display:block; margin:0 auto;';
-    img.onerror = () => {
-        if (gen !== _cdkGen) return; // stale — a newer render has already taken over
-        if (img.dataset.renderer !== 'rdkit') {
-            img.dataset.renderer = 'rdkit';
-            img.src = fallbackUrl;
-            link.href = fallbackUrl;
-            link.textContent = 'Rendered locally with RDKit';
-            return;
-        }
-        container.innerHTML = '<p style="color:var(--accent-orange); font-size:0.8rem; text-align:center; padding:0.5rem 0;">2D depiction unavailable</p>';
-    };
-    img.dataset.renderer = 'cdk';
-    img.src = url;
+    const renderer = document.createElement('span');
+    renderer.className = 'depict-renderer-badge';
+    renderer.textContent = useLocal ? 'Local RDKit' : 'CDK Depict';
+    if (useLocal) renderer.classList.add('fallback');
 
     const link = document.createElement('a');
-    link.href = url;
+    link.href = useLocal ? fallbackUrl : cdkUrl;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
-    link.style.cssText = 'font-size:0.72rem; color:var(--text-secondary); display:block; margin-top:4px; text-align:right;';
-    link.textContent = 'Open in CDK Depict ↗';
+    link.className = 'depict-source-link';
+    link.textContent = useLocal ? 'Open local RDKit SVG ↗' : 'Open CDK Depict SVG ↗';
+
+    let usingFallback = false;
+    img.onerror = () => {
+        if (gen !== _depictGen) return; // stale — a newer render has taken over
+        if (!useLocal && !usingFallback) {
+            usingFallback = true;
+            renderer.textContent = 'RDKit fallback';
+            renderer.classList.add('fallback');
+            link.href = fallbackUrl;
+            link.textContent = 'Open local RDKit SVG ↗';
+            img.dataset.renderer = 'rdkit';
+            img.src = fallbackUrl;
+            return;
+        }
+        const message = useLocal ? 'Local RDKit depiction unavailable' : 'CDK and RDKit depictions unavailable';
+        container.innerHTML = `<p style="color:var(--accent-orange); font-size:0.8rem; text-align:center; padding:0.5rem 0;">${message}</p>`;
+    };
+    if (useLocal) {
+        img.dataset.renderer = 'rdkit';
+        img.src = fallbackUrl;
+    } else {
+        img.dataset.renderer = 'cdk';
+        img.src = cdkUrl;
+    }
 
     container.appendChild(img);
-    container.appendChild(link);
+    const footer = document.createElement('div');
+    footer.className = 'depict-source-row';
+    footer.appendChild(renderer);
+    footer.appendChild(link);
+    container.appendChild(footer);
 }
 
 function fetchMoleculeReactions(smiles) {
@@ -1026,30 +1278,55 @@ function updateStepNavigation() {
     document.getElementById('step-indicator').innerText = `Step ${activeStepIndex} / ${total}`;
     document.getElementById('btn-prev').disabled = activeStepIndex <= 1;
     document.getElementById('btn-next').disabled = activeStepIndex >= total;
+    document.getElementById('btn-play').disabled = total <= 1;
 }
 
-function togglePlay() {
+function stopPlayback() {
     const btn = document.getElementById('btn-play');
     if (playInterval) {
         clearInterval(playInterval);
         playInterval = null;
-        btn.innerText = "▶";
-    } else {
-        btn.innerText = "⏸";
-        const speed = parseInt(document.getElementById('play-speed').value) || 2000;
-        playInterval = setInterval(() => {
-            if (activeStepIndex < activeReaction.arrows.length) {
-                selectStep(activeStepIndex + 1);
-            } else {
-                selectStep(1); 
-            }
-        }, speed);
     }
+    if (btn) btn.innerText = "▶";
 }
 
-function goHome() {
+function startPlayback({ userInitiated = false } = {}) {
+    stopPlayback();
+    if (!activeReaction || !Array.isArray(activeReaction.arrows) || activeReaction.arrows.length <= 1) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const autoplayEnabled = document.getElementById('autoplay-toggle')?.checked !== false;
+    if (!userInitiated && (reduceMotion || !autoplayEnabled)) return;
+    const btn = document.getElementById('btn-play');
+    if (btn) btn.innerText = "⏸";
+    const speed = parseInt(document.getElementById('play-speed')?.value, 10) || 500;
+    playInterval = setInterval(() => {
+        const next = activeStepIndex < activeReaction.arrows.length
+            ? activeStepIndex + 1
+            : 1;
+        selectStep(next);
+    }, speed);
+}
+
+function changePlaybackSpeed() {
+    const speed = document.getElementById('play-speed')?.value;
+    if (speed) localStorage.setItem('synepd_play_speed', speed);
+    if (playInterval) startPlayback({ userInitiated: true });
+}
+
+function setAutoplayPreference(enabled) {
+    localStorage.setItem('synepd_autoplay', enabled ? 'on' : 'off');
+    if (enabled) startPlayback({ userInitiated: true });
+    else stopPlayback();
+}
+
+function togglePlay() {
+    if (playInterval) stopPlayback();
+    else startPlayback({ userInitiated: true });
+}
+
+function goHome({ updateHistory = true } = {}) {
     activeReaction = null;
-    if (playInterval) { clearInterval(playInterval); playInterval = null; }
+    stopPlayback();
     document.title = 'SynEPD Explorer';
     
     const viewport = document.getElementById('graph-viewport');
@@ -1064,7 +1341,7 @@ function goHome() {
     document.getElementById('detail-fallback').style.display = "block";
     document.getElementById('graph-controls-panel').style.display = "none";
     document.getElementById('graph-legend').style.display = "none";
-    history.pushState({}, '', window.location.pathname);
+    if (updateHistory) history.pushState({}, '', window.location.pathname);
 }
 
 async function loadRandomReaction() {
@@ -1093,105 +1370,144 @@ async function fetchArrowTypes() {
 }
 
 // Database stats for dashboard (FE-05)
+async function resolveMechanisticCenterCount(counts = {}) {
+    const reported = Number(counts.mechanistic_centers);
+    if (Number.isFinite(reported) && reported >= 0) return reported;
+
+    // Compatibility with an older db-info/stats response that omitted MC.
+    try {
+        const res = await fetch(`${API_V1}/mechanistic-centers?limit=1`);
+        if (res.ok) {
+            const data = await res.json();
+            const total = Number(data.total);
+            if (Number.isFinite(total)) return total;
+        }
+    } catch (err) {
+        console.warn('Failed to fetch the MC count directly:', err);
+    }
+
+    return 0;
+}
+
 async function fetchStats() {
     try {
         const res = await fetch(`${API_V1}/stats`);
+        if (!res.ok) throw new Error(`Statistics request failed: ${res.status}`);
         const data = await res.json();
         const insightsSec = document.getElementById('db-insights-section');
         if (insightsSec) insightsSec.style.display = 'block';
 
         const totals = data.totals || {};
-        renderInsightKpis(totals);
+        const molecules = Number(totals.molecules || 0);
+        if (molecules) animateCount('dash-molecules-val', molecules);
 
         const arrowTypeData = Object.entries(data.arrow_type_distribution || {})
-            .map(([code, count]) => ({code, label: code, count}))
-            .sort((a, b) => b.count - a.count);
-        renderDonutChart('#arrow-type-chart', arrowTypeData, 'Arrow Type Share', {maxItems: 8});
+            .map(([code, count]) => ({code, label: code, count: Number(count)}));
+        renderArrowTypeMatrix('#arrow-type-chart', arrowTypeData, 'Electron-Flow Grammar');
 
         const arrowsPerReactionData = Object.entries(data.arrows_per_reaction_distribution || {})
-            .map(([code, count]) => ({code, label: `${code} arrows`, count}))
+            .map(([code, count]) => ({code, label: `${code} arrows`, count: Number(count)}))
             .sort((a, b) => Number(a.code) - Number(b.code));
-        renderVerticalBarChart('#arrows-per-reaction-chart', arrowsPerReactionData, 'Arrows Per Reaction');
+        const arrowMedian = weightedQuantile(arrowsPerReactionData, 0.5);
+        const arrowP95 = weightedQuantile(arrowsPerReactionData, 0.95);
+        renderVerticalBarChart(
+            '#arrows-per-reaction-chart',
+            arrowsPerReactionData,
+            'Arrows Per Reaction',
+            {
+                color: 'var(--series-1)',
+                marker: arrowMedian,
+                caption: `Median ${arrowMedian}; 95th percentile ${arrowP95}. Each bar opens the matching reactions.`,
+                filterKind: 'arrow-count',
+            }
+        );
 
-        const topTaxaData = (data.top_taxonomy_nodes || [])
-            .map(t => ({
-                code: t.code,
-                label: t.name || t.code,
-                count: t.count,
-                detail: t.code
-            }));
-        renderHorizontalBarChart('#top-taxa-chart', topTaxaData, 'Most Populated Reaction Classes', {maxItems: 8});
-
-        const summaryData = [
-            {code: 'Molecules', label: 'Molecules', count: totals.molecules || 0},
-            {code: 'RC templates', label: 'RC templates', count: totals.reaction_centers || data.reaction_center_count || 0},
-            {code: 'Taxons', label: 'Taxons', count: totals.taxons || 0},
-            {code: 'EPD arrows', label: 'EPD arrows', count: totals.epd_arrows || 0},
-        ];
-        renderHorizontalBarChart('#summary-ratio-chart', summaryData, 'Database Object Counts', {compact: true});
-
-        const taxonomyLevelData = Object.entries(data.taxonomy_level_distribution || {})
-            .map(([code, count]) => ({code, label: `Level ${code}`, count}))
-            .sort((a, b) => Number(a.code) - Number(b.code));
-        renderVerticalBarChart('#taxonomy-level-chart', taxonomyLevelData, 'Taxonomy Depth');
+        renderMechanisticCenterComparison(
+            '#mc-comparison-chart',
+            data.mechanistic_center_comparison || {},
+            'How MC Extends RC'
+        );
 
         const rcReuseData = Object.entries(data.rc_reuse_distribution || {})
-            .map(([code, count]) => ({code, label: `${code} reaction${Number(code) === 1 ? '' : 's'}`, count}))
+            .map(([code, count]) => ({code, label: `${code} reaction${Number(code) === 1 ? '' : 's'}`, count: Number(count)}))
             .sort((a, b) => Number(a.code) - Number(b.code));
-        renderVerticalBarChart('#rc-reuse-chart', rcReuseData, 'RC Template Reuse');
+        const templateTotal = d3.sum(rcReuseData, d => d.count);
+        const reactionTotal = d3.sum(rcReuseData, d => Number(d.code) * d.count);
+        const singleUse = rcReuseData.find(d => Number(d.code) === 1)?.count || 0;
+        renderVerticalBarChart(
+            '#rc-reuse-chart',
+            rcReuseData,
+            'RC Template Reuse',
+            {
+                color: 'var(--series-4)',
+                logY: true,
+                caption: `${formatPercent(singleUse, templateTotal)} of RC templates are used once; they cover ${formatPercent(singleUse, reactionTotal)} of reactions. Select a bin to inspect its templates.`,
+                filterKind: 'rc-reuse',
+            }
+        );
     } catch (e) {
         console.error("Failed to fetch stats:", e);
+        renderStatsError('Database insights could not be loaded. The server may be busy or this page may be stale.');
     }
 }
 
-function renderInsightKpis(totals) {
-    const container = document.getElementById('insight-kpi-grid');
-    if (!container) return;
-    const reactions = totals.reactions || 0;
-    const epdArrows = totals.epd_arrows || 0;
-    const rcTemplates = totals.reaction_centers || 0;
-    const molecules = totals.molecules || 0;
-    const avgArrows = reactions ? (epdArrows / reactions).toFixed(2) : '0.00';
-    const rxnPerTemplate = rcTemplates ? (reactions / rcTemplates).toFixed(2) : '0.00';
-    container.innerHTML = [
-        {label: 'Avg arrows / reaction', value: avgArrows},
-        {label: 'Reactions / RC template', value: rxnPerTemplate},
-        {label: 'Molecules indexed', value: molecules.toLocaleString()},
-        {label: 'Classified reactions', value: (totals.classified_reactions || 0).toLocaleString()},
-    ].map(item => `
-        <div class="insight-kpi">
-            <span>${item.label}</span>
-            <strong>${item.value}</strong>
-        </div>
-    `).join('');
-}
+const insightChartRegistry = new Map();
 
-function prepareChart(selector, title, chartData) {
+function prepareChart(selector, title, chartData, caption = '') {
     const container = d3.select(selector);
     container.selectAll("*").remove();
-    container
-        .attr("role", "button")
-        .attr("tabindex", 0)
-        .attr("title", `${title}. Click to open full screen.`)
-        .on("click", (event) => {
-            if (event.target.closest?.("[data-chart-caption]")) return;
-            openChartModal(selector, title);
-        })
-        .on("keydown", (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                openChartModal(selector, title);
-            }
-        });
+    container.attr("aria-label", title);
 
     const titleRow = container.append("div")
         .attr("class", "insight-title-row");
     titleRow.append("p")
         .attr("class", "insight-title")
         .text(title);
-    titleRow.append("span")
-        .attr("class", "insight-open-hint")
-        .text("Click to expand");
+    const actions = titleRow.append("div")
+        .attr("class", "insight-title-actions");
+    actions.append("button")
+        .attr("type", "button")
+        .attr("class", "insight-action insight-table-toggle")
+        .text("Table")
+        .on("click", event => {
+            event.stopPropagation();
+            toggleInsightTable(selector);
+        });
+    actions.append("button")
+        .attr("type", "button")
+        .attr("class", "insight-action")
+        .attr("title", "Download CSV data")
+        .text("CSV")
+        .on("click", event => {
+            event.stopPropagation();
+            downloadInsightCSV(selector);
+        });
+    actions.append("button")
+        .attr("type", "button")
+        .attr("class", "insight-action")
+        .attr("title", "Download SVG figure")
+        .text("SVG")
+        .on("click", event => {
+            event.stopPropagation();
+            downloadInsightSVG(selector);
+        });
+    actions.append("button")
+        .attr("type", "button")
+        .attr("class", "insight-action")
+        .attr("title", "Download 2x PNG figure")
+        .text("PNG")
+        .on("click", event => {
+            event.stopPropagation();
+            downloadInsightPNG(selector);
+        });
+    actions.append("button")
+        .attr("type", "button")
+        .attr("class", "insight-action")
+        .text("Expand")
+        .on("click", event => {
+            event.stopPropagation();
+            openChartModal(selector, title);
+        });
 
     if (!chartData.length) {
         container.append("p")
@@ -1199,7 +1515,110 @@ function prepareChart(selector, title, chartData) {
             .text("No data available");
         return null;
     }
+    insightChartRegistry.set(selector, {title, rows: chartData, columns: null});
+    if (caption) {
+        container.append("p")
+            .attr("class", "insight-caption insight-caption-pending")
+            .text(caption);
+    }
     return container;
+}
+
+function finishChart(selector, rows, columns, caption = '') {
+    const container = document.querySelector(selector);
+    if (!container) return;
+    container.querySelector('.insight-caption-pending')?.remove();
+    const tableWrap = document.createElement('div');
+    tableWrap.className = 'insight-table-wrap';
+    tableWrap.hidden = true;
+    const table = document.createElement('table');
+    table.className = 'insight-table';
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    columns.forEach(column => {
+        const th = document.createElement('th');
+        th.textContent = column.label;
+        headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+    const tbody = document.createElement('tbody');
+    rows.forEach(row => {
+        const tr = document.createElement('tr');
+        columns.forEach(column => {
+            const td = document.createElement('td');
+            const value = column.format ? column.format(row[column.key], row) : row[column.key];
+            td.textContent = value == null ? '' : String(value);
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    tableWrap.appendChild(table);
+    container.appendChild(tableWrap);
+    if (caption) {
+        const p = document.createElement('p');
+        p.className = 'insight-caption';
+        p.textContent = caption;
+        container.appendChild(p);
+    }
+    const entry = insightChartRegistry.get(selector) || {};
+    insightChartRegistry.set(selector, {...entry, rows, columns});
+}
+
+function toggleInsightTable(selectorOrRoot) {
+    const root = typeof selectorOrRoot === 'string'
+        ? document.querySelector(selectorOrRoot)
+        : selectorOrRoot;
+    if (!root) return;
+    const table = root.querySelector('.insight-table-wrap');
+    const visual = root.querySelector('.chart-visual');
+    if (!table || !visual) return;
+    const showTable = table.hidden;
+    table.hidden = !showTable;
+    visual.hidden = showTable;
+    const button = root.querySelector('.insight-table-toggle');
+    if (button) button.textContent = showTable ? 'Chart' : 'Table';
+}
+
+function renderInlineError(root, message, retryFn) {
+    if (!root) return;
+    root.replaceChildren();
+    const box = document.createElement('div');
+    box.className = 'insight-error';
+    const text = document.createElement('span');
+    text.textContent = message;
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.className = 'insight-action';
+    retry.textContent = 'Retry';
+    retry.addEventListener('click', retryFn);
+    box.append(text, retry);
+    root.appendChild(box);
+}
+
+function renderStatsError(message) {
+    const section = document.getElementById('db-insights-section');
+    if (section) section.style.display = 'block';
+    [
+        'arrow-type-chart', 'arrows-per-reaction-chart',
+        'mc-comparison-chart', 'rc-reuse-chart',
+    ].forEach(id => renderInlineError(document.getElementById(id), message, fetchStats));
+}
+
+function weightedQuantile(rows, quantile) {
+    const total = d3.sum(rows, row => Number(row.count));
+    const threshold = total * quantile;
+    let cumulative = 0;
+    for (const row of rows) {
+        cumulative += Number(row.count);
+        if (cumulative >= threshold) return Number(row.code);
+    }
+    return rows.length ? Number(rows[rows.length - 1].code) : 0;
+}
+
+function formatPercent(value, total) {
+    return total ? `${(100 * Number(value) / Number(total)).toFixed(1)}%` : '0.0%';
 }
 
 function chartCaption(d, unit = 'items') {
@@ -1241,6 +1660,151 @@ function attachStaticChartTooltips(root) {
         showChartTooltip(mark.getAttribute("data-chart-caption"), rect.left + rect.width / 2, rect.top + rect.height / 2);
     };
     root.onfocusout = hideChartTooltip;
+    root.onclick = event => {
+        const mark = event.target.closest?.('[data-filter-kind]');
+        if (!mark) return;
+        event.stopPropagation();
+        applyInsightFilter(
+            mark.dataset.filterKind,
+            mark.dataset.filterValue,
+            mark.dataset.filterLabel || mark.dataset.chartCaption
+        );
+    };
+    root.onkeydown = event => {
+        if (!['Enter', ' '].includes(event.key)) return;
+        const mark = event.target.closest?.('[data-filter-kind]');
+        if (!mark) return;
+        event.preventDefault();
+        root.onclick({target: mark, stopPropagation() {}});
+    };
+}
+
+function makeInsightMarksInteractive(selection, kind, valueFn, labelFn = valueFn) {
+    selection
+        .classed('insight-mark', true)
+        .attr('data-filter-kind', kind)
+        .attr('data-filter-value', valueFn)
+        .attr('data-filter-label', labelFn)
+        .attr('role', 'button')
+        .on('click.insight-filter', (event, datum) => {
+            event.stopPropagation();
+            applyInsightFilter(kind, valueFn(datum), labelFn(datum));
+        })
+        .on('keydown.insight-filter', (event, datum) => {
+            if (!['Enter', ' '].includes(event.key)) return;
+            event.preventDefault();
+            applyInsightFilter(kind, valueFn(datum), labelFn(datum));
+        });
+}
+
+async function applyInsightFilter(kind, value, label = '') {
+    if (kind === 'rc-reuse') {
+        await showRcReuseTemplates(Number(value));
+        return;
+    }
+    const endpoints = {
+        'arrow-type': `${API_V1}/reactions/by-arrow-type?code=${encodeURIComponent(value)}&limit=100`,
+        'arrow-count': `${API_V1}/reactions/by-arrow-count?n=${encodeURIComponent(value)}&limit=100`,
+    };
+    const endpoint = endpoints[kind];
+    if (endpoint) await showInsightReactions(endpoint, label || String(value));
+}
+
+async function showInsightReactions(endpoint, label) {
+    switchTab('search');
+    const resultsContainer = document.getElementById('search-results');
+    resultsContainer.innerHTML = '<p style="color:var(--text-secondary); text-align:center;">Loading filtered reactions…</p>';
+    try {
+        const res = await fetch(endpoint);
+        if (!res.ok) throw new Error(`Filter request failed: ${res.status}`);
+        const data = await res.json();
+        const rows = Array.isArray(data.results) ? data.results : [];
+        resultsContainer.replaceChildren();
+        const meta = document.createElement('div');
+        meta.className = 'search-meta';
+        meta.textContent = `${label} · ${Number(data.total || rows.length).toLocaleString()} reactions`;
+        resultsContainer.appendChild(meta);
+        rows.forEach(rxn => resultsContainer.appendChild(makeReactionResultCard(rxn)));
+        if (!rows.length) {
+            const empty = document.createElement('p');
+            empty.className = 'insight-empty';
+            empty.textContent = 'No matching reactions found.';
+            resultsContainer.appendChild(empty);
+        }
+    } catch (error) {
+        renderInlineError(resultsContainer, 'Filtered reactions could not be loaded.', () => showInsightReactions(endpoint, label));
+    }
+}
+
+function makeReactionResultCard(rxn) {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', `View details for reaction ${rxn.name || rxn.case_id}`);
+    card.addEventListener('click', () => loadReaction(rxn.id));
+    card.addEventListener('keydown', event => {
+        if (!['Enter', ' '].includes(event.key)) return;
+        event.preventDefault();
+        card.click();
+    });
+    const heading = document.createElement('h4');
+    heading.textContent = rxn.name || rxn.case_id;
+    const caseId = document.createElement('p');
+    caseId.textContent = rxn.case_id || '';
+    const smiles = document.createElement('p');
+    smiles.className = 'result-card-smiles';
+    smiles.textContent = rxn.canonical_rsmi || '';
+    card.append(heading, caseId, smiles);
+    return card;
+}
+
+async function showRcReuseTemplates(reuseCount) {
+    const modal = document.getElementById('chart-modal');
+    const body = document.getElementById('chart-modal-body');
+    const heading = document.getElementById('chart-modal-title');
+    if (!modal || !body || !heading) return;
+    heading.textContent = `RC templates used by ${reuseCount} reaction${reuseCount === 1 ? '' : 's'}`;
+    body.innerHTML = '<p class="insight-empty">Loading templates…</p>';
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+    try {
+        const res = await fetch(`${API_V1}/reaction-centers?limit=2000`);
+        if (!res.ok) throw new Error(`Template request failed: ${res.status}`);
+        const data = await res.json();
+        const rows = (data.results || []).filter(row => Number(row.reaction_count) === reuseCount);
+        body.replaceChildren();
+        const wrap = document.createElement('div');
+        wrap.className = 'insight-table-wrap';
+        const table = document.createElement('table');
+        table.className = 'insight-table';
+        table.innerHTML = '<thead><tr><th>RC ID</th><th>WL hash</th><th>SMARTS</th><th>Reactions</th></tr></thead>';
+        const tbody = document.createElement('tbody');
+        rows.forEach(row => {
+            const tr = document.createElement('tr');
+            [row.id, row.wlhash, row.smarts || '—', row.reaction_count].forEach(value => {
+                const td = document.createElement('td');
+                td.textContent = String(value);
+                tr.appendChild(td);
+            });
+            tr.className = 'insight-mark';
+            tr.tabIndex = 0;
+            tr.title = `Show reactions using RC ${row.id}`;
+            const open = () => showInsightReactions(`${API_V1}/reaction-centers/${row.id}/reactions?limit=100`, `RC ${row.id}`);
+            tr.addEventListener('click', open);
+            tr.addEventListener('keydown', event => {
+                if (!['Enter', ' '].includes(event.key)) return;
+                event.preventDefault();
+                open();
+            });
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        wrap.appendChild(table);
+        body.appendChild(wrap);
+    } catch (error) {
+        renderInlineError(body, 'RC templates could not be loaded.', () => showRcReuseTemplates(reuseCount));
+    }
 }
 
 function showChartTooltip(text, x, y) {
@@ -1264,16 +1828,44 @@ function openChartModal(selector, title) {
     const modal = document.getElementById('chart-modal');
     const body = document.getElementById('chart-modal-body');
     const heading = document.getElementById('chart-modal-title');
+    const tableToggle = document.getElementById('chart-modal-table-toggle');
     if (!source || !modal || !body || !heading) return;
     heading.textContent = title;
     body.innerHTML = source.innerHTML;
+    const idMap = new Map();
     body.querySelectorAll('[id]').forEach((el, idx) => {
-        el.id = `fullscreen-chart-${idx}`;
+        const oldId = el.id;
+        const newId = `fullscreen-chart-${idx}-${oldId}`;
+        idMap.set(oldId, newId);
+        el.id = newId;
+    });
+    body.querySelectorAll('*').forEach(el => {
+        for (const attr of el.getAttributeNames()) {
+            let value = el.getAttribute(attr);
+            if (!value) continue;
+            idMap.forEach((newId, oldId) => {
+                value = value.replaceAll(`url(#${oldId})`, `url(#${newId})`);
+                if (value === `#${oldId}`) value = `#${newId}`;
+            });
+            el.setAttribute(attr, value);
+        }
     });
     body.querySelectorAll("[data-chart-caption]").forEach(el => {
         el.setAttribute("tabindex", "0");
     });
     attachStaticChartTooltips(body);
+    if (tableToggle) {
+        const hasTable = Boolean(body.querySelector('.insight-table-wrap'));
+        tableToggle.hidden = !hasTable;
+        tableToggle.textContent = 'Table view';
+        tableToggle.onclick = event => {
+            event.stopPropagation();
+            toggleInsightTable(body);
+            tableToggle.textContent = body.querySelector('.insight-table-wrap')?.hidden
+                ? 'Table view'
+                : 'Chart view';
+        };
+    }
     modal.classList.add('show');
     document.body.classList.add('modal-open');
 }
@@ -1287,119 +1879,146 @@ function closeChartModal() {
     }
 }
 
-function chartColors() {
-    return [
-        'var(--accent-cyan)',
-        'var(--accent-purple)',
-        'var(--accent-pink)',
-        'var(--accent-green)',
-        'var(--accent-orange)',
-        'var(--accent-red)',
-        '#64748b',
-        '#0ea5e9',
+function openSchemaModal() {
+    const modal = document.getElementById('schema-modal');
+    if (!modal) return;
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+}
+
+function closeSchemaModal() {
+    const modal = document.getElementById('schema-modal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    if (!document.getElementById('sketch-modal')?.classList.contains('show') &&
+        !document.getElementById('chart-modal')?.classList.contains('show')) {
+        document.body.classList.remove('modal-open');
+    }
+}
+
+function chartSequentialColors() {
+    return Array.from({length: 7}, (_, index) => `var(--sequential-${index + 1})`);
+}
+
+function insightFilename(title, extension) {
+    const stem = String(title || 'synepd-insight')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+    return `${stem || 'synepd-insight'}.${extension}`;
+}
+
+function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function standaloneInsightSVG(selector) {
+    const source = document.querySelector(`${selector} svg.chart-visual`);
+    if (!source) return null;
+    const clone = source.cloneNode(true);
+    const originals = [source, ...source.querySelectorAll('*')];
+    const copies = [clone, ...clone.querySelectorAll('*')];
+    const properties = [
+        'fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'opacity',
+        'font-family', 'font-size', 'font-weight', 'paint-order',
     ];
-}
-
-function renderHorizontalBarChart(selector, chartData, title, options = {}) {
-    const visibleData = options.maxItems ? chartData.slice(0, options.maxItems) : chartData;
-    const container = prepareChart(selector, title, visibleData);
-    if (!container) return;
-
-    const margin = {
-        top: 8,
-        right: 54,
-        bottom: 8,
-        left: options.compact ? 118 : 160
+    originals.forEach((element, index) => {
+        const computed = getComputedStyle(element);
+        properties.forEach(property => {
+            const value = computed.getPropertyValue(property);
+            if (value) copies[index].style.setProperty(property, value);
+        });
+    });
+    const viewBox = source.viewBox?.baseVal;
+    const width = viewBox?.width || source.clientWidth || 800;
+    const height = viewBox?.height || source.clientHeight || 500;
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    clone.setAttribute('width', width);
+    clone.setAttribute('height', height);
+    const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    background.setAttribute('x', '0');
+    background.setAttribute('y', '0');
+    background.setAttribute('width', width);
+    background.setAttribute('height', height);
+    background.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim() || '#070a13');
+    clone.insertBefore(background, clone.firstChild);
+    return {
+        xml: new XMLSerializer().serializeToString(clone),
+        width,
+        height,
     };
-    const frameWidth = 560;
-    const width = frameWidth - margin.left - margin.right;
-    const barHeight = options.compact ? 22 : 25;
-    const height = Math.max(visibleData.length * barHeight, 64);
-
-    const gradientId = `bar-gradient-${selector.replace(/[^a-zA-Z0-9_-]/g, '')}`;
-    const svgEl = container.append("svg")
-        .attr("class", "chart-svg chart-horizontal")
-        .attr("width", "100%")
-        .attr("height", height + margin.top + margin.bottom)
-        .attr("viewBox", `0 0 ${frameWidth} ${height + margin.top + margin.bottom}`)
-        .attr("role", "img")
-        .attr("aria-label", title);
-
-    const defs = svgEl.append("defs");
-    const grad = defs.append("linearGradient")
-        .attr("id", gradientId)
-        .attr("x1", "0%")
-        .attr("y1", "0%")
-        .attr("x2", "100%")
-        .attr("y2", "0%");
-    grad.append("stop").attr("offset", "0%").attr("stop-color", "var(--accent-purple)");
-    grad.append("stop").attr("offset", "100%").attr("stop-color", "var(--accent-cyan)");
-
-    const svg = svgEl.append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-
-    const x = d3.scaleLinear()
-        .domain([0, d3.max(visibleData, d => d.count) || 1])
-        .range([0, width]);
-
-    const y = d3.scaleBand()
-        .domain(visibleData.map(d => d.code))
-        .range([0, height])
-        .padding(0.2);
-
-    const bars = svg.append("g")
-        .selectAll("rect")
-        .data(visibleData)
-        .join("rect")
-        .attr("x", 0)
-        .attr("y", d => y(d.code))
-        .attr("width", 0)
-        .attr("height", y.bandwidth())
-        .attr("fill", `url(#${gradientId})`)
-        .attr("rx", 3);
-    attachChartTooltip(bars, d => chartCaption(d, 'items'));
-    bars.transition()
-        .duration(800)
-        .attr("width", d => x(d.count));
-
-    const valueLabels = svg.append("g")
-        .selectAll("text")
-        .data(visibleData)
-        .join("text")
-        .attr("class", "chart-label")
-        .attr("x", -5)
-        .attr("y", d => y(d.code) + y.bandwidth() / 2)
-        .attr("dy", ".35em")
-        .attr("text-anchor", "end")
-        .attr("fill", "var(--text-primary)")
-        .text(d => truncateLabel(d.label || d.code, options.compact ? 18 : 24))
-        .append("title")
-        .text(d => d.detail ? `${d.detail}: ${d.label}` : (d.label || d.code));
-
-    svg.append("g")
-        .selectAll("text")
-        .data(visibleData)
-        .join("text")
-        .attr("class", "chart-value")
-        .attr("x", d => x(d.count) + 5)
-        .attr("y", d => y(d.code) + y.bandwidth() / 2)
-        .attr("dy", ".35em")
-        .attr("text-anchor", "start")
-        .attr("fill", "var(--text-primary)")
-        .text(d => Number(d.count).toLocaleString());
-    attachChartTooltip(valueLabels, d => chartCaption(d, 'items'));
 }
 
-function renderVerticalBarChart(selector, chartData, title) {
-    const container = prepareChart(selector, title, chartData);
+function downloadInsightCSV(selector) {
+    const entry = insightChartRegistry.get(selector);
+    if (!entry?.columns || !entry.rows) return;
+    const escapeCell = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
+    const lines = [entry.columns.map(column => escapeCell(column.label)).join(',')];
+    entry.rows.forEach(row => {
+        lines.push(entry.columns.map(column => {
+            const value = column.format ? column.format(row[column.key], row) : row[column.key];
+            return escapeCell(value);
+        }).join(','));
+    });
+    downloadBlob(
+        new Blob([lines.join('\n')], {type: 'text/csv;charset=utf-8'}),
+        insightFilename(entry.title, 'csv')
+    );
+}
+
+function downloadInsightSVG(selector) {
+    const entry = insightChartRegistry.get(selector);
+    const exportData = standaloneInsightSVG(selector);
+    if (!entry || !exportData) return;
+    downloadBlob(
+        new Blob([exportData.xml], {type: 'image/svg+xml'}),
+        insightFilename(entry.title, 'svg')
+    );
+}
+
+function downloadInsightPNG(selector) {
+    const entry = insightChartRegistry.get(selector);
+    const exportData = standaloneInsightSVG(selector);
+    if (!entry || !exportData) return;
+    const blob = new Blob([exportData.xml], {type: 'image/svg+xml'});
+    const url = URL.createObjectURL(blob);
+    const image = new Image();
+    image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.ceil(exportData.width * 2);
+        canvas.height = Math.ceil(exportData.height * 2);
+        const context = canvas.getContext('2d');
+        context.scale(2, 2);
+        context.drawImage(image, 0, 0, exportData.width, exportData.height);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(png => {
+            if (png) downloadBlob(png, insightFilename(entry.title, 'png'));
+        }, 'image/png');
+    };
+    image.onerror = () => {
+        URL.revokeObjectURL(url);
+        showToast('Chart PNG export failed', 'error');
+    };
+    image.src = url;
+}
+
+function renderVerticalBarChart(selector, chartData, title, options = {}) {
+    const container = prepareChart(selector, title, chartData, options.caption);
     if (!container) return;
-    const margin = {top: 14, right: 12, bottom: 34, left: 44};
-    const frameWidth = 420;
-    const frameHeight = 230;
+    const margin = {top: 24, right: 14, bottom: 38, left: 50};
+    const frameWidth = selector === '#rc-reuse-chart' ? 720 : 460;
+    const frameHeight = 250;
     const width = frameWidth - margin.left - margin.right;
     const height = frameHeight - margin.top - margin.bottom;
     const svgEl = container.append("svg")
-        .attr("class", "chart-svg chart-vertical")
+        .attr("class", "chart-svg chart-vertical chart-visual")
         .attr("width", "100%")
         .attr("height", frameHeight)
         .attr("viewBox", `0 0 ${frameWidth} ${frameHeight}`)
@@ -1410,18 +2029,24 @@ function renderVerticalBarChart(selector, chartData, title) {
         .domain(chartData.map(d => d.code))
         .range([0, width])
         .padding(0.22);
-    const y = d3.scaleLinear()
-        .domain([0, d3.max(chartData, d => d.count) || 1])
-        .nice()
-        .range([height, 0]);
+    const maxCount = d3.max(chartData, d => d.count) || 1;
+    const y = options.logY
+        ? d3.scaleLog().domain([1, maxCount]).range([height, 0])
+        : d3.scaleLinear().domain([0, maxCount]).nice().range([height, 0]);
 
     svg.append("g")
         .attr("class", "chart-axis")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).tickValues(chartData.map(d => d.code).filter((_, i) => i % 2 === 0)).tickSizeOuter(0));
+        .call(d3.axisBottom(x).tickValues(
+            chartData.map(d => d.code).filter((_, i) => selector === '#rc-reuse-chart' || i % 2 === 0)
+        ).tickSizeOuter(0));
     svg.append("g")
         .attr("class", "chart-axis")
-        .call(d3.axisLeft(y).ticks(4).tickSize(-width));
+        .call(
+            options.logY
+                ? d3.axisLeft(y).ticks(4, '~s').tickSize(-width)
+                : d3.axisLeft(y).ticks(4).tickSize(-width)
+        );
 
     const bars = svg.append("g")
         .selectAll("rect")
@@ -1432,91 +2057,259 @@ function renderVerticalBarChart(selector, chartData, title) {
         .attr("width", x.bandwidth())
         .attr("height", 0)
         .attr("rx", 3)
-        .attr("fill", (d, i) => chartColors()[i % chartColors().length]);
+        .attr("fill", options.color || 'var(--series-1)');
     attachChartTooltip(bars, d => chartCaption(d, 'reactions'));
+    if (options.filterKind) {
+        makeInsightMarksInteractive(bars, options.filterKind, d => d.code, d => d.label);
+    }
+    const renderedBarHeight = d => Math.max(options.logY ? 3 : 0, height - y(Math.max(1, d.count)));
+    const setBarGeometry = selection => selection
+        .attr("y", d => height - renderedBarHeight(d))
+        .attr("height", renderedBarHeight);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        setBarGeometry(bars);
+    } else {
+        setBarGeometry(bars.transition().duration(500));
+    }
 
-    bars.transition()
-        .duration(800)
-        .attr("y", d => y(d.count))
-        .attr("height", d => height - y(d.count));
+    if (Number.isFinite(options.marker)) {
+        const markerX = x(String(options.marker)) + x.bandwidth() / 2;
+        svg.append('line')
+            .attr('class', 'chart-median-line')
+            .attr('x1', markerX)
+            .attr('x2', markerX)
+            .attr('y1', 0)
+            .attr('y2', height);
+        svg.append('text')
+            .attr('class', 'chart-median-label')
+            .attr('x', markerX + 5)
+            .attr('y', 9)
+            .text(`median ${options.marker}`);
+    }
+    finishChart(
+        selector,
+        chartData,
+        [
+            {key: 'label', label: title === 'RC Template Reuse' ? 'Reuse' : 'Arrow count'},
+            {key: 'count', label: title === 'RC Template Reuse' ? 'RC templates' : 'Reactions', format: value => Number(value).toLocaleString()},
+        ],
+        options.caption
+    );
 }
 
-function renderDonutChart(selector, chartData, title, options = {}) {
-    const visibleData = options.maxItems ? chartData.slice(0, options.maxItems) : chartData;
-    const container = prepareChart(selector, title, visibleData);
+function parseArrowFlow(code) {
+    const match = String(code).match(/^(LP|Pi|Sigma)-\/(LP|Pi|Sigma)\+$/i);
+    if (!match) return null;
+    const normalize = value => ({lp: 'LP', pi: 'PI', sigma: 'SIGMA'})[value.toLowerCase()];
+    return {source: normalize(match[1]), target: normalize(match[2])};
+}
+
+function renderArrowTypeMatrix(selector, chartData, title) {
+    const types = ['LP', 'PI', 'SIGMA'];
+    const lookup = new Map();
+    chartData.forEach(row => {
+        const flow = parseArrowFlow(row.code);
+        if (flow) lookup.set(`${flow.source}:${flow.target}`, row);
+    });
+    const cells = types.flatMap(source => types.map(target => {
+        const row = lookup.get(`${source}:${target}`);
+        return {
+            source,
+            target,
+            code: row?.code || `${source}-/${target}+`,
+            label: `${source} → ${target}`,
+            count: Number(row?.count || 0),
+        };
+    }));
+    const caption = 'Lone-pair → σ* dominates; σ → π is rarest, and the absent LP → LP cell is itself part of the mechanistic grammar.';
+    const container = prepareChart(selector, title, cells, caption);
     if (!container) return;
 
-    const width = 520;
-    const height = 245;
-    const radius = 82;
-    const colors = chartColors();
-    const svgEl = container.append("svg")
-        .attr("class", "chart-svg chart-donut")
-        .attr("width", "100%")
-        .attr("height", height)
-        .attr("viewBox", `0 0 ${width} ${height}`)
-        .attr("role", "img")
-        .attr("aria-label", title);
+    const frameWidth = 760;
+    const frameHeight = 350;
+    const originX = 126;
+    const originY = 54;
+    const cellWidth = 150;
+    const cellHeight = 72;
+    const maxCount = d3.max(cells, d => d.count) || 1;
+    const sequential = chartSequentialColors();
+    const color = d3.scaleQuantize().domain([1, maxCount]).range(sequential);
+    const svg = container.append('svg')
+        .attr('class', 'chart-svg chart-heatmap chart-visual')
+        .attr('width', '100%')
+        .attr('height', frameHeight)
+        .attr('viewBox', `0 0 ${frameWidth} ${frameHeight}`)
+        .attr('role', 'img')
+        .attr('aria-label', `${title}: source electron domain by target acceptor domain`);
 
-    const total = d3.sum(visibleData, d => d.count);
-    const pie = d3.pie()
-        .sort(null)
-        .value(d => d.count);
-    const arc = d3.arc()
-        .innerRadius(radius * 0.58)
-        .outerRadius(radius);
-    const group = svgEl.append("g")
-        .attr("transform", `translate(125,122)`);
+    svg.append('text')
+        .attr('class', 'chart-axis-label')
+        .attr('x', originX + cellWidth * 1.5)
+        .attr('y', 16)
+        .attr('text-anchor', 'middle')
+        .text('TARGET ACCEPTOR');
+    svg.append('text')
+        .attr('class', 'chart-axis-label')
+        .attr('transform', `translate(18,${originY + cellHeight * 1.5}) rotate(-90)`)
+        .attr('text-anchor', 'middle')
+        .text('SOURCE ELECTRON DOMAIN');
 
-    const slices = group.selectAll("path")
-        .data(pie(visibleData))
-        .join("path")
-        .attr("fill", (d, i) => colors[i % colors.length])
-        .attr("stroke", "var(--bg-secondary)")
-        .attr("stroke-width", 2)
-        .attr("d", arc);
-    attachChartTooltip(slices, d => chartCaption(d, 'arrows'));
+    svg.selectAll('.matrix-column-label')
+        .data(types)
+        .join('text')
+        .attr('class', 'chart-label matrix-column-label')
+        .attr('x', (_, index) => originX + index * cellWidth + cellWidth / 2)
+        .attr('y', originY - 12)
+        .attr('text-anchor', 'middle')
+        .text(value => value);
+    svg.selectAll('.matrix-row-label')
+        .data(types)
+        .join('text')
+        .attr('class', 'chart-label matrix-row-label')
+        .attr('x', originX - 12)
+        .attr('y', (_, index) => originY + index * cellHeight + cellHeight / 2)
+        .attr('dy', '.35em')
+        .attr('text-anchor', 'end')
+        .text(value => value);
 
-    group.append("text")
-        .attr("class", "donut-total")
-        .attr("text-anchor", "middle")
-        .attr("y", -3)
-        .text(Number(total).toLocaleString());
-    group.append("text")
-        .attr("class", "donut-caption")
-        .attr("text-anchor", "middle")
-        .attr("y", 17)
-        .text("arrows");
+    const cellGroups = svg.append('g')
+        .selectAll('g')
+        .data(cells)
+        .join('g')
+        .attr('transform', d => `translate(${originX + types.indexOf(d.target) * cellWidth},${originY + types.indexOf(d.source) * cellHeight})`);
+    const rects = cellGroups.append('rect')
+        .attr('width', cellWidth - 7)
+        .attr('height', cellHeight - 7)
+        .attr('rx', 6)
+        .attr('fill', d => d.count ? color(d.count) : 'var(--bg-tertiary)')
+        .attr('stroke', d => d.count ? 'transparent' : 'var(--border)')
+        .attr('stroke-dasharray', d => d.count ? null : '4 3');
+    attachChartTooltip(rects, d => d.count
+        ? `${d.label}: ${d.count.toLocaleString()} arrows`
+        : `${d.label}: absent from the vocabulary`);
+    makeInsightMarksInteractive(
+        rects.filter(d => d.count > 0),
+        'arrow-type',
+        d => d.code,
+        d => `${d.label} · ${d.code}`
+    );
+    cellGroups.append('text')
+        .attr('class', 'matrix-count')
+        .attr('x', (cellWidth - 7) / 2)
+        .attr('y', (cellHeight - 7) / 2)
+        .attr('dy', '.18em')
+        .attr('text-anchor', 'middle')
+        .attr('fill', d => !d.count ? 'var(--text-secondary)' : (d.count > maxCount * 0.42 ? '#ffffff' : '#0f172a'))
+        .text(d => d.count ? d.count.toLocaleString() : 'absent');
 
-    const legend = svgEl.append("g")
-        .attr("transform", "translate(245,35)");
-    const rows = legend.selectAll("g")
-        .data(visibleData)
-        .join("g")
-        .attr("transform", (_, i) => `translate(0,${i * 23})`);
-    rows.append("rect")
-        .attr("width", 10)
-        .attr("height", 10)
-        .attr("rx", 2)
-        .attr("y", -8)
-        .attr("fill", (_, i) => colors[i % colors.length]);
-    rows.append("text")
-        .attr("class", "chart-label")
-        .attr("x", 17)
-        .attr("y", 0)
-        .text(d => truncateLabel(d.label, 18));
-    rows.append("text")
-        .attr("class", "chart-value")
-        .attr("x", 210)
-        .attr("y", 0)
-        .attr("text-anchor", "end")
-        .text(d => Number(d.count).toLocaleString());
-    attachChartTooltip(rows, d => chartCaption(d, 'arrows'));
+    const rowTotals = types.map(source => d3.sum(cells.filter(d => d.source === source), d => d.count));
+    const columnTotals = types.map(target => d3.sum(cells.filter(d => d.target === target), d => d.count));
+    svg.append('text').attr('class', 'chart-axis-label').attr('x', originX + cellWidth * 3 + 16).attr('y', originY - 12).text('TOTAL');
+    svg.selectAll('.matrix-row-total')
+        .data(rowTotals)
+        .join('text')
+        .attr('class', 'chart-value matrix-row-total')
+        .attr('x', originX + cellWidth * 3 + 16)
+        .attr('y', (_, index) => originY + index * cellHeight + cellHeight / 2)
+        .attr('dy', '.35em')
+        .text(value => value.toLocaleString());
+    svg.selectAll('.matrix-column-total')
+        .data(columnTotals)
+        .join('text')
+        .attr('class', 'chart-value matrix-column-total')
+        .attr('x', (_, index) => originX + index * cellWidth + cellWidth / 2)
+        .attr('y', originY + cellHeight * 3 + 11)
+        .attr('text-anchor', 'middle')
+        .text(value => value.toLocaleString());
+
+    finishChart(
+        selector,
+        cells,
+        [
+            {key: 'source', label: 'Source'},
+            {key: 'target', label: 'Target'},
+            {key: 'code', label: 'Arrow type'},
+            {key: 'count', label: 'Arrows', format: value => Number(value).toLocaleString()},
+        ],
+        caption
+    );
 }
 
-function truncateLabel(label, maxLength) {
-    const text = String(label || '');
-    return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
+function renderMechanisticCenterComparison(selector, comparison, title) {
+    const total = Number(comparison.template_total || 0);
+    const rows = [
+        {
+            code: 'EPD-enriched',
+            label: 'EPD-enriched MC',
+            count: Number(comparison.epd_enriched_template_count || 0),
+            percent: Number(comparison.epd_enriched_template_percent || 0),
+            color: 'var(--sequential-5)',
+        },
+        {
+            code: 'Structural extension',
+            label: 'Structurally extends RC',
+            count: Number(comparison.structurally_extended_template_count || 0),
+            percent: Number(comparison.structurally_extended_template_percent || 0),
+            color: 'var(--sequential-7)',
+        },
+    ];
+    const caption = comparison.definition || 'MC templates add EPD transition context to their parent RC templates.';
+    const container = prepareChart(selector, title, rows, caption);
+    if (!container) return;
+    const width = 560;
+    const height = 205;
+    const trackX = 178;
+    const trackWidth = 330;
+    const svg = container.append('svg')
+        .attr('class', 'chart-svg chart-meter chart-visual')
+        .attr('viewBox', `0 0 ${width} ${height}`)
+        .attr('role', 'img')
+        .attr('aria-label', title);
+    const groups = svg.selectAll('g.meter-row')
+        .data(rows)
+        .join('g')
+        .attr('class', 'meter-row')
+        .attr('transform', (_, index) => `translate(0,${42 + index * 78})`);
+    groups.append('text')
+        .attr('class', 'chart-label')
+        .attr('x', 8)
+        .attr('y', 12)
+        .text(d => d.label);
+    groups.append('rect')
+        .attr('x', trackX)
+        .attr('y', -3)
+        .attr('width', trackWidth)
+        .attr('height', 22)
+        .attr('rx', 11)
+        .attr('fill', 'var(--bg-tertiary)');
+    const meters = groups.append('rect')
+        .attr('x', trackX)
+        .attr('y', -3)
+        .attr('width', d => trackWidth * d.percent / 100)
+        .attr('height', 22)
+        .attr('rx', 11)
+        .attr('fill', d => d.color);
+    attachChartTooltip(meters, d => `${d.label}: ${d.count.toLocaleString()} of ${total.toLocaleString()} templates (${d.percent.toFixed(2)}%)`);
+    groups.append('text')
+        .attr('class', 'chart-value')
+        .attr('x', trackX + trackWidth + 10)
+        .attr('y', 12)
+        .text(d => `${d.percent.toFixed(1)}%`);
+    groups.append('text')
+        .attr('class', 'meter-detail')
+        .attr('x', trackX)
+        .attr('y', 38)
+        .text(d => `${d.count.toLocaleString()} of ${total.toLocaleString()} MC templates`);
+    finishChart(
+        selector,
+        rows,
+        [
+            {key: 'label', label: 'Comparison'},
+            {key: 'count', label: 'MC templates', format: value => Number(value).toLocaleString()},
+            {key: 'percent', label: 'Percent', format: value => `${Number(value).toFixed(2)}%`},
+        ],
+        caption
+    );
 }
 
 // Recently viewed reactions history (FE-07)
@@ -1614,10 +2407,10 @@ function endpointId(endpoint) {
 }
 
 function markTransitionBonds(graphData, arrows) {
-    if (!graphData?.links || !arrows?.length) return;
+    if (!graphData?.links) return;
 
     const transitionKeys = new Set();
-    arrows.forEach(arr => {
+    (arrows || []).forEach(arr => {
         [arr.source_atoms, arr.target_atoms].forEach(atoms => {
             if (atoms?.length === 2) {
                 transitionKeys.add(bondKey(atoms[0], atoms[1]));
@@ -1668,16 +2461,20 @@ function renderChangeSummary(summary) {
 
 // Theme toggler and structure update (FE-14)
 function toggleTheme() {
-    document.body.classList.toggle('light-theme');
-    renderCDKDepict();
+    const useLight = !document.body.classList.contains('light-theme');
+    document.body.classList.toggle('light-theme', useLight);
+    document.documentElement.classList.toggle('light-theme', useLight);
+    localStorage.setItem('synepd_theme', useLight ? 'light' : 'dark');
+    renderReactionDepict();
 }
 
 // Similar reactions loading (FE-01)
 async function loadNeighbors(reactionId) {
+    const container = document.getElementById('neighbors-list');
     try {
         const res = await fetch(`${API_V1}/reactions/${reactionId}/neighbors?limit=6`);
+        if (!res.ok) throw new Error(`Neighbor request failed: ${res.status}`);
         const data = await res.json();
-        const container = document.getElementById('neighbors-list');
         if (!container) return;
         container.innerHTML = '';
         if (!data.neighbors?.length) {
@@ -1710,12 +2507,17 @@ async function loadNeighbors(reactionId) {
         });
     } catch (e) {
         console.error("Failed to load neighbors:", e);
+        renderInlineError(container, 'Similar reactions could not be loaded.', () => loadNeighbors(reactionId));
     }
 }
 
 function animateCount(elementId, target) {
     const el = document.getElementById(elementId);
     if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        el.innerText = Number(target).toLocaleString();
+        return;
+    }
     const duration = 900;
     const start = performance.now();
     function step(now) {
@@ -1728,13 +2530,15 @@ function animateCount(elementId, target) {
 }
 
 async function fetchDbInfo() {
-    ['dash-reactions-val','dash-templates-val','dash-arrows-val','dash-taxons-val'].forEach(id => {
+    ['dash-reactions-val','dash-templates-val','dash-mechanistic-centers-val','dash-arrows-val','dash-taxons-val','dash-molecules-val'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = '—';
     });
     try {
         const res = await fetch(`${API_V1}/db-info`);
+        if (!res.ok) throw new Error(`Database metadata request failed: ${res.status}`);
         const data = await res.json();
+        document.getElementById('db-info-error')?.remove();
         const setText = (id, text) => {
             const el = document.getElementById(id);
             if (el) el.innerText = text;
@@ -1747,20 +2551,22 @@ async function fetchDbInfo() {
         setText('dash-db-updated', data.last_update || data.release_date);
         animateCount('dash-reactions-val', data.counts.reactions);
         animateCount('dash-templates-val', data.counts.reaction_centers || 0);
+        const mechanisticCenterCount = await resolveMechanisticCenterCount(data.counts);
+        animateCount('dash-mechanistic-centers-val', mechanisticCenterCount);
         animateCount('dash-arrows-val', data.counts.epd_arrows || 0);
         animateCount('dash-taxons-val', data.counts.taxons);
+        animateCount('dash-molecules-val', data.counts.molecules || 0);
     } catch (err) {
         console.error("Failed to load db info:", err);
+        const grid = document.querySelector('.dashboard-grid');
+        if (grid && !document.getElementById('db-info-error')) {
+            const error = document.createElement('div');
+            error.id = 'db-info-error';
+            error.className = 'dashboard-inline-error';
+            renderInlineError(error, 'Database summary could not be loaded.', fetchDbInfo);
+            grid.appendChild(error);
+        }
     }
-}
-
-function openSchemaModal() {
-    const modal = document.getElementById('schema-modal');
-    modal.classList.add('show');
-}
-function closeSchemaModal() {
-    const modal = document.getElementById('schema-modal');
-    modal.classList.remove('show');
 }
 
 let submitType = 'reaction';
@@ -1926,11 +2732,11 @@ async function sendSubmission() {
 // URL routing
 window.addEventListener('load', () => {
     const match = location.hash.match(/^#reaction\/(\d+)$/);
-    if (match) loadReaction(parseInt(match[1]));
+    if (match) loadReaction(parseInt(match[1]), { historyMode: 'replace' });
 });
 window.addEventListener('popstate', (e) => {
-    if (e.state?.reactionId) loadReaction(e.state.reactionId);
-    else goHome();
+    if (e.state?.reactionId) loadReaction(e.state.reactionId, { historyMode: 'none' });
+    else goHome({ updateHistory: false });
 });
 
 // Keyboard shortcuts
@@ -1942,6 +2748,11 @@ document.addEventListener('keydown', (e) => {
     }
     if (e.key === 'Escape' && document.getElementById('chart-modal')?.classList.contains('show')) {
         closeChartModal();
+        e.preventDefault();
+        return;
+    }
+    if (e.key === 'Escape' && document.getElementById('schema-modal')?.classList.contains('show')) {
+        closeSchemaModal();
         e.preventDefault();
         return;
     }
@@ -2033,6 +2844,34 @@ if (searchInputEl) {
 }
 
 // Initial initialization calls
+const savedTheme = localStorage.getItem('synepd_theme');
+const useLightTheme = savedTheme === 'light'
+    || (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches);
+document.documentElement.classList.toggle('light-theme', useLightTheme);
+document.body.classList.toggle('light-theme', useLightTheme);
+const savedPlaySpeed = localStorage.getItem('synepd_play_speed');
+const playSpeedSelect = document.getElementById('play-speed');
+if (['500', '1000', '2000', '3000'].includes(savedPlaySpeed) && playSpeedSelect) {
+    playSpeedSelect.value = savedPlaySpeed;
+}
+const autoplayToggle = document.getElementById('autoplay-toggle');
+if (autoplayToggle) autoplayToggle.checked = localStorage.getItem('synepd_autoplay') !== 'off';
+
+const tabList = document.querySelector('[role="tablist"]');
+tabList?.addEventListener('keydown', event => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    const tabs = Array.from(tabList.querySelectorAll('[role="tab"]'));
+    const current = tabs.indexOf(document.activeElement);
+    if (current < 0) return;
+    let next = current;
+    if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = tabs.length - 1;
+    else next = (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    event.preventDefault();
+    switchTab(tabs[next].dataset.tab);
+    tabs[next].focus();
+});
+
 fetchArrowTypes();
 fetchStats();
 checkConnection();

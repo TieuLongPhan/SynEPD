@@ -1,58 +1,97 @@
 {
+  "crosswalks": [
+    {
+      "bytes": 24146,
+      "name": "rxno_crosswalk.tsv",
+      "sha256": "5f06f8c0ad5fd4cc42d112b87163a7ea4eb362ac64b6cf3fdecf8e5ea26aed49"
+    },
+    {
+      "bytes": 13568,
+      "name": "rxno_crosswalk.ttl",
+      "sha256": "519d5ba33150c96ecbb9f2e5c706450a020a92ecbdcda5736b3458602d013e3b"
+    }
+  ],
   "database": {
-    "bytes": 19853312,
+    "bytes": 22716416,
     "counts": {
-      "epd": 1915,
-      "epd_arrow": 7303,
-      "its": 1915,
-      "mechanism_context": 1915,
-      "molecule": 2179,
-      "reaction": 1915,
-      "reaction_center": 1497,
-      "taxon": 1051
+      "epd": 1926,
+      "epd_arrow": 8123,
+      "its": 1926,
+      "mechanism_context": 1926,
+      "mechanistic_center": 1540,
+      "molecule": 2277,
+      "reaction": 1926,
+      "reaction_center": 1521,
+      "reaction_component": 7057,
+      "reaction_entry_code": 1956,
+      "reaction_taxonomy": 1956,
+      "taxon": 939
     },
     "foreign_key_violations": 0,
     "graph_formats": {
       "its": {
-        "synepd.node-link-json.zlib.v1": 1915
+        "synepd.node-link-json.zlib.v1": 1926
       },
       "mechanism_context": {
-        "synepd.node-link-json.zlib.v1": 1915
+        "synepd.node-link-json.zlib.v1": 1926
+      },
+      "mechanistic_center": {
+        "synepd.node-link-json.zlib.v1": 1540
       },
       "reaction_center": {
-        "synepd.node-link-json.zlib.v1": 1497
+        "synepd.node-link-json.zlib.v1": 1521
       }
     },
     "integrity_check": "ok",
     "mechanism_context_versions": {
-      "synepd.mechanistic-center.v1": 1915
+      "synepd.mechanistic-center.v1": 1926
     },
     "name": "epdb.sqlite",
-    "sha256": "dea811c906c2a73c564c69536ab061cacc8e210cdd4a56977ea2a8943261a802"
+    "sha256": "5f88f5de7d59fdc6f0f0e260c5439234cd8c38da8beb58c30b36c35fd79045d5"
   },
   "dataset_release": {
     "license": "CC BY 4.0",
-    "release_date": "2026-07-15",
-    "version": "v0.2.0"
+    "release_date": "2026-08-12",
+    "version": "v0.4.0"
   },
   "manifest_version": "synepd.release-manifest.v1",
   "schema_migrations": [
     {
-      "applied_at": "2026-07-15 14:13:11",
+      "applied_at": "2026-08-13 07:25:48",
       "checksum": "sha256:87a9d2414a7c49132c4299077b515609da899a047d795f9eaa05ef3464374d27",
       "version": "002_mechanism_context"
+    },
+    {
+      "applied_at": "2026-08-13 07:25:48",
+      "checksum": "sha256:c7e203b8593560864dc193719d2b6ef92afcc7d3ca2c62c30a7731b7d860c569",
+      "version": "003_taxon_xref"
+    },
+    {
+      "applied_at": "2026-08-13 07:25:48",
+      "checksum": "sha256:34c629b5e38a599b3b2f5675ca3bb8fc0a45e2fe9897bfc5f7e0ea5946d8f9a3",
+      "version": "004_reaction_metadata"
+    },
+    {
+      "applied_at": "2026-08-13 07:25:48",
+      "checksum": "sha256:2c926958cb5591744bda98a496d679dfe7b131b04c4806d1d33d01587b0c3dd5",
+      "version": "005_mechanistic_center"
+    },
+    {
+      "applied_at": "2026-08-13 07:25:48",
+      "checksum": "sha256:4913f555c248e21ceba18a8a9a162935b63e6966b40e0b7f1d5d1ab5b4fbbd74",
+      "version": "006_its_mechanistic_center"
+    },
+    {
+      "applied_at": "2026-08-13 07:25:48",
+      "checksum": "sha256:e0c8aefcd24bc3ecbbd29afe43bcf79b41012ad9fb0ab9d943f072a45f9f8c8b",
+      "version": "007_core_release"
     }
   ],
   "sources": [
     {
-      "bytes": 57928,
-      "name": "hierarchy.md",
-      "sha256": "502f337abaac09b37ebb4700b3439e48091075638e63f9047aabe6be05f086a4"
-    },
-    {
-      "bytes": 2063121,
+      "bytes": 2613937,
       "name": "polar.json",
-      "sha256": "883a8437b987872639d0b86c14f0911bbb25c7ebc4058974f8fdd24e31157a8c"
+      "sha256": "1db0bf6abf26a14ed1c4e3589a54bb61750ce1a8ed832f72a703aec27e1ab8fa"
     }
   ]
 }

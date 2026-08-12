@@ -189,10 +189,7 @@ cython_debug/
 #   option (not recommended) you can uncomment the following to ignore the entire idea folder.
 # .idea/
 
-# Abstra
-#   Abstra is an AI-powered process automation framework.
-#   Ignore directories containing user credentials, local state, and settings.
-#   Learn more at https://abstra.io/docs
+# Abstra local state
 .abstra/
 
 # Visual Studio Code
@@ -219,12 +216,38 @@ __marimo__/
 .streamlit/secrets.toml
 
 
-plan/*
-scripts/
+# Local curation, planning, paper, and rendering workspaces are intentionally
+# kept outside repository commits.
+/Fix/
+/paper/
+/plan/
+/render/
+/rendered/
+
+# Scripts are working tools and stay untracked, except the RXNO/MOP crosswalk
+# generator and its comparison report, which the committed crosswalk derives
+# from and must stay reproducible.
+scripts/*
+!scripts/build_rxno_mapping.py
+!scripts/compare_taxonomy_rxno.py
+!scripts/render_taxonomy.py
 data/raw/*
 data/old/*
-data/check/
 data/precheck/
 test.ipynb
 synepd.egg-info/*
-paper/*
+# Local review notes and generated curation diagnostics
+/issue.txt
+/FE.md
+/CHANGELOG.md
+
+# Local LaTeX intermediates produced while editing the web schema figure.
+/synepd/web/static/*.aux
+/synepd/web/static/*.dvi
+/synepd/web/static/*.fdb_latexmk
+/synepd/web/static/*.fls
+/synepd/web/static/*.out
+/synepd/web/static/*.pdf
+/synepd/web/static/*.synctex.gz
+/note.txt
+/synepd/web/static/taxonomy_overview.png

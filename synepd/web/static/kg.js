@@ -627,33 +627,18 @@ function kgRenderSelectionInfo(d) {
 // --------------------------------------------------------------------------- //
 // Click-to-inspect info card (centre panel)
 // --------------------------------------------------------------------------- //
-function kgCdkUrl(smiles, withMap) {
-    const isDark = !document.body.classList.contains('light-theme');
-    const style = isDark ? 'cod' : 'cow';
-    const annotate = withMap ? 'mapidx' : 'none';
-    return `https://www.simolecule.com/cdkdepict/depict/${style}/svg`
-        + `?smi=${encodeURIComponent(smiles)}&zoom=2&abbr=off&hdisp=bridgehead`
-        + `&showtitle=false&annotate=${annotate}`;
-}
-
 function kgRdkitUrl(smiles, kind = 'auto') {
     return `${KG_API()}/render/rdkit.svg?smi=${encodeURIComponent(smiles)}&kind=${encodeURIComponent(kind)}`;
 }
 
 function kgFallbackToRdkit(img) {
-    if (img.dataset.renderer !== 'rdkit' && img.dataset.rdkitSrc) {
-        img.dataset.renderer = 'rdkit';
-        img.src = img.dataset.rdkitSrc;
-        return;
-    }
     if (img.parentElement) img.parentElement.style.display = 'none';
 }
 
 function kgDepictImgHtml(smiles, kind, alt) {
-    const cdkUrl = kgCdkUrl(smiles, kind === 'reaction');
     const rdkitUrl = kgRdkitUrl(smiles, kind);
-    return `<img alt="${escapeHtml(alt)}" src="${escapeHtml(cdkUrl)}"
-                 data-renderer="cdk" data-rdkit-src="${escapeHtml(rdkitUrl)}"
+    return `<img alt="${escapeHtml(alt)}" src="${escapeHtml(rdkitUrl)}"
+                 data-renderer="rdkit"
                  onerror="kgFallbackToRdkit(this)">`;
 }
 
@@ -737,12 +722,6 @@ async function kgShowReactionInfo(d) {
     // Trust badges
     if (rxn.balanced === true)  html += `<span class="kg-trust-badge kg-trust-ok">⚖ Balanced</span>`;
     if (rxn.balanced === false) html += `<span class="kg-trust-badge kg-trust-warn">⚠ Unbalanced</span>`;
-    if (rxn.mechanism_context) {
-        const eventCount = (rxn.mechanism_context.events || []).length;
-        const shortHash = (rxn.mechanism_context.context_hash || '').slice(0, 12);
-        html += `<div class="kg-info-meta">Mechanistic context: ${eventCount} edits · ${escapeHtml(shortHash)}…</div>`;
-    }
-
     html += `<div class="kg-info-struct">${kgDepictImgHtml(depictSmiles, 'reaction', 'reaction')}</div>`;
 
     if (rxn.arrows && rxn.arrows.length) {

@@ -321,7 +321,16 @@ function downloadSVG() {
     const bgSecondary = cssVar('--bg-secondary') || '#101524';
     const textPrimary = cssVar('--text-primary') || '#f3f4f6';
     const textSecondary = cssVar('--text-secondary') || '#9ca3af';
+    const exportVariables = [
+        '--accent-1', '--accent-2', '--accent-3', '--accent-4', '--accent-5', '--accent-6',
+        '--accent-red', '--accent-green', '--accent-orange', '--accent-pink',
+        '--bg-primary', '--bg-secondary', '--text-primary', '--text-secondary',
+    ];
+    const resolvedVariables = exportVariables
+        .map(name => `${name}:${cssVar(name)}`)
+        .join(';');
     style.textContent = `
+        :root { ${resolvedVariables}; }
         .node circle { stroke: ${bgSecondary}; stroke-width: 1.5px; }
         .node text { font-family: Outfit, sans-serif; font-weight: 700; fill: ${textPrimary}; }
         .node .map-label { font-family: monospace; font-size: 0.65rem; fill: ${textSecondary}; }
