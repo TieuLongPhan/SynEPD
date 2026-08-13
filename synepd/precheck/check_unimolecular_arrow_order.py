@@ -101,9 +101,7 @@ def check_unimolecular_arrow_order(
     )
     raw_epd = record.get("epd") or []
     actual_arrow_types = tuple(
-        arrow[0]
-        for arrow in raw_epd
-        if isinstance(arrow, (list, tuple)) and arrow
+        arrow[0] for arrow in raw_epd if isinstance(arrow, (list, tuple)) and arrow
     )
     if tax_code is None:
         return UnimolecularArrowOrderCheck(

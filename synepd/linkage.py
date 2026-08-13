@@ -14,7 +14,6 @@ import os
 from pathlib import Path
 from typing import Iterable
 
-
 ONTOLOGY_RELEASE = {
     "id": "rxno-2021-12-16",
     "ontology_iri": "http://purl.obolibrary.org/obo/rxno.owl",
@@ -29,7 +28,9 @@ def resolve_crosswalk_path(database: str | Path | None = None) -> Path:
     configured = os.environ.get("SYNEPD_RXNO_CROSSWALK")
     if configured:
         return Path(configured)
-    if database and not str(database).startswith(("postgresql://", "postgres://", "host=")):
+    if database and not str(database).startswith(
+        ("postgresql://", "postgres://", "host=")
+    ):
         adjacent = Path(database).parent / "rxno_crosswalk.tsv"
         if adjacent.is_file():
             return adjacent

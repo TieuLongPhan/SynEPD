@@ -217,9 +217,16 @@ class MechanisticCenterTemplate:
 
 
 class ReleaseDatabase:
-    def __init__(self, path: Path | str):
+    def __init__(self, path: Path | str, *, read_only: bool = False):
         self.path = Path(path)
-        self.connection = sqlite3.connect(self.path)
+        if read_only:
+            self.connection = sqlite3.connect(
+                f"{self.path.resolve().as_uri()}?mode=ro",
+                uri=True,
+            )
+            self.connection.execute("PRAGMA query_only = ON")
+        else:
+            self.connection = sqlite3.connect(self.path)
         self.connection.row_factory = sqlite3.Row
         self.connection.execute("PRAGMA foreign_keys = ON;")
 
@@ -240,7 +247,7 @@ class ReleaseDatabase:
             is None
         )
         with self.connection:
-            self.connection.executescript(f"""
+            self.connection.executescript("""
                 CREATE TABLE IF NOT EXISTS dataset_release (
                     version TEXT PRIMARY KEY,
                     release_date DATE,

@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from synepd.core.data import (
     DEFAULT_DB_FILENAME,
+    DEFAULT_VERSION,
     DEFAULT_ZENODO_RECORD_ID,
     get_cache_dir,
     get_default_db_path,
@@ -33,7 +34,9 @@ def test_get_default_db_path(tmp_path):
 
             resolved_path = get_default_db_path()
             assert resolved_path == db_path
-            mock_download.assert_called_once_with(db_path)
+            mock_download.assert_called_once_with(
+                db_path, source="auto", version="0.4.0"
+            )
 
 
 def test_get_default_db_path_uses_cached_current_database_name(tmp_path):
@@ -63,10 +66,13 @@ def test_get_default_db_path_uses_versioned_cache(tmp_path):
 
 
 def test_release_url_helpers():
-    assert get_zenodo_record_id("0.1.0") == DEFAULT_ZENODO_RECORD_ID
-    assert get_zenodo_api_url("v0.1.0").endswith(
-        f"/api/records/{DEFAULT_ZENODO_RECORD_ID}"
-    )
+    assert DEFAULT_VERSION == "0.4.0"
+    assert DEFAULT_ZENODO_RECORD_ID == "21235891"
+    assert get_zenodo_record_id("0.4.0") == DEFAULT_ZENODO_RECORD_ID
+    assert get_zenodo_record_id("0.1.0") == "21235892"
+    assert get_zenodo_record_id("0.2.0") == "21381101"
+    assert get_zenodo_record_id("0.3.0") == "21394239"
+    assert get_zenodo_api_url("v0.1.0").endswith("/api/records/21235892")
     assert get_github_archive_url("0.1.0").endswith("/refs/tags/v0.1.0.zip")
     assert get_github_release_api_url("0.1.0").endswith("/releases/tags/v0.1.0")
 
@@ -124,6 +130,15 @@ def test_download_database_auto_falls_back_to_github(tmp_path):
             download_database(dest_path, source="auto", version="0.1.0")
 
     github.assert_called_once_with(dest_path, version="0.1.0")
+
+
+def test_zenodo_download_rejects_a_concept_record_at_the_wrong_version(tmp_path):
+    from synepd.core.data import _download_zenodo_database
+
+    record = {"metadata": {"version": "v0.3.0"}, "files": []}
+    with mock.patch("synepd.core.data._load_zenodo_record", return_value=record):
+        with pytest.raises(RuntimeError, match="not requested SynEPD 0.4.0"):
+            _download_zenodo_database(tmp_path / "epdb.sqlite", version="0.4.0")
 
 
 def test_verify_checksum_accepts_valid_digest_and_rejects_mismatch(tmp_path):

@@ -557,7 +557,7 @@ def _get_db_info_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict:
             db_release_date = row[1]
             db_license = row[2]
         else:
-            db_version = "v0.1.0"
+            db_version = "v0.4.0"
             db_release_date = "2026-07-07"
             db_license = "CC BY 4.0"
 
@@ -1119,9 +1119,7 @@ def _get_reaction_detail_cached(reaction_id: int, db_path: str, _db_token: str) 
         )
         rxn_data["ontology_xrefs"] = resolve_lineage_xrefs(cur.fetchall(), db_path)
         _, ontology_release = load_rxno_linkage(db_path)
-        rxn_data["ontology_releases"] = (
-            [ontology_release] if ontology_release else []
-        )
+        rxn_data["ontology_releases"] = [ontology_release] if ontology_release else []
 
         # Fetch EPD arrows
         sql_arr = "SELECT arrow_index, arrow_type_code, source_atoms, target_atoms FROM epd_arrow WHERE reaction_id = ? ORDER BY arrow_index;"

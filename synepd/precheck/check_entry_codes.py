@@ -42,9 +42,7 @@ def check_entry_code_uniqueness(
                 codes = [primary]
             else:
                 if not isinstance(aliases, (list, tuple)):
-                    raise ValueError(
-                        f"Record {record_id} entry_codes must be a list"
-                    )
+                    raise ValueError(f"Record {record_id} entry_codes must be a list")
                 if aliases.count(primary) != 1:
                     raise ValueError(
                         f"Record {record_id} entry_codes must contain its "

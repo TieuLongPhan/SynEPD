@@ -209,8 +209,8 @@ def test_welcome_panel_keeps_raw_relation_vocabulary_internal():
     index = (root / "synepd/web/static/index.html").read_text(encoding="utf-8")
 
     assert "Database relation figure" in index
-    assert re.search(r'app\.js\?v=\d{8}-\d+', index)
-    assert re.search(r'data_arch\.svg\?v=\d{8}-\d+', index)
+    assert re.search(r"app\.js\?v=\d{8}-\d+", index)
+    assert re.search(r"data_arch\.svg\?v=\d{8}-\d+", index)
     assert 'onclick="openSchemaModal()"' in index
     assert 'id="schema-modal"' in index
     assert "function closeSchemaModal()" in (

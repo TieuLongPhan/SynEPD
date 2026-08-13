@@ -15,6 +15,29 @@ class ReactionManager:
         row = cursor.fetchone()
         return dict(row) if row else None
 
+    def get_by_id(self, reaction_id: int) -> Optional[Dict[str, Any]]:
+        """Retrieve a reaction by its integer release-database ID."""
+        row = self.db.connection.execute(
+            "SELECT * FROM reaction WHERE id = ?", (reaction_id,)
+        ).fetchone()
+        return dict(row) if row else None
+
+    def search(self, text: str, *, limit: int = 50) -> List[Dict[str, Any]]:
+        """Search case IDs, reaction names, and canonical reaction SMILES."""
+        if limit < 1:
+            raise ValueError("limit must be positive")
+        pattern = f"%{text}%"
+        rows = self.db.connection.execute(
+            """
+            SELECT * FROM reaction
+            WHERE case_id LIKE ? OR name LIKE ? OR canonical_rsmi LIKE ?
+            ORDER BY CASE WHEN case_id = ? THEN 0 ELSE 1 END, id
+            LIMIT ?
+            """,
+            (pattern, pattern, pattern, text, limit),
+        ).fetchall()
+        return [dict(row) for row in rows]
+
     def get_by_aam_key(self, aam_key: str) -> Optional[Dict[str, Any]]:
         cursor = self.db.connection.cursor()
         cursor.execute("SELECT * FROM reaction WHERE aam_key = ?", (aam_key,))
@@ -67,6 +90,7 @@ class ReactionManager:
             JOIN reaction_component rc ON rc.reaction_id = r.id
             JOIN molecule m ON m.id = rc.molecule_id
             WHERE m.canonical_smiles IN ({placeholders}) AND {side_condition}
+            ORDER BY r.id
         """
         cursor.execute(query, tuple(smiles_variants))
         return [dict(row) for row in cursor.fetchall()]
@@ -88,11 +112,12 @@ class MoleculeManager:
     def get_synthesis_reactions(self, canonical_smiles: str) -> List[Dict[str, Any]]:
         cursor = self.db.connection.cursor()
         query = """
-            SELECT r.*
+            SELECT DISTINCT r.*
             FROM reaction r
             JOIN reaction_component rc ON rc.reaction_id = r.id
             JOIN molecule m ON m.id = rc.molecule_id
             WHERE m.canonical_smiles = ? AND rc.side = 'product'
+            ORDER BY r.id
         """
         cursor.execute(query, (canonical_smiles,))
         return [dict(row) for row in cursor.fetchall()]
@@ -100,11 +125,12 @@ class MoleculeManager:
     def get_consumption_reactions(self, canonical_smiles: str) -> List[Dict[str, Any]]:
         cursor = self.db.connection.cursor()
         query = """
-            SELECT r.*
+            SELECT DISTINCT r.*
             FROM reaction r
             JOIN reaction_component rc ON rc.reaction_id = r.id
             JOIN molecule m ON m.id = rc.molecule_id
             WHERE m.canonical_smiles = ? AND rc.side = 'reactant'
+            ORDER BY r.id
         """
         cursor.execute(query, (canonical_smiles,))
         return [dict(row) for row in cursor.fetchall()]
@@ -117,10 +143,11 @@ class TaxonomyManager:
     def get_reactions_by_taxon(self, taxon_code: str) -> List[Dict[str, Any]]:
         cursor = self.db.connection.cursor()
         query = """
-            SELECT r.*
+            SELECT DISTINCT r.*
             FROM reaction r
             JOIN reaction_taxonomy rt ON rt.reaction_id = r.id
             WHERE rt.taxon_code = ?
+            ORDER BY r.id
         """
         cursor.execute(query, (taxon_code,))
         return [dict(row) for row in cursor.fetchall()]
@@ -148,11 +175,12 @@ class TaxonomyManager:
         cursor = self.db.connection.cursor()
         # Allows fuzzy matching on the class name
         query = """
-            SELECT r.*
+            SELECT DISTINCT r.*
             FROM reaction r
             JOIN reaction_taxonomy rt ON rt.reaction_id = r.id
             JOIN taxon t ON t.code = rt.taxon_code
             WHERE t.name LIKE ?
+            ORDER BY r.id
         """
         cursor.execute(query, (f"%{class_name}%",))
         return [dict(row) for row in cursor.fetchall()]
@@ -171,6 +199,7 @@ class EPDManager:
             FROM reaction r
             JOIN epd_arrow ea ON ea.reaction_id = r.id
             WHERE ea.arrow_index = 1 AND ea.arrow_type_code = ?
+            ORDER BY r.id
         """
         cursor.execute(query, (arrow_type_code,))
         return [dict(row) for row in cursor.fetchall()]
@@ -182,6 +211,7 @@ class EPDManager:
             FROM reaction r
             JOIN epd e ON e.reaction_id = r.id
             WHERE e.number_arrows = ?
+            ORDER BY r.id
         """
         cursor.execute(query, (count,))
         return [dict(row) for row in cursor.fetchall()]
@@ -195,6 +225,7 @@ class EPDManager:
             FROM reaction r
             JOIN epd_arrow ea ON ea.reaction_id = r.id
             WHERE ea.arrow_type_code = ?
+            ORDER BY r.id
         """
         cursor.execute(query, (arrow_type_code,))
         return [dict(row) for row in cursor.fetchall()]
@@ -208,9 +239,9 @@ class EPDManager:
         cursor = self.db.connection.cursor()
 
         # Build a dynamic query to check the exact sequence of arrows
-        joins = []
+        joins = ["JOIN epd e ON e.reaction_id = r.id AND e.number_arrows = ?"]
         conditions = []
-        params = []
+        params = [len(sequence)]
 
         for i, arrow in enumerate(sequence):
             alias = f"ea{i}"
@@ -229,7 +260,10 @@ class EPDManager:
             if i == len(sequence) - 1:
                 break
 
-        query = f"SELECT DISTINCT r.* FROM reaction r {' '.join(joins)} WHERE {' AND '.join(conditions)}"
+        query = (
+            f"SELECT DISTINCT r.* FROM reaction r {' '.join(joins)} "
+            f"WHERE {' AND '.join(conditions)} ORDER BY r.id"
+        )
         cursor.execute(query, params)
         return [dict(row) for row in cursor.fetchall()]
 
@@ -250,6 +284,27 @@ class MechanismManager:
             data["template_graph"] = decode_graph(
                 data["template_graph"], data["graph_format"]
             )
+        return data
+
+    def get_reaction_center_for_reaction(
+        self, reaction_id: int
+    ) -> Optional[Dict[str, Any]]:
+        """Retrieve the RC template linked to a reaction through its ITS."""
+        row = self.db.connection.execute(
+            """
+            SELECT rc.*
+            FROM its
+            JOIN reaction_center rc ON rc.id = its.rc_id
+            WHERE its.reaction_id = ?
+            """,
+            (reaction_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        data = dict(row)
+        data["template_graph"] = decode_graph(
+            data["template_graph"], data["graph_format"]
+        )
         return data
 
     def get_its_for_reaction(self, reaction_id: int) -> Optional[Dict[str, Any]]:

@@ -10,12 +10,16 @@ from pathlib import Path
 from urllib.parse import quote
 
 # Default release and cache paths
-DEFAULT_VERSION = "0.1.0"
+DEFAULT_VERSION = "0.4.0"
 DEFAULT_GITHUB_REPOSITORY = "TieuLongPhan/SynEPD"
-DEFAULT_ZENODO_RECORD_ID = "21235892"
+DEFAULT_ZENODO_RECORD_ID = "21235891"
 ZENODO_RECORD_IDS = {
-    "0.1.0": DEFAULT_ZENODO_RECORD_ID,
-    "v0.1.0": DEFAULT_ZENODO_RECORD_ID,
+    "0.1.0": "21235892",
+    "v0.1.0": "21235892",
+    "0.2.0": "21381101",
+    "v0.2.0": "21381101",
+    "0.3.0": "21394239",
+    "v0.3.0": "21394239",
 }
 DEFAULT_DB_FILENAME = "epdb.sqlite"
 DEFAULT_ARCHIVE_DB_MEMBER = f"data/{DEFAULT_DB_FILENAME}"
@@ -54,6 +58,10 @@ def get_zenodo_record_id(version: str | None = None) -> str:
     record_id = ZENODO_RECORD_IDS.get(normalized) or ZENODO_RECORD_IDS.get(
         f"v{normalized}"
     )
+    if record_id is None and normalized == DEFAULT_VERSION:
+        # The concept record follows the newest release. Download code verifies
+        # its declared version before accepting an artifact.
+        record_id = DEFAULT_ZENODO_RECORD_ID
     if record_id is None:
         known = ", ".join(sorted({normalize_version(v) for v in ZENODO_RECORD_IDS}))
         raise ValueError(
@@ -85,21 +93,23 @@ def get_zenodo_api_url(version: str | None = None, record_id: str | None = None)
 
 
 def get_default_db_path(
-    version: str | None = None, source: str = "zenodo", force: bool = False
+    version: str | None = None, source: str = "auto", force: bool = False
 ) -> Path:
-    """Return the path to the cached database, downloading it if not present."""
-    use_legacy_cache = version is None and source == "zenodo"
+    """Return a cached release database, downloading it when necessary.
+
+    The unversioned call tracks :data:`DEFAULT_VERSION` while preserving the
+    historical ``epdb.sqlite`` cache filename.  ``source="auto"`` prefers a
+    configured Zenodo archive and falls back to the matching GitHub release.
+    """
+    release_version = version or DEFAULT_VERSION
     db_filename = (
-        DEFAULT_DB_FILENAME if use_legacy_cache else get_versioned_db_filename(version)
+        DEFAULT_DB_FILENAME if version is None else get_versioned_db_filename(version)
     )
     db_path = get_cache_dir() / db_filename
     if not db_path.exists():
-        if use_legacy_cache:
-            download_database(db_path)
-        else:
-            download_database(db_path, source=source, version=version)
+        download_database(db_path, source=source, version=release_version)
     elif force:
-        download_database(db_path, source=source, version=version)
+        download_database(db_path, source=source, version=release_version)
     return db_path
 
 
@@ -216,6 +226,14 @@ def _download_zenodo_database(
     """Download the database from a Zenodo record or its release archive."""
     release_record_id = record_id or get_zenodo_record_id(version)
     record = _load_zenodo_record(release_record_id)
+    requested_version = normalize_version(version) if version is not None else None
+    raw_record_version = record.get("metadata", {}).get("version")
+    record_version = normalize_version(raw_record_version) if raw_record_version else ""
+    if requested_version is not None and record_version != requested_version:
+        raise RuntimeError(
+            f"Zenodo record {release_record_id} is release {record_version or 'unknown'}, "
+            f"not requested SynEPD {requested_version}"
+        )
     files = record.get("files", [])
 
     direct_file = next(

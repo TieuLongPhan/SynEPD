@@ -40,9 +40,7 @@ def check_alpha_elimination_arrow_order(
             ("EPD must be a list",),
         )
     arrow_types = tuple(
-        arrow[0]
-        for arrow in raw_epd
-        if isinstance(arrow, (list, tuple)) and arrow
+        arrow[0] for arrow in raw_epd if isinstance(arrow, (list, tuple)) and arrow
     )
     applicable = (
         any(

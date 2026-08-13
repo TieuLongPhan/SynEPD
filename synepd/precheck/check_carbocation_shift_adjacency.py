@@ -7,7 +7,6 @@ from typing import Any
 
 from rdkit import Chem
 
-
 CARBOCATION_REARRANGEMENT_PREFIX = "POLAR.07.01."
 
 
@@ -40,8 +39,7 @@ def check_carbocation_shift_adjacency(
     epd = record.get("epd") or []
     applicable = (
         any(
-            isinstance(code, str)
-            and code.startswith(CARBOCATION_REARRANGEMENT_PREFIX)
+            isinstance(code, str) and code.startswith(CARBOCATION_REARRANGEMENT_PREFIX)
             for code in tax_codes
         )
         and len(epd) == 1
@@ -99,13 +97,19 @@ def check_carbocation_shift_adjacency(
             if missing:
                 errors.append(f"reactant is missing atom maps {missing}")
             else:
-                if mol.GetBondBetweenAtoms(
-                    by_map[migration_origin], by_map[migrating_atom]
-                ) is None:
+                if (
+                    mol.GetBondBetweenAtoms(
+                        by_map[migration_origin], by_map[migrating_atom]
+                    )
+                    is None
+                ):
                     errors.append("the migrating sigma bond is absent in reactants")
-                if mol.GetBondBetweenAtoms(
-                    by_map[migration_origin], by_map[cation_center]
-                ) is None:
+                if (
+                    mol.GetBondBetweenAtoms(
+                        by_map[migration_origin], by_map[cation_center]
+                    )
+                    is None
+                ):
                     errors.append(
                         "migration origin and accepting cation center are not adjacent"
                     )

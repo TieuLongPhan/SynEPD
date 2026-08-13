@@ -40,6 +40,9 @@ explorer.
 * Raised the minimum SynKit dependency to 1.6.0 and regenerated the SQLite
   database, release manifest, taxonomy assets, and documentation from the
   curated sources.
+* Added ``SynEPDQuery``, a read-only Python interface for named-reaction,
+  molecule-role, taxonomy, EPD, RC-neighbour, ITS/RC/MC, and RXNO/MOP queries
+  without exposing the underlying SQL schema.
 
 0.3.0 - 2026-07-16
 ------------------

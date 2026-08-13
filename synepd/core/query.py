@@ -42,7 +42,7 @@ def _resolve_query_db_path(
     if db_source is not None or db_version is not None:
         from synepd.core.data import get_default_db_path
 
-        return get_default_db_path(version=db_version, source=db_source or "zenodo")
+        return get_default_db_path(version=db_version, source=db_source or "auto")
     return "data/epdb.sqlite"
 
 

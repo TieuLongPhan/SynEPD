@@ -304,7 +304,11 @@ def _table_count(connection: sqlite3.Connection, table: str) -> int:
     exists = connection.execute(
         "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)
     ).fetchone()
-    return connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0] if exists else 0
+    return (
+        connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+        if exists
+        else 0
+    )
 
 
 def _apply_core_release_migration(connection: sqlite3.Connection) -> None:
