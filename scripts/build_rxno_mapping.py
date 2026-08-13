@@ -30,13 +30,16 @@ fuzzy string similarity) are written with a confidence score to a separate
 confident but wrong hits (e.g. "Martin sulfurane dehydration" vs "Dess-Martin
 oxidation").
 
-Committed artifacts: ``data/rxno_crosswalk.tsv`` and ``data/rxno_crosswalk.ttl``.
-Working artifacts (git-ignored under ``data/check/``): the review TSV and a JSON
-run report.
+Committed artifacts: ``data/rxno_crosswalk.tsv`` and
+``docs/source/_static/rxno_crosswalk.ttl``.
+Human-curated mappings: ``data/rxno_mapping_overrides.tsv``.  These are merged
+with deterministic automatic matches and take precedence for the same taxon.
+Ontology input: the tracked RXNO release snapshot at ``data/rxno.obo``.
+Optional review TSV and JSON reports are written to the local curation workspace.
 
 Usage
 -----
-    python scripts/build_rxno_mapping.py           # download OBO if needed
+    python scripts/build_rxno_mapping.py           # rebuild from the pinned OBO
     python scripts/build_rxno_mapping.py --obo path/to/rxno.obo
     python scripts/build_rxno_mapping.py --check    # non-zero exit if a
                                                      # committed artifact is stale
@@ -45,12 +48,12 @@ Usage
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sqlite3
 import sys
 import unicodedata
-import urllib.request
 from collections import Counter, defaultdict
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -58,19 +61,35 @@ from pathlib import Path
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
 DEFAULT_DB = REPOSITORY_ROOT / "data" / "epdb.sqlite"
-OBO_URL = "http://purl.obolibrary.org/obo/rxno.obo"
-OBO_CACHE = REPOSITORY_ROOT / "data" / "check" / "rxno.obo"
+OBO_CACHE = REPOSITORY_ROOT / "data" / "rxno.obo"
 CROSSWALK_TSV = REPOSITORY_ROOT / "data" / "rxno_crosswalk.tsv"
-CROSSWALK_TTL = REPOSITORY_ROOT / "data" / "rxno_crosswalk.ttl"
-NEEDS_REVIEW_TSV = (
-    REPOSITORY_ROOT / "data" / "check" / "rxno_crosswalk_needs_review.tsv"
-)
-REPORT_JSON = REPOSITORY_ROOT / "data" / "check" / "rxno_crosswalk_report.json"
+CROSSWALK_TTL = REPOSITORY_ROOT / "docs" / "source" / "_static" / "rxno_crosswalk.ttl"
+OVERRIDES_TSV = REPOSITORY_ROOT / "data" / "rxno_mapping_overrides.tsv"
+REDIRECTS_TSV = REPOSITORY_ROOT / "data" / "taxonomy_redirects.tsv"
+NEEDS_REVIEW_TSV = REPOSITORY_ROOT / "Fix" / "audit" / "rxno_crosswalk_needs_review.tsv"
+REPORT_JSON = REPOSITORY_ROOT / "Fix" / "audit" / "rxno_crosswalk_report.json"
 
 # Placeholder namespace for SynEPD taxonomy concepts in the SKOS export. Swap
 # for the project's canonical base IRI once one is published.
 SYNEPD_TAXON_BASE = "https://w3id.org/synepd/taxon/"
 OBO_IRI_BASE = "http://purl.obolibrary.org/obo/"
+ONTOLOGY_RELEASE_ID = "rxno-2021-12-16"
+ONTOLOGY_IRI = "http://purl.obolibrary.org/obo/rxno.owl"
+ONTOLOGY_VERSION_IRI = (
+    "http://purl.obolibrary.org/obo/rxno/releases/2021-12-16/rxno.owl"
+)
+EXPECTED_OBO_DATA_VERSION = "releases/2021-12-16"
+EXPECTED_OBO_SHA256 = "cf501cf34c8c9c2c3003033dc2e0eea366ed9cb4a0c4772387c1d4b1477e1a92"
+ONTOLOGY_LICENSE_IRI = "http://creativecommons.org/licenses/by/4.0/"
+LINKSET_IRI = "https://w3id.org/synepd/linkset/rxno-2021-12-16"
+ALLOWED_MAPPING_RELATIONS = frozenset(
+    {
+        "skos:exactMatch",
+        "skos:broadMatch",
+        "skos:closeMatch",
+        "dcterms:isPartOf",
+    }
+)
 
 # Content words that carry no discriminating meaning for a reaction name.
 STOP_WORDS = frozenset(
@@ -365,12 +384,23 @@ def classify(taxa, indexes):
 # IO
 # --------------------------------------------------------------------------- #
 def ensure_obo(path: Path) -> Path:
-    if path.exists():
-        return path
-    path.parent.mkdir(parents=True, exist_ok=True)
-    print(f"Downloading {OBO_URL} -> {path}", file=sys.stderr)
-    with urllib.request.urlopen(OBO_URL, timeout=120) as resp:  # noqa: S310
-        path.write_bytes(resp.read())
+    """Return the pinned ontology only after checksum/version validation."""
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"Pinned RXNO snapshot is missing: {path}; restore the tracked file"
+        )
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest != EXPECTED_OBO_SHA256:
+        raise ValueError(
+            f"Pinned RXNO checksum mismatch for {path}: "
+            f"expected {EXPECTED_OBO_SHA256}, got {digest}"
+        )
+    version = obo_data_version(path)
+    if version != EXPECTED_OBO_DATA_VERSION:
+        raise ValueError(
+            f"Pinned RXNO data-version mismatch for {path}: "
+            f"expected {EXPECTED_OBO_DATA_VERSION}, got {version}"
+        )
     return path
 
 
@@ -382,6 +412,16 @@ def read_taxa(db_path: Path):
         ).fetchall()
     finally:
         conn.close()
+
+
+def read_reaction_taxa(db_path: Path) -> set[str]:
+    with sqlite3.connect(db_path) as connection:
+        return {
+            row[0]
+            for row in connection.execute(
+                "SELECT DISTINCT taxon_code FROM reaction_taxonomy"
+            )
+        }
 
 
 def obo_data_version(path: Path) -> str:
@@ -421,20 +461,156 @@ def render_tsv(rows) -> str:
     return "\n".join(lines) + "\n"
 
 
+def load_overrides(path: Path, taxa, terms) -> list[tuple]:
+    """Load reviewed mappings and validate both ends against active sources."""
+    if not path.exists():
+        return []
+    taxon_by_code = {code: (level, name) for code, level, name in taxa}
+    term_by_id = {term["id"]: term for term in terms}
+    rows: list[tuple] = []
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not lines:
+        return rows
+    expected = "taxon_code\trelation\tontology_id\trationale\treview_status"
+    if lines[0] != expected:
+        raise ValueError(f"{path} has an invalid header; expected {expected!r}")
+    seen: set[tuple[str, str]] = set()
+    for line_no, line in enumerate(lines[1:], start=2):
+        if not line.strip():
+            continue
+        fields = line.split("\t")
+        if len(fields) != 5:
+            raise ValueError(f"{path}:{line_no} must have exactly five columns")
+        code, relation, ontology_id, rationale, review_status = fields
+        if code not in taxon_by_code:
+            raise ValueError(f"{path}:{line_no} references inactive taxon {code}")
+        if relation not in ALLOWED_MAPPING_RELATIONS:
+            raise ValueError(f"{path}:{line_no} has invalid relation {relation}")
+        if ontology_id not in term_by_id:
+            raise ValueError(
+                f"{path}:{line_no} references unknown/obsolete term {ontology_id}"
+            )
+        if review_status != "accepted" or not rationale.strip():
+            raise ValueError(
+                f"{path}:{line_no} must be accepted and include a rationale"
+            )
+        key = (code, ontology_id)
+        if key in seen:
+            raise ValueError(f"{path}:{line_no} duplicates {code} -> {ontology_id}")
+        seen.add(key)
+        level, taxon_name = taxon_by_code[code]
+        rows.append(
+            (
+                code,
+                level,
+                taxon_name,
+                relation,
+                "curated",
+                1.0,
+                ontology_id,
+                term_by_id[ontology_id]["name"],
+            )
+        )
+    return rows
+
+
+def validate_redirects(
+    path: Path,
+    taxa,
+    accepted=(),
+    reaction_taxa: set[str] | None = None,
+) -> list[tuple[str, str, str, str]]:
+    """Validate the retired-code ledger against the active release graph."""
+    if not path.is_file():
+        raise FileNotFoundError(f"Taxonomy redirect ledger is missing: {path}")
+    active_codes = {row[0] for row in taxa}
+    mapped_codes = {row[0] for row in accepted}
+    reaction_taxa = reaction_taxa or set()
+    lines = path.read_text(encoding="utf-8").splitlines()
+    expected = "retired_taxon_code\treplacement_taxon_code\trelation\trationale"
+    if not lines or lines[0] != expected:
+        raise ValueError(f"{path} has an invalid header; expected {expected!r}")
+
+    redirects: list[tuple[str, str, str, str]] = []
+    by_source: dict[str, str] = {}
+    code_pattern = re.compile(r"^POLAR(?:\.\d{2,3})+$")
+    for line_no, line in enumerate(lines[1:], start=2):
+        if not line.strip():
+            continue
+        fields = line.split("\t")
+        if len(fields) != 4:
+            raise ValueError(f"{path}:{line_no} must have exactly four columns")
+        source, target, relation, rationale = fields
+        if not code_pattern.fullmatch(source) or not code_pattern.fullmatch(target):
+            raise ValueError(f"{path}:{line_no} contains an invalid POLAR code")
+        if source in by_source:
+            raise ValueError(f"{path}:{line_no} duplicates retired code {source}")
+        if source == target:
+            raise ValueError(f"{path}:{line_no} contains a self redirect")
+        if relation != "replaced_by":
+            raise ValueError(f"{path}:{line_no} has invalid relation {relation}")
+        if not rationale.strip():
+            raise ValueError(f"{path}:{line_no} must include a rationale")
+        by_source[source] = target
+        redirects.append((source, target, relation, rationale))
+
+    for source, target, _, _ in redirects:
+        if source in active_codes:
+            raise ValueError(f"{path} retired source is still active: {source}")
+        if target not in active_codes:
+            raise ValueError(f"{path} replacement target is inactive: {target}")
+        if source in mapped_codes:
+            raise ValueError(f"{path} retired source remains in crosswalk: {source}")
+        if source in reaction_taxa:
+            raise ValueError(f"{path} retired source remains assigned: {source}")
+
+    for start in by_source:
+        seen: set[str] = set()
+        current = start
+        while current in by_source:
+            if current in seen:
+                raise ValueError(f"{path} contains a redirect cycle at {current}")
+            seen.add(current)
+            current = by_source[current]
+    return redirects
+
+
+def merge_overrides(automatic, overrides):
+    """Replace automatic mappings for curated taxa with reviewed mappings."""
+    overridden_codes = {row[0] for row in overrides}
+    merged = [row for row in automatic if row[0] not in overridden_codes]
+    merged.extend(overrides)
+    return merged
+
+
 def _obo_iri(ontology_id: str) -> str:
     return OBO_IRI_BASE + ontology_id.replace(":", "_")
 
 
 def render_skos(accepted, data_version: str) -> str:
-    """Emit the accepted linkset as a SKOS mapping in Turtle."""
+    """Emit mappings plus explicit ontology/linkset provenance in Turtle."""
     head = [
         "@prefix skos: <http://www.w3.org/2004/02/skos/core#> .",
+        "@prefix dcterms: <http://purl.org/dc/terms/> .",
+        "@prefix void: <http://rdfs.org/ns/void#> .",
         "@prefix obo: <http://purl.obolibrary.org/obo/> .",
         f"@prefix taxon: <{SYNEPD_TAXON_BASE}> .",
         "",
-        "# SynEPD taxonomy -> RXNO/MOP crosswalk (SKOS mappings).",
+        "# SynEPD taxonomy -> RXNO/MOP crosswalk.",
         f"# Generated by scripts/build_rxno_mapping.py from RXNO {data_version}.",
         "# taxon: is a placeholder namespace; substitute the canonical base IRI.",
+        "",
+        f"<{LINKSET_IRI}> a void:Linkset ;",
+        '    dcterms:title "SynEPD taxonomy to RXNO/MOP crosswalk" ;',
+        f"    dcterms:source <{ONTOLOGY_VERSION_IRI}> ;",
+        f'    dcterms:hasVersion "{data_version}" ;',
+        f"    dcterms:license <{ONTOLOGY_LICENSE_IRI}> ;",
+        f'    dcterms:provenance "SHA-256: {EXPECTED_OBO_SHA256}" ;',
+        f"    void:subjectsTarget <{SYNEPD_TAXON_BASE}> ;",
+        f"    void:objectsTarget <{ONTOLOGY_IRI}> .",
+        "",
+        f"<{ONTOLOGY_VERSION_IRI}> dcterms:isVersionOf <{ONTOLOGY_IRI}> ;",
+        f"    dcterms:license <{ONTOLOGY_LICENSE_IRI}> .",
         "",
     ]
     body = []
@@ -444,11 +620,15 @@ def render_skos(accepted, data_version: str) -> str:
     return "\n".join(head + body) + "\n"
 
 
-def build_report(taxa, terms, accepted, review, data_version: str) -> dict:
+def build_report(
+    taxa, terms, accepted, review, data_version: str, *, redirect_count: int = 0
+) -> dict:
     linked = {r[0] for r in accepted}
     reviewed = {r[0] for r in review}
     return {
         "rxno_data_version": data_version,
+        "ontology_release_id": ONTOLOGY_RELEASE_ID,
+        "ontology_source_sha256": EXPECTED_OBO_SHA256,
         "ontology_terms": {
             "rxno": sum(1 for t in terms if t["id"].startswith("RXNO:")),
             "mop": sum(1 for t in terms if t["id"].startswith("MOP:")),
@@ -461,6 +641,7 @@ def build_report(taxa, terms, accepted, review, data_version: str) -> dict:
         "review_suggestions": len(review),
         "review_by_match_type": dict(Counter(r[4] for r in review)),
         "taxa_covered_incl_review": len(linked | reviewed),
+        "taxonomy_redirects": redirect_count,
     }
 
 
@@ -471,7 +652,7 @@ def main() -> int:
         "--obo",
         type=Path,
         default=OBO_CACHE,
-        help="RXNO OBO file; downloaded to the cache path if absent.",
+        help="Pinned RXNO OBO snapshot (missing or modified input fails closed).",
     )
     ap.add_argument(
         "--check",
@@ -489,11 +670,28 @@ def main() -> int:
     # Stage 3-4: match and classify into SKOS relations.
     indexes = build_indexes(terms)
     accepted, review = classify(taxa, indexes)
+    overrides = load_overrides(OVERRIDES_TSV, taxa, terms)
+    accepted = merge_overrides(accepted, overrides)
+    overridden_codes = {row[0] for row in overrides}
+    review = [row for row in review if row[0] not in overridden_codes]
+    redirects = validate_redirects(
+        REDIRECTS_TSV,
+        taxa,
+        accepted,
+        read_reaction_taxa(args.db),
+    )
 
     # Stage 5: render artifacts.
     crosswalk = render_tsv(accepted)
     skos = render_skos(accepted, data_version)
-    report = build_report(taxa, terms, accepted, review, data_version)
+    report = build_report(
+        taxa,
+        terms,
+        accepted,
+        review,
+        data_version,
+        redirect_count=len(redirects),
+    )
 
     by_rel = report["accepted_by_relation"]
     print(
@@ -501,12 +699,15 @@ def main() -> int:
         f"{report['ontology_terms']['mop']} MOP terms | taxa: {len(taxa)}\n"
         f"accepted: {len(accepted)} links "
         f"({by_rel.get('skos:exactMatch', 0)} exactMatch, "
-        f"{by_rel.get('skos:broadMatch', 0)} broadMatch) "
+        f"{by_rel.get('skos:broadMatch', 0)} broadMatch, "
+        f"{by_rel.get('skos:closeMatch', 0)} closeMatch, "
+        f"{by_rel.get('dcterms:isPartOf', 0)} isPartOf) "
         f"over {report['taxa_with_accepted_link']} taxa "
         f"({report['taxa_with_accepted_link'] / len(taxa):.1%})\n"
         f"review suggestions: {len(review)} | taxa covered incl. review: "
         f"{report['taxa_covered_incl_review']} "
-        f"({report['taxa_covered_incl_review'] / len(taxa):.1%})",
+        f"({report['taxa_covered_incl_review'] / len(taxa):.1%}) | "
+        f"redirects: {len(redirects)}",
         file=sys.stderr,
     )
 

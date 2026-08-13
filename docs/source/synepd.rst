@@ -38,5 +38,6 @@ Module contents
 
 .. automodule:: synepd
    :members:
+   :no-index:
    :show-inheritance:
    :undoc-members:

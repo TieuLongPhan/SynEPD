@@ -10,8 +10,13 @@ from synepd.database.models import ReleaseDatabase
 from synepd.database.repository import (
     ReleaseArrow,
     ReleaseMechanismContext,
+    ReleaseMechanisticCenter,
+    ReleaseOntologyRelease,
     ReleaseReaction,
+    ReleaseReactionEntryCode,
+    ReleaseReactionXref,
     ReleaseRepository,
+    ReleaseTaxonXref,
     SQLiteReleaseRepository,
 )
 
@@ -21,8 +26,13 @@ __all__ = [
     "CaseSQLiteStore",
     "ReleaseDatabase",
     "ReleaseReaction",
+    "ReleaseReactionEntryCode",
     "ReleaseArrow",
     "ReleaseMechanismContext",
+    "ReleaseMechanisticCenter",
+    "ReleaseOntologyRelease",
+    "ReleaseReactionXref",
+    "ReleaseTaxonXref",
     "ReleaseRepository",
     "SQLiteReleaseRepository",
     "SynEPDDatabase",

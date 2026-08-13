@@ -7,10 +7,19 @@
     <meta property="og:title" content="SynEPD Explorer">
     <meta property="og:description" content="Hierarchical mechanistic reaction database for chemical pathways">
     <title>SynEPD Explorer</title>
+    <script>
+        try {
+            const savedTheme = localStorage.getItem('synepd_theme');
+            const preferLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+            if (savedTheme === 'light' || (!savedTheme && preferLight)) {
+                document.documentElement.classList.add('light-theme');
+            }
+        } catch (_) {}
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=20260813-3">
     <link rel="stylesheet" href="/static/kg.css?v=1.1.0">
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
@@ -39,17 +48,17 @@
     <div class="workspace" role="main">
         <!-- Left Panel: Search & Browsing -->
         <div class="left-panel" role="navigation" aria-label="Reaction browser">
-            <div class="tab-bar" role="tablist">
-                <button class="tab-btn active" onclick="switchTab('search')" role="tab" aria-selected="true" aria-controls="tab-search">Search</button>
-                <button class="tab-btn" onclick="switchTab('taxonomy')" role="tab" aria-selected="false" aria-controls="tab-taxonomy">Taxonomy</button>
-                <button class="tab-btn" onclick="switchTab('history')" role="tab" aria-selected="false" aria-controls="tab-history">History</button>
-                <button class="tab-btn" onclick="switchTab('sketch')" role="tab" aria-selected="false" aria-controls="tab-sketch">Sketch</button>
-                <button class="tab-btn" onclick="switchTab('kg')" role="tab" aria-selected="false" aria-controls="tab-kg">Graph</button>
+            <div class="tab-bar" role="tablist" aria-label="Reaction browser views">
+                <button id="tabbtn-search" data-tab="search" class="tab-btn active" onclick="switchTab('search')" role="tab" aria-selected="true" aria-controls="tab-search" tabindex="0">Search</button>
+                <button id="tabbtn-taxonomy" data-tab="taxonomy" class="tab-btn" onclick="switchTab('taxonomy')" role="tab" aria-selected="false" aria-controls="tab-taxonomy" tabindex="-1">Taxonomy</button>
+                <button id="tabbtn-history" data-tab="history" class="tab-btn" onclick="switchTab('history')" role="tab" aria-selected="false" aria-controls="tab-history" tabindex="-1">History</button>
+                <button id="tabbtn-sketch" data-tab="sketch" class="tab-btn" onclick="switchTab('sketch')" role="tab" aria-selected="false" aria-controls="tab-sketch" tabindex="-1">Sketch</button>
+                <button id="tabbtn-kg" data-tab="kg" class="tab-btn" onclick="switchTab('kg')" role="tab" aria-selected="false" aria-controls="tab-kg" tabindex="-1">Graph</button>
             </div>
             
             <div class="tab-content-container">
                 <!-- Search Tab Pane -->
-                <div id="tab-search" class="tab-pane active" role="tabpanel" aria-labelledby="tab-search">
+                <div id="tab-search" class="tab-pane active" role="tabpanel" aria-labelledby="tabbtn-search">
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
                         <input id="search-input" class="search-input" placeholder="Search by name, case ID, or reaction SMILES..." 
                                onkeydown="if(event.key === 'Enter') triggerSearch()" aria-label="Search reaction database">
@@ -64,19 +73,20 @@
                 </div>
 
                 <!-- Taxonomy Tab Pane -->
-                <div id="tab-taxonomy" class="tab-pane" role="tabpanel" aria-labelledby="tab-taxonomy">
+                <div id="tab-taxonomy" class="tab-pane" role="tabpanel" aria-labelledby="tabbtn-taxonomy" hidden>
                     <button id="taxonomy-overview-open-btn" class="search-btn" style="width:100%; margin-bottom:0.5rem; font-size:0.82rem;" onclick="taxonomyOverviewEnterMode()">Taxonomy Overview</button>
                     <button id="tmap-open-btn" class="search-btn" style="width:100%; margin-bottom:0.75rem; font-size:0.82rem;" onclick="tmapEnterMode()">🗺 Chemical Space Map</button>
                     <input id="tax-filter" class="search-input" placeholder="Filter taxonomy..."
                            style="margin-bottom: 0.75rem; font-size: 0.85rem;"
                            oninput="filterTaxonomyTree(this.value)" aria-label="Filter taxonomy tree">
+                    <div id="taxonomy-ontology-release" class="taxonomy-ontology-release" hidden></div>
                     <div id="taxonomy-tree-container">
                         <p style="color: var(--text-secondary); text-align: center;">Loading hierarchy...</p>
                     </div>
                 </div>
 
                 <!-- History Tab Pane -->
-                <div id="tab-history" class="tab-pane" role="tabpanel" aria-labelledby="tab-history">
+                <div id="tab-history" class="tab-pane" role="tabpanel" aria-labelledby="tabbtn-history" hidden>
                     <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem;">
                         Recently viewed reactions.
                     </p>
@@ -84,14 +94,14 @@
                 </div>
 
                 <!-- Sketch Tab Pane -->
-                <div id="tab-sketch" class="tab-pane" role="tabpanel" aria-labelledby="tab-sketch">
+                <div id="tab-sketch" class="tab-pane" role="tabpanel" aria-labelledby="tabbtn-sketch" hidden>
                     <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.75rem;">Draw a reaction and search for matching EPD projections.</p>
                     <div id="sketch-status" style="font-size:0.78rem; min-height:1.1rem; margin-bottom:0.5rem; color:var(--text-secondary);">Sketcher loading. No API key is required.</div>
                     <button class="search-btn" style="width: 100%;" onclick="openSketchModal()">Open full sketcher</button>
                 </div>
 
                 <!-- Knowledge Graph Tab Pane -->
-                <div id="tab-kg" class="tab-pane" role="tabpanel" aria-labelledby="tab-kg">
+                <div id="tab-kg" class="tab-pane" role="tabpanel" aria-labelledby="tabbtn-kg" hidden>
                     <div style="display:flex; align-items:flex-start; gap:0.45rem; background:color-mix(in srgb, var(--accent-orange) 12%, transparent); border:1px solid var(--accent-orange); border-radius:6px; padding:0.45rem 0.6rem; margin-bottom:0.6rem; font-size:0.75rem; color:var(--accent-orange);">
                         <span style="font-size:0.85rem; line-height:1.2; flex-shrink:0;">⚠</span>
                         <span><strong>Under development</strong> — results and interactions may be incomplete or unstable.</span>
@@ -204,12 +214,20 @@
                             <p>RC Templates</p>
                         </div>
                         <div class="dash-card">
+                            <h3 id="dash-mechanistic-centers-val">—</h3>
+                            <p>MC Templates</p>
+                        </div>
+                        <div class="dash-card">
                             <h3 id="dash-arrows-val">—</h3>
                             <p>EPD Arrows</p>
                         </div>
                         <div class="dash-card">
                             <h3 id="dash-taxons-val">—</h3>
                             <p>Taxon Classes</p>
+                        </div>
+                        <div class="dash-card">
+                            <h3 id="dash-molecules-val">—</h3>
+                            <p>Molecules</p>
                         </div>
                     </div>
 
@@ -221,14 +239,11 @@
                                 Surprise me
                             </button>
                         </div>
-                        <div id="insight-kpi-grid" class="insight-kpi-grid"></div>
                         <div id="db-insights-body" class="home-insights-body">
-                            <div id="arrow-type-chart" class="insight-chart"></div>
+                            <div id="arrow-type-chart" class="insight-chart insight-chart-wide"></div>
                             <div id="arrows-per-reaction-chart" class="insight-chart"></div>
-                            <div id="top-taxa-chart" class="insight-chart"></div>
-                            <div id="summary-ratio-chart" class="insight-chart"></div>
-                            <div id="taxonomy-level-chart" class="insight-chart"></div>
-                            <div id="rc-reuse-chart" class="insight-chart"></div>
+                            <div id="mc-comparison-chart" class="insight-chart"></div>
+                            <div id="rc-reuse-chart" class="insight-chart insight-chart-wide"></div>
                         </div>
                     </div>
 
@@ -242,7 +257,7 @@
                     </div>
 
                     <!-- Acknowledgement section -->
-                    <div class="acknowledgement-section" style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem; width: 100%; max-width: 650px; text-align: left;">
+                    <div class="acknowledgement-section" style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem; width: 100%; max-width: 980px; text-align: left;">
                         <h4 style="margin-bottom: 0.75rem; color: var(--accent-cyan); font-size: 0.95rem; font-weight: 600;">Acknowledgement</h4>
                         
                         <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
@@ -251,10 +266,13 @@
                         
                         <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
                             <a href="https://tacsy.eu/" target="_blank" style="flex: 1; min-width: 160px; display: flex; justify-content: center;">
-                                <img src="/static/tacsy-logo.jpg" alt="TACsy logo" style="max-width: 160px; height: auto; border-radius: 4px; display: block;" />
+                                <img src="/static/tacsy-logo.jpg" alt="TACsy logo" style="width: 100%; max-width: 160px; height: auto; object-fit: contain; box-sizing: border-box; border-radius: 4px; display: block;" />
                             </a>
                             <a href="https://ec.europa.eu/regional_policy/information-sources/logo-download-center_en" target="_blank" style="flex: 1; min-width: 200px; display: flex; justify-content: center;">
-                                <img src="/static/eu-funded.jpg" alt="Funded by the European Union" style="max-width: 260px; height: auto; border-radius: 4px; display: block;" />
+                                <img src="/static/eu-funded.jpg" alt="Funded by the European Union" style="width: 100%; max-width: 260px; height: auto; object-fit: contain; box-sizing: border-box; border-radius: 4px; display: block;" />
+                            </a>
+                            <a href="https://nfdi4chem.de/" target="_blank" rel="noopener" style="flex: 1; min-width: 220px; display: flex; justify-content: center;">
+                                <img src="/static/nfdi4chem-logo.svg" alt="NFDI4Chem logo" style="width: 100%; max-width: 240px; height: auto; object-fit: contain; box-sizing: border-box; background: #fff; padding: 0.5rem; border-radius: 4px; display: block;" />
                             </a>
                         </div>
                         
@@ -295,13 +313,18 @@
                 
                 <div style="display:flex; align-items:center; gap:0.25rem; font-size:0.75rem; color:var(--text-secondary); margin-left:0.25rem;">
                     <span>Speed:</span>
-                    <select id="play-speed" style="background:var(--bg-tertiary); border:1px solid var(--border); color:var(--text-primary); border-radius:6px; padding:0.15rem 0.3rem; font-size:0.75rem; cursor:pointer;" aria-label="EPD playback speed">
+                    <select id="play-speed" onchange="changePlaybackSpeed()" style="background:var(--bg-tertiary); border:1px solid var(--border); color:var(--text-primary); border-radius:6px; padding:0.15rem 0.3rem; font-size:0.75rem; cursor:pointer;" aria-label="EPD playback speed">
                         <option value="3000">0.5×</option>
-                        <option value="2000" selected>1×</option>
+                        <option value="2000">1×</option>
                         <option value="1000">2×</option>
-                        <option value="500">4×</option>
+                        <option value="500" selected>4×</option>
                     </select>
                 </div>
+
+                <label class="show-all-toggle" title="Automatically play when a reaction opens">
+                    <input type="checkbox" id="autoplay-toggle" onchange="setAutoplayPreference(this.checked)" checked>
+                    <span>Autoplay</span>
+                </label>
 
                 <div style="border-left: 1px solid var(--border); height: 20px; margin: 0 0.5rem;"></div>
                 
@@ -362,7 +385,7 @@
                     <strong style="font-size:0.85rem; color:var(--text-primary);">Chemical Space Map</strong>
                     <span style="font-size:0.68rem; background:color-mix(in srgb, var(--accent-cyan) 14%, transparent); color:var(--accent-cyan); border:1px solid var(--accent-cyan); border-radius:999px; padding:0.1rem 0.5rem; font-weight:600; letter-spacing:0.03em;">TMAP</span>
                     <span style="font-size:0.68rem; background:color-mix(in srgb, var(--accent-orange) 18%, transparent); color:var(--accent-orange); border:1px solid var(--accent-orange); border-radius:999px; padding:0.1rem 0.5rem; font-weight:600; letter-spacing:0.03em;">⚠ Under development</span>
-                    <span style="font-size:0.73rem; color:var(--text-secondary); margin-left:0.25rem;">1 887 reactions · colored by POLAR class</span>
+                    <span style="font-size:0.73rem; color:var(--text-secondary); margin-left:0.25rem;">1,926 reactions · colored by POLAR class</span>
                     <button class="kg-mini-btn" style="margin-left:auto;" onclick="tmapExitMode()">← Back</button>
                 </div>
                 <div id="tmap-loading" style="position:absolute; inset:0; top:42px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.2rem; background:var(--bg-primary); z-index:1;">
@@ -370,7 +393,7 @@
                     <div style="width:260px; height:4px; border-radius:99px; background:var(--bg-tertiary); overflow:hidden;">
                         <div id="tmap-progress-bar" style="height:100%; width:30%; border-radius:99px; background:var(--accent-cyan); animation:tmap-slide 1.4s ease-in-out infinite;"></div>
                     </div>
-                    <span style="font-size:0.75rem; color:var(--text-secondary);">1 887 reactions · POLAR taxonomy colours</span>
+                    <span style="font-size:0.75rem; color:var(--text-secondary);">1,926 reactions · POLAR taxonomy colours</span>
                 </div>
                 <iframe id="tmap-frame" src="about:blank" style="flex:1; border:none; width:100%; height:100%;" onload="tmapOnFrameLoad()" title="TMAP chemical space map"></iframe>
             </div>
@@ -379,7 +402,7 @@
             <div id="taxonomy-overview-viewport" class="taxonomy-overview-viewport" aria-hidden="true">
                 <div class="kg-toolbar">
                     <strong style="font-size:0.85rem; color:var(--text-primary);">POLAR Taxonomy Overview</strong>
-                    <span class="taxonomy-overview-badge">8 families · 84 subclasses · 958 leaves</span>
+                    <span class="taxonomy-overview-badge">8 families · 82 subclasses · 848 leaves</span>
                     <button id="tax-view-btn-diagram" class="kg-mini-btn active taxonomy-toolbar-link-first" onclick="switchTaxonomyView('diagram')">Diagram</button>
                     <button id="tax-view-btn-tree" class="kg-mini-btn" onclick="switchTaxonomyView('tree')">Interactive Tree</button>
                     <a class="kg-mini-btn taxonomy-toolbar-link" href="/static/taxonomy.html" target="_blank" rel="noopener" title="Open interactive tree in a new tab">External Tree ↗</a>
@@ -388,7 +411,7 @@
                 <div class="taxonomy-overview-canvas" id="taxonomy-overview-canvas" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0;">
                     <!-- Diagram view -->
                     <div id="taxonomy-view-diagram" class="taxonomy-view-pane" style="flex: 1; overflow: auto; padding: 1rem; background: var(--bg-primary);">
-                        <img src="/static/taxonomy_overview.svg" alt="SynEPD POLAR taxonomy with eight top-level families and their 84 subclasses" style="display: block; width: max(100%, 1180px); max-width: 2360px; height: auto; margin: 0 auto; border: 1px solid var(--border); border-radius: 10px;">
+                        <img src="/static/taxonomy_overview.svg" alt="SynEPD POLAR taxonomy with eight top-level families and their 82 subclasses" style="display: block; width: max(100%, 1180px); max-width: 2360px; height: auto; margin: 0 auto; border: 1px solid var(--border); border-radius: 10px;">
                     </div>
                     <!-- Interactive Tree view -->
                     <div id="taxonomy-view-tree" class="taxonomy-view-pane" style="flex: 1; display: none; overflow: hidden; position: relative; background: var(--bg-primary);">
@@ -400,45 +423,31 @@
 
         <!-- Right Panel: Metadata & Reaction Details -->
         <div class="right-panel" role="complementary" aria-label="Reaction details">
-            <div id="detail-fallback" class="welcome-container" style="padding-top: 12rem; text-align: center; color: var(--text-secondary); height: 100%;">
+            <div id="detail-fallback" class="welcome-container relation-fallback">
+                <figure class="schema-figure">
+                    <button type="button" class="schema-figure-trigger" onclick="openSchemaModal()" aria-haspopup="dialog" aria-label="Enlarge the database relation figure">
+                        <picture>
+                            <source srcset="/static/data_arch.svg?v=20260813-4" type="image/svg+xml">
+                            <img src="/static/data_arch.png?v=20260813-4" alt="SynEPD relational schema showing ITS links directly to reusable RC and EPD-aware MC templates">
+                        </picture>
+                    </button>
+                    <figcaption>Database relation figure · click to enlarge</figcaption>
+                </figure>
                 <span style="font-size: 2.25rem;">🔍</span>
                 <p style="margin-top: 0.75rem; font-size: 0.95rem;">Select a reaction pathway to view structural mappings, full 2D coordination mappings, and EPD projections.</p>
                 
-                <!-- Database schema architectural relational summary table to help TACsy researchers -->
-                <div style="max-width: 320px; margin: 2rem auto 0 auto; text-align: left; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem;">
-                    <p style="color: var(--text-primary); font-size: 0.8rem; margin-bottom: 0.5rem; font-weight: 600;">Relational Schema Architecture</p>
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 0.75rem;">
-                        <div style="display: grid; grid-template-columns: 95px 1fr; gap: 0.4rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border);">
-                            <span style="color: var(--accent-purple); font-weight: 600;">reaction</span>
-                            <span>id (PK), case_id, canonical_rsmi, aam_key</span>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 95px 1fr; gap: 0.4rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border);">
-                            <span style="color: var(--accent-purple); font-weight: 600;">molecule</span>
-                            <span>id (PK), canonical_smiles, inchikey</span>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 95px 1fr; gap: 0.4rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border);">
-                            <span style="color: var(--accent-purple); font-weight: 600;">reaction_comp</span>
-                            <span>id (PK), reaction_id, molecule_id, side</span>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 95px 1fr; gap: 0.4rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border);">
-                            <span style="color: var(--accent-purple); font-weight: 600;">taxon</span>
-                            <span>code (PK), parent_code, level, name</span>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 95px 1fr; gap: 0.4rem; padding: 0.25rem 0; border-bottom: 1px solid var(--border);">
-                            <span style="color: var(--accent-purple); font-weight: 600;">its</span>
-                            <span>reaction_id, rc_id, wlhash, graph_data</span>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 95px 1fr; gap: 0.4rem; padding: 0.25rem 0;">
-                            <span style="color: var(--accent-purple); font-weight: 600;">epd_arrow</span>
-                            <span>id, reaction_id, arrow_index, source_atoms</span>
-                        </div>
-                    </div>
-                    
-                    <div style="border-top: 1px solid var(--border); padding-top: 0.75rem;">
-                        <p style="color: var(--text-primary); font-size: 0.8rem; font-weight: 600; margin-bottom: 0.4rem;">Database Schema Diagram</p>
-                        <div class="schema-img-container" onclick="openSchemaModal()" title="Click to view full screen">
-                            <img src="/static/data_arch.png" alt="SynEPD Database Schema Diagram" />
-                        </div>
+                <div class="schema-summary">
+                    <p class="schema-summary-title">Release database structure</p>
+                    <div class="schema-summary-grid">
+                        <span>reaction</span><small>curated reaction identity and mapped structures</small>
+                        <span>molecule</span><small>canonical reactant and product components</small>
+                        <span>reaction_component</span><small>ordered reaction-side membership</small>
+                        <span>taxon</span><small>POLAR hierarchy</small>
+                        <span>reaction_taxonomy</span><small>multi-label reaction assignments</small>
+                        <span>reaction_center (RC)</span><small>reusable net endpoint-change templates</small>
+                        <span>its</span><small>full reaction graphs linked directly to their RC and MC templates</small>
+                        <span>epd / epd_arrow</span><small>ordered electron-pushing descriptions</small>
+                        <span>mechanistic_center (MC)</span><small>reusable induced-RC templates with EPD transition edges</small>
                     </div>
                 </div>
             </div>
@@ -524,30 +533,29 @@
     <div id="chart-tooltip" class="chart-tooltip"></div>
 
     <!-- Script references (FE-16 Modularisation) -->
-    <script src="/static/graph.js"></script>
+    <script src="/static/graph.js?v=20260813-3"></script>
     <script src="/static/kg.js?v=1.1.1"></script>
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=20260813-3"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsme-editor@2024.4.29/jsme.nocache.js" onerror="if (typeof setSketchStatus === 'function') setSketchStatus('Sketcher library could not load from the JSME CDN.', 'error')"></script>
-
-    <!-- Schema Modal Overlay -->
-    <div id="schema-modal" class="modal-overlay" onclick="closeSchemaModal()">
-        <span class="modal-close" onclick="closeSchemaModal()">&times;</span>
-        <div class="modal-content" onclick="event.stopPropagation()" style="width: 90vw; max-width: 1400px; height: 85vh; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6);">
-            <h3 style="margin-top: 0; margin-bottom: 1rem; color: var(--accent-cyan); border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; font-size: 1.3rem; font-weight: 600;">📁 Database Architecture Relational Schema</h3>
-            <div style="flex: 1; overflow: auto; display: flex; justify-content: center; align-items: center; padding: 1rem; background: var(--bg-primary); border-radius: 8px; border: 1px solid var(--border);">
-                <img src="/static/data_arch.png" alt="Database Architecture Schema Diagram" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
-            </div>
-        </div>
-    </div>
 
     <div id="chart-modal" class="modal-overlay" onclick="closeChartModal()">
         <span class="modal-close" onclick="closeChartModal()">&times;</span>
         <div class="modal-content chart-modal-content" onclick="event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="chart-modal-title">
             <div class="chart-modal-header">
                 <h3 id="chart-modal-title">Database Chart</h3>
-                <p>Hover over marks to inspect exact counts.</p>
+                <div class="chart-modal-actions">
+                    <p>Hover over marks to inspect exact counts.</p>
+                    <button id="chart-modal-table-toggle" class="insight-action" type="button">Table view</button>
+                </div>
             </div>
             <div id="chart-modal-body" class="chart-modal-body"></div>
+        </div>
+    </div>
+
+    <div id="schema-modal" class="modal-overlay schema-modal-overlay" onclick="closeSchemaModal()" aria-hidden="true">
+        <button type="button" class="modal-close schema-modal-close" onclick="closeSchemaModal()" aria-label="Close database relation figure">&times;</button>
+        <div class="modal-content schema-modal-content" onclick="event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Enlarged database relation figure">
+            <img src="/static/data_arch.svg?v=20260813-4" alt="SynEPD relational schema showing ITS links directly to reusable RC and EPD-aware MC templates">
         </div>
     </div>
 </body>

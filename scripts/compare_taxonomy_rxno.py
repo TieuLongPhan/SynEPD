@@ -30,12 +30,18 @@ if str(REPOSITORY_ROOT / "scripts") not in sys.path:
 from build_rxno_mapping import (  # noqa: E402
     DEFAULT_DB,
     OBO_CACHE,
+    OVERRIDES_TSV,
+    REDIRECTS_TSV,
     build_indexes,
     classify,
     ensure_obo,
     load_obo,
+    load_overrides,
+    merge_overrides,
     obo_data_version,
+    read_reaction_taxa,
     read_taxa,
+    validate_redirects,
 )
 
 
@@ -51,8 +57,10 @@ def pct(part: int, whole: int) -> str:
 def analyse(taxa, terms, accepted, review):
     codes_exact = {r[0] for r in accepted if r[3] == "skos:exactMatch"}
     codes_broad = {r[0] for r in accepted if r[3] == "skos:broadMatch"}
+    codes_close = {r[0] for r in accepted if r[3] == "skos:closeMatch"}
+    codes_part = {r[0] for r in accepted if r[3] == "dcterms:isPartOf"}
     codes_review = {r[0] for r in review}
-    linked = codes_exact | codes_broad
+    linked = codes_exact | codes_broad | codes_close | codes_part
     review_only = codes_review - linked
     unmatched = {c for c, _, _ in taxa} - linked - codes_review
 
@@ -67,6 +75,8 @@ def analyse(taxa, terms, accepted, review):
         "n_taxa": len(taxa),
         "exact": codes_exact,
         "broad": codes_broad - codes_exact,
+        "close": codes_close - codes_exact - codes_broad,
+        "is_part_of": codes_part - codes_exact - codes_broad - codes_close,
         "review_only": review_only,
         "unmatched": unmatched,
         "rxno_terms": rxno_terms,
@@ -93,16 +103,19 @@ def render_report(a, terms, data_version, top: int) -> str:
 
     # 1. Forward coverage: how much of SynEPD maps.
     exact, broad = len(a["exact"]), len(a["broad"])
+    close, is_part_of = len(a["close"]), len(a["is_part_of"])
     rev, unm = len(a["review_only"]), len(a["unmatched"])
     w("\n[1] Taxonomy coverage (SynEPD -> RXNO/MOP)")
     for label, cnt in [
         ("exactMatch (committed)", exact),
         ("broadMatch (committed)", broad),
+        ("closeMatch (committed)", close),
+        ("isPartOf (committed)", is_part_of),
         ("review candidate only", rev),
         ("no candidate at all", unm),
     ]:
         w(f"    {label:26s} {cnt:5d}  {pct(cnt, n):>6}  {_bar(cnt, n)}")
-    linked = exact + broad
+    linked = exact + broad + close + is_part_of
     w(f"    {'-' * 26} {'-' * 5}")
     w(f"    {'committed links':26s} {linked:5d}  {pct(linked, n):>6}")
     w(
@@ -124,7 +137,7 @@ def render_report(a, terms, data_version, top: int) -> str:
 
     # 3. Coverage by taxonomy level.
     w("\n[3] Committed coverage by taxonomy level")
-    linked_codes = a["exact"] | a["broad"]
+    linked_codes = a["exact"] | a["broad"] | a["close"] | a["is_part_of"]
     per_level: dict[int, list[int]] = {}
     for c, lv, _ in a["taxa"]:
         tot, hit = per_level.setdefault(lv, [0, 0])
@@ -177,6 +190,7 @@ def render_markdown(a, terms, data_version, top: int) -> str:
     n = a["n_taxa"]
     by_name = {c: nm for c, _, nm in a["taxa"]}
     exact, broad = len(a["exact"]), len(a["broad"])
+    close, is_part_of = len(a["close"]), len(a["is_part_of"])
     rev, unm = len(a["review_only"]), len(a["unmatched"])
     rx = len(a["rxno_hit"])
     md = [
@@ -192,6 +206,8 @@ def render_markdown(a, terms, data_version, top: int) -> str:
         "|---|---:|---:|",
         f"| exactMatch (committed) | {exact} | {pct(exact, n)} |",
         f"| broadMatch (committed) | {broad} | {pct(broad, n)} |",
+        f"| closeMatch (committed) | {close} | {pct(close, n)} |",
+        f"| isPartOf (committed) | {is_part_of} | {pct(is_part_of, n)} |",
         f"| review candidate only | {rev} | {pct(rev, n)} |",
         f"| no candidate | {unm} | {pct(unm, n)} |",
         "",
@@ -219,6 +235,16 @@ def main() -> int:
     data_version = obo_data_version(obo)
     taxa = read_taxa(args.db)
     accepted, review = classify(taxa, build_indexes(terms))
+    overrides = load_overrides(OVERRIDES_TSV, taxa, terms)
+    accepted = merge_overrides(accepted, overrides)
+    overridden_codes = {row[0] for row in overrides}
+    review = [row for row in review if row[0] not in overridden_codes]
+    validate_redirects(
+        REDIRECTS_TSV,
+        taxa,
+        accepted,
+        read_reaction_taxa(args.db),
+    )
 
     a = analyse(taxa, terms, accepted, review)
     print(render_report(a, terms, data_version, args.top))

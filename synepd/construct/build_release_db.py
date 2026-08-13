@@ -5,16 +5,21 @@ from dataclasses import dataclass
 import os
 from pathlib import Path
 import hashlib
+from typing import Any
 from rdkit import Chem
 from synkit.Graph.Mech import LWGEditor
 from synkit.Chem.Reaction.standardize import Standardize
 from synkit.Chem.Reaction.canon_rsmi import CanonRSMI
 
-from synepd.database.models import ReleaseDatabase
+from synepd.database.models import ALLOWED_REACTION_RELATION_TYPES, ReleaseDatabase
 from synepd.core.graph_codec import GRAPH_FORMAT, encode_graph
 from synepd.core.mechanism import (
     MECHANISM_CONTEXT_VERSION,
+    build_mechanistic_center_template,
     build_mechanistic_center_from_graphs,
+    mechanistic_center_edge_counts,
+    mechanistic_center_wlhash,
+    mechanistic_centers_are_isomorphic,
     serialize_mechanism_context,
 )
 from synepd.core.representation import (
@@ -31,8 +36,11 @@ from synepd.core.ingest import (
 
 
 from synepd.precheck import (
+    check_alpha_elimination_arrow_order,
     check_reaction_balance,
     check_atom_map_balance,
+    check_carbocation_shift_adjacency,
+    check_entry_code_uniqueness,
     check_single_h_completion,
 )
 
@@ -45,6 +53,30 @@ class BuildReport:
     exclusions: dict[str, int]
     output_path: str
     enriched: bool
+
+
+CLEAN_SCHEMA = "synepd.clean.polar.v2"
+CLEAN_PAYLOAD_FIELDS = frozenset({"schema", "count", "id_start", "records"})
+CLEAN_RECORD_FIELDS = frozenset(
+    {
+        "id",
+        "family",
+        "tax_code",
+        "tax_codes",
+        "entry_code",
+        "entry_codes",
+        "reaction_name",
+        "reaction_names",
+        "rsmi",
+        "epd",
+        "relations",
+        "epd_representation",
+    }
+)
+EPD_REPRESENTATION_FIELDS = frozenset({"mode", "lwg_formal_charge_overrides"})
+EPD_SURROGATE_MODES = frozenset(
+    {"closed_shell_surrogate", "closed_shell_formal_charge_surrogate"}
+)
 
 
 def generate_aam_key(rsmi: str) -> str:
@@ -311,6 +343,172 @@ def load_json(path: Path) -> dict:
         return json.load(f)
 
 
+def _nonempty_unique_strings(value: Any, *, field: str, record_id: int) -> list[str]:
+    if not isinstance(value, list) or not value:
+        raise ValueError(f"record {record_id} {field} must be a non-empty list")
+    if any(not isinstance(item, str) or not item.strip() for item in value):
+        raise ValueError(f"record {record_id} {field} must contain non-empty strings")
+    if len(value) != len(set(value)):
+        raise ValueError(f"record {record_id} {field} contains duplicates")
+    return value
+
+
+def validate_clean_v2_payload(payload: Any) -> list[dict[str, Any]]:
+    """Validate the production JSON boundary and return its reaction records.
+
+    The v2 schema intentionally admits chemistry/catalog data only. Narrative
+    curation notes are maintained outside the release payload, while the two
+    supported non-exact EPD modes retain only their machine-actionable formal
+    charge overrides.
+    """
+    if not isinstance(payload, dict) or payload.get("schema") != CLEAN_SCHEMA:
+        raise ValueError(f"clean release payload must use schema {CLEAN_SCHEMA!r}")
+    unexpected = set(payload) - CLEAN_PAYLOAD_FIELDS
+    if unexpected:
+        raise ValueError(
+            f"clean release payload has unsupported fields: {sorted(unexpected)}"
+        )
+    records = payload.get("records")
+    if not isinstance(records, list):
+        raise ValueError("clean release payload records must be a list")
+    if payload.get("count") != len(records):
+        raise ValueError("clean release payload count does not match records")
+
+    record_ids: set[int] = set()
+    for record in records:
+        if not isinstance(record, dict):
+            raise ValueError("every clean release record must be an object")
+        unexpected = set(record) - CLEAN_RECORD_FIELDS
+        if unexpected:
+            raise ValueError(
+                f"clean release record has unsupported fields: {sorted(unexpected)}"
+            )
+        record_id = record.get("id")
+        if (
+            not isinstance(record_id, int)
+            or isinstance(record_id, bool)
+            or record_id < 1
+            or record_id in record_ids
+        ):
+            raise ValueError(
+                f"invalid or duplicate clean release record id: {record_id!r}"
+            )
+        record_ids.add(record_id)
+
+        for field in ("family", "tax_code", "entry_code", "reaction_name", "rsmi"):
+            value = record.get(field)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(
+                    f"record {record_id} {field} must be a non-empty string"
+                )
+        for singular, plural in (
+            ("tax_code", "tax_codes"),
+            ("entry_code", "entry_codes"),
+            ("reaction_name", "reaction_names"),
+        ):
+            values = _nonempty_unique_strings(
+                record.get(plural), field=plural, record_id=record_id
+            )
+            if values[0] != record[singular]:
+                raise ValueError(
+                    f"record {record_id} {plural} must start with {singular}"
+                )
+        if len(record["tax_codes"]) != len(record["entry_codes"]):
+            raise ValueError(
+                f"record {record_id} tax_codes and entry_codes must have equal length"
+            )
+        for taxon_code, entry_code in zip(
+            record["tax_codes"], record["entry_codes"], strict=True
+        ):
+            if not entry_code.startswith(f"{taxon_code}."):
+                raise ValueError(
+                    f"record {record_id} entry code {entry_code!r} does not belong "
+                    f"to paired taxon {taxon_code!r}"
+                )
+        epd = record.get("epd")
+        if not isinstance(epd, list) or not epd:
+            raise ValueError(f"record {record_id} epd must be a non-empty list")
+
+        representation = record.get("epd_representation")
+        if representation is not None:
+            if not isinstance(representation, dict):
+                raise ValueError(
+                    f"record {record_id} epd_representation must be an object"
+                )
+            unexpected = set(representation) - EPD_REPRESENTATION_FIELDS
+            if unexpected:
+                raise ValueError(
+                    f"record {record_id} epd_representation has unsupported fields: "
+                    f"{sorted(unexpected)}"
+                )
+            if representation.get("mode") not in EPD_SURROGATE_MODES:
+                raise ValueError(
+                    f"record {record_id} has an unsupported EPD representation mode"
+                )
+            overrides = representation.get("lwg_formal_charge_overrides")
+            if not isinstance(overrides, dict) or not overrides:
+                raise ValueError(
+                    f"record {record_id} surrogate requires formal-charge overrides"
+                )
+            if any(
+                not isinstance(atom_map, str)
+                or not atom_map.isdigit()
+                or int(atom_map) < 1
+                or not isinstance(charge, int)
+                or isinstance(charge, bool)
+                for atom_map, charge in overrides.items()
+            ):
+                raise ValueError(
+                    f"record {record_id} has invalid formal-charge overrides"
+                )
+
+        relations = record.get("relations", [])
+        if not isinstance(relations, list):
+            raise ValueError(f"record {record_id} relations must be a list")
+        seen_relations: set[tuple[str, int]] = set()
+        for relation in relations:
+            if not isinstance(relation, dict) or set(relation) != {"type", "target_id"}:
+                raise ValueError(
+                    f"record {record_id} relations require type and target_id only"
+                )
+            relation_type = relation["type"]
+            target_id = relation["target_id"]
+            if not isinstance(relation_type, str) or not relation_type.strip():
+                raise ValueError(f"record {record_id} has an invalid relation type")
+            if relation_type not in ALLOWED_REACTION_RELATION_TYPES:
+                raise ValueError(
+                    f"record {record_id} has an unsupported relation type: "
+                    f"{relation_type!r}"
+                )
+            if (
+                not isinstance(target_id, int)
+                or isinstance(target_id, bool)
+                or target_id < 1
+                or target_id == record_id
+            ):
+                raise ValueError(f"record {record_id} has an invalid relation target")
+            key = (relation_type, target_id)
+            if key in seen_relations:
+                raise ValueError(f"record {record_id} contains a duplicate relation")
+            seen_relations.add(key)
+
+    missing_targets = sorted(
+        {
+            relation["target_id"]
+            for record in records
+            for relation in record.get("relations", [])
+            if relation["target_id"] not in record_ids
+        }
+    )
+    if missing_targets:
+        raise ValueError(
+            f"clean release relations reference missing records: {missing_targets}"
+        )
+    if records and payload.get("id_start") != min(record_ids):
+        raise ValueError("clean release payload id_start does not match records")
+    return records
+
+
 def extract_reaction_name(case_id: str) -> str:
     """Extract and format a human-readable reaction name from a SynEPD Case ID.
 
@@ -374,14 +572,61 @@ def build_release_database(
     hierarchy = {taxon["code"]: taxon["name"] for taxon in hierarchy_taxons}
 
     data = load_json(json_path)
+    strict_clean_schema = False
     if isinstance(data, list):
         raw_records = data
     elif isinstance(data, dict):
-        raw_records = data.get("records") or data.get("cases")
+        if "schema" in data:
+            raw_records = validate_clean_v2_payload(data)
+            strict_clean_schema = True
+        else:
+            raw_records = data.get("records") or data.get("cases")
     else:
         raw_records = None
     if raw_records is None:
         raise ValueError(f"{json_path} must contain records, cases, or a records list")
+
+    if strict_clean_schema:
+        unknown_taxa = sorted(
+            {
+                code
+                for record in raw_records
+                for code in record["tax_codes"]
+                if code not in hierarchy
+            }
+        )
+        if unknown_taxa:
+            raise ValueError(
+                f"clean release records reference unknown taxonomy codes: {unknown_taxa}"
+            )
+
+    # Dataset-level curation invariants fail the build rather than silently
+    # dropping records. Legacy fixtures/case lists do not carry entry codes;
+    # mixed clean/legacy records are invalid rather than partially checked.
+    records_with_entry_code = [
+        record for record in raw_records if "entry_code" in record
+    ]
+    if records_with_entry_code and len(records_with_entry_code) != len(raw_records):
+        raise ValueError("entry_code must be present on every record or none")
+    if records_with_entry_code:
+        code_check = check_entry_code_uniqueness(raw_records, include_aliases=True)
+        if not code_check.valid:
+            raise ValueError(
+                f"duplicate primary/alias entry codes: {code_check.collisions}"
+            )
+    for record in raw_records:
+        alpha_order = check_alpha_elimination_arrow_order(record)
+        if not alpha_order.valid:
+            raise ValueError(
+                f"record {record.get('id')} has invalid alpha-elimination order: "
+                f"{alpha_order.errors}"
+            )
+        shift = check_carbocation_shift_adjacency(record)
+        if not shift.valid:
+            raise ValueError(
+                f"record {record.get('id')} has a nonlocal carbocation shift: "
+                f"{shift.errors}"
+            )
 
     flat_to_inchikey = collect_all_molecule_inchikeys(raw_records)
     all_inchikeys = sorted(list(set(flat_to_inchikey.values())))
@@ -463,6 +708,9 @@ def build_release_database(
         molecule_cache = {}
         # rc_cache will store wlhash -> list of (rc_id, rc_graph) to handle collisions
         rc_cache = {}
+        # Reusable MCs are deduplicated within their parent RC template.
+        mc_cache = {}
+        stored_mc_hashes = set()
 
         # Load taxonomy
         with db.connection:
@@ -475,7 +723,6 @@ def build_release_database(
                     "INSERT OR IGNORE INTO taxon (code, parent_code, level, name) VALUES (?, ?, ?, ?)",
                     (code, parent_code, level, name),
                 )
-
         for c in raw_records:
             if "case_id" in c:
                 case_id = c["case_id"]
@@ -565,6 +812,32 @@ def build_release_database(
                         "INSERT OR IGNORE INTO reaction_taxonomy (reaction_id, taxon_code) VALUES (?, ?)",
                         (reaction_id, tax_code),
                     )
+
+            entry_codes = c.get("entry_codes") or (
+                [c["entry_code"]] if c.get("entry_code") else []
+            )
+            if entry_codes and len(entry_codes) != len(tax_codes):
+                raise ValueError(
+                    f"record {c.get('id')} entry_codes and tax_codes have unequal length"
+                )
+            with db.connection:
+                db.connection.executemany(
+                    """
+                    INSERT INTO reaction_entry_code (
+                        reaction_id, taxon_code, entry_code, code_index, is_primary
+                    ) VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (
+                        (
+                            reaction_id,
+                            tax_codes[code_index],
+                            entry_code,
+                            code_index,
+                            int(code_index == 0),
+                        )
+                        for code_index, entry_code in enumerate(entry_codes)
+                    ),
+                )
 
             # 3. Ingest ReactionComponents
             parts = rsmi.split(">>")
@@ -733,6 +1006,54 @@ def build_release_database(
                             remapped_epd,
                             step_reports=edit_result.step_reports,
                         )
+                        mc_graph = build_mechanistic_center_template(center)
+                        mc_hash = mechanistic_center_wlhash(mc_graph)
+                        candidates = mc_cache.setdefault(matched_rc_id, {}).setdefault(
+                            mc_hash, []
+                        )
+                        matched_mc_id = next(
+                            (
+                                candidate_id
+                                for candidate_id, candidate_graph in candidates
+                                if mechanistic_centers_are_isomorphic(
+                                    mc_graph, candidate_graph
+                                )
+                            ),
+                            None,
+                        )
+                        if matched_mc_id is None:
+                            edge_counts = mechanistic_center_edge_counts(mc_graph)
+                            stored_mc_hash = mc_hash
+                            suffix = 1
+                            while stored_mc_hash in stored_mc_hashes:
+                                stored_mc_hash = f"{mc_hash}_{suffix}"
+                                suffix += 1
+                            cursor = db.connection.execute(
+                                """
+                                INSERT INTO mechanistic_center (
+                                    rc_id, wlhash, template_graph, graph_format,
+                                    transition_edge_count,
+                                    rc_extension_edge_count,
+                                    transient_only_edge_count
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                                """,
+                                (
+                                    matched_rc_id,
+                                    stored_mc_hash,
+                                    encode_graph(mc_graph),
+                                    GRAPH_FORMAT,
+                                    edge_counts.transition,
+                                    edge_counts.rc_extension,
+                                    edge_counts.transient_only,
+                                ),
+                            )
+                            matched_mc_id = cursor.lastrowid
+                            stored_mc_hashes.add(stored_mc_hash)
+                            candidates.append((matched_mc_id, mc_graph))
+                        db.connection.execute(
+                            "UPDATE its SET mc_id = ? WHERE reaction_id = ?",
+                            (matched_mc_id, reaction_id),
+                        )
                         context = serialize_mechanism_context(center)
                         db.connection.execute(
                             """
@@ -777,14 +1098,35 @@ def build_release_database(
         context_count = db.connection.execute(
             "SELECT COUNT(*) FROM mechanism_context"
         ).fetchone()[0]
+        mc_count = db.connection.execute(
+            "SELECT COUNT(*) FROM mechanistic_center"
+        ).fetchone()[0]
+        its_mc_count = db.connection.execute(
+            "SELECT COUNT(*) FROM its WHERE mc_id IS NOT NULL"
+        ).fetchone()[0]
+        rc_count = db.connection.execute(
+            "SELECT COUNT(*) FROM reaction_center"
+        ).fetchone()[0]
         foreign_key_violations = db.connection.execute(
             "PRAGMA foreign_key_check"
         ).fetchall()
-        if reaction_count != admitted_count or context_count != admitted_count:
+        if (
+            reaction_count != admitted_count
+            or context_count != admitted_count
+            or its_mc_count != admitted_count
+            or not rc_count <= mc_count <= admitted_count
+        ):
             raise RuntimeError(
                 "Build admission invariant failed: "
                 f"admitted={admitted_count}, reactions={reaction_count}, "
-                f"contexts={context_count}"
+                f"contexts={context_count}, its_mc={its_mc_count}, "
+                f"rc={rc_count}, mc={mc_count}"
+            )
+        if strict_clean_schema and admitted_count != len(raw_records):
+            raise RuntimeError(
+                "Clean release build excluded records: "
+                f"admitted={admitted_count}, input={len(raw_records)}, "
+                f"exclusions={dict(sorted(exclusions.items()))}"
             )
         if foreign_key_violations:
             raise RuntimeError(
@@ -808,4 +1150,4 @@ if __name__ == "__main__":
         hierarchy_path=Path("data/hierarchy.md"),
         db_path=Path("data/epdb.sqlite"),
     )
-    print("Release database v0.1.0 built successfully.")
+    print("Release database built successfully.")

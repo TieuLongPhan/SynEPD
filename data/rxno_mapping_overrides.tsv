@@ -1,0 +1,18 @@
+taxon_code	relation	ontology_id	rationale	review_status
+POLAR.01.06.009	skos:broadMatch	MOP:0000739	A phosphine-borane complex is a specific Lewis adduct formation.	accepted
+POLAR.02.01.020	skos:exactMatch	RXNO:0000034	The leaf is the canonical full Mitsunobu substitution reaction.	accepted
+POLAR.02.05.011	skos:exactMatch	RXNO:0000447	SynEPD Duff formylation corresponds to the RXNO Duff reaction concept.	accepted
+POLAR.03.02.005	dcterms:isPartOf	RXNO:0000032	The Mannich-type C–C addition is a component stage of the broader Mannich reaction.	accepted
+POLAR.03.02.011	dcterms:isPartOf	RXNO:0000335	Iminium capture is one component stage of the complete reductive-amination sequence.	accepted
+POLAR.03.03.006	skos:broadMatch	RXNO:0000032	Mukaiyama-Mannich addition is a specific Mannich reaction variant.	accepted
+POLAR.03.05.012	skos:broadMatch	RXNO:0000292	The hydroboration/protonolysis sequence is a specific hydroboration reaction.	accepted
+POLAR.04.05.004	dcterms:isPartOf	RXNO:0000008	The beta-elimination is a continuation stage after the conjugate-addition event.	accepted
+POLAR.05.04.003	dcterms:isPartOf	RXNO:0000072	Carbene generation is a preparatory stage of the complete Reimer-Tiemann reaction.	accepted
+POLAR.05.04.005	dcterms:isPartOf	RXNO:0000258	Carbenoid formation is a preparatory stage of the complete Simmons-Smith reaction.	accepted
+POLAR.06.05.010	skos:exactMatch	RXNO:0000287	Pinnick oxidation is the chlorite aldehyde oxidation represented by RXNO as Lindgren oxidation.	accepted
+POLAR.07.04.008	dcterms:isPartOf	RXNO:0000051	Precursor conversion is a preparatory stage of the complete Wolff rearrangement.	accepted
+POLAR.08.03.009	dcterms:isPartOf	RXNO:0000034	This azo-dicarboxylate alcohol-activation stage is a component of the broader Mitsunobu reaction.	accepted
+POLAR.08.03.010	skos:exactMatch	RXNO:0000554	The represented Appel bromination uses tetrabromomethane explicitly.	accepted
+POLAR.08.04.004	skos:exactMatch	RXNO:0000268	Hantzsch 1,4-dihydropyridine synthesis is the RXNO Hantzsch pyridine synthesis concept.	accepted
+POLAR.08.08.008	skos:exactMatch	RXNO:0000146	The leaf contains the full aldehyde-to-terminal-alkyne Corey-Fuchs sequence.	accepted
+POLAR.08.08.013	skos:exactMatch	RXNO:0000556	This leaf is explicitly the terminal dibromoolefination first stage of Corey-Fuchs.	accepted

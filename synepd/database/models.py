@@ -15,13 +15,50 @@ class DatasetRelease:
 
 
 DEFAULT_RELEASE = DatasetRelease(
-    version="v0.2.0",
-    release_date="2026-07-15",
+    version="v0.4.0",
+    release_date="2026-08-12",
     license="CC BY 4.0",
 )
-CURRENT_SCHEMA_VERSION = "002_mechanism_context"
-CURRENT_SCHEMA_CHECKSUM = (
+MECHANISM_CONTEXT_SCHEMA_VERSION = "002_mechanism_context"
+MECHANISM_CONTEXT_SCHEMA_CHECKSUM = (
     "sha256:87a9d2414a7c49132c4299077b515609da899a047d795f9eaa05ef3464374d27"
+)
+TAXON_XREF_SCHEMA_VERSION = "003_taxon_xref"
+TAXON_XREF_SCHEMA_CHECKSUM = (
+    "sha256:c7e203b8593560864dc193719d2b6ef92afcc7d3ca2c62c30a7731b7d860c569"
+)
+REACTION_METADATA_SCHEMA_VERSION = "004_reaction_metadata"
+REACTION_METADATA_SCHEMA_CHECKSUM = (
+    "sha256:34c629b5e38a599b3b2f5675ca3bb8fc0a45e2fe9897bfc5f7e0ea5946d8f9a3"
+)
+MECHANISTIC_CENTER_SCHEMA_VERSION = "005_mechanistic_center"
+MECHANISTIC_CENTER_SCHEMA_CHECKSUM = (
+    "sha256:2c926958cb5591744bda98a496d679dfe7b131b04c4806d1d33d01587b0c3dd5"
+)
+ITS_MECHANISTIC_CENTER_SCHEMA_VERSION = "006_its_mechanistic_center"
+ITS_MECHANISTIC_CENTER_SCHEMA_CHECKSUM = (
+    "sha256:4913f555c248e21ceba18a8a9a162935b63e6966b40e0b7f1d5d1ab5b4fbbd74"
+)
+CORE_RELEASE_SCHEMA_VERSION = "007_core_release"
+CORE_RELEASE_SCHEMA_CHECKSUM = (
+    "sha256:e0c8aefcd24bc3ecbbd29afe43bcf79b41012ad9fb0ab9d943f072a45f9f8c8b"
+)
+CURRENT_SCHEMA_VERSION = CORE_RELEASE_SCHEMA_VERSION
+CURRENT_SCHEMA_CHECKSUM = CORE_RELEASE_SCHEMA_CHECKSUM
+ALLOWED_REACTION_RELATION_TYPES = frozenset(
+    {
+        "alternative_mechanism_of",
+        "component_of",
+        "follows",
+        "has_component",
+        "mapping_variant_of",
+        "mechanism_variant_of",
+        "substrate_variant_of",
+        "taxonomy_projection_of",
+    }
+)
+REACTION_RELATION_TYPE_SQL = ", ".join(
+    f"'{value}'" for value in sorted(ALLOWED_REACTION_RELATION_TYPES)
 )
 
 
@@ -85,6 +122,30 @@ class ReactionTaxonomy:
 
 
 @dataclass
+class ReactionAlias:
+    reaction_id: int
+    alias: str
+    alias_index: int
+
+
+@dataclass
+class ReactionEntryCode:
+    reaction_id: int
+    taxon_code: str
+    entry_code: str
+    code_index: int
+    is_primary: bool = False
+
+
+@dataclass
+class ReactionRelation:
+    reaction_id: int
+    relation_type: str
+    target_reaction_id: int
+    relation_index: int
+
+
+@dataclass
 class ReactionCenter:
     wlhash: str
     template_graph: bytes
@@ -100,6 +161,7 @@ class ITS:
     wlhash: str
     graph_data: bytes
     graph_format: str
+    mc_id: Optional[int] = None
 
 
 @dataclass
@@ -142,10 +204,29 @@ class MechanismContext:
     diagnostics_json: str
 
 
+@dataclass
+class MechanisticCenterTemplate:
+    rc_id: int
+    wlhash: str
+    template_graph: bytes
+    graph_format: str
+    transition_edge_count: int = 0
+    rc_extension_edge_count: int = 0
+    transient_only_edge_count: int = 0
+    id: Optional[int] = None
+
+
 class ReleaseDatabase:
-    def __init__(self, path: Path | str):
+    def __init__(self, path: Path | str, *, read_only: bool = False):
         self.path = Path(path)
-        self.connection = sqlite3.connect(self.path)
+        if read_only:
+            self.connection = sqlite3.connect(
+                f"{self.path.resolve().as_uri()}?mode=ro",
+                uri=True,
+            )
+            self.connection.execute("PRAGMA query_only = ON")
+        else:
+            self.connection = sqlite3.connect(self.path)
         self.connection.row_factory = sqlite3.Row
         self.connection.execute("PRAGMA foreign_keys = ON;")
 
@@ -159,6 +240,12 @@ class ReleaseDatabase:
         self.close()
 
     def create_tables(self) -> None:
+        fresh_database = (
+            self.connection.execute(
+                "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'reaction'"
+            ).fetchone()
+            is None
+        )
         with self.connection:
             self.connection.executescript("""
                 CREATE TABLE IF NOT EXISTS dataset_release (
@@ -233,6 +320,25 @@ class ReleaseDatabase:
                     PRIMARY KEY (reaction_id, taxon_code)
                 );
 
+                CREATE TABLE IF NOT EXISTS reaction_entry_code (
+                    reaction_id INTEGER NOT NULL,
+                    taxon_code TEXT NOT NULL,
+                    entry_code TEXT NOT NULL UNIQUE,
+                    code_index INTEGER NOT NULL,
+                    is_primary INTEGER NOT NULL DEFAULT 0,
+                    FOREIGN KEY (reaction_id) REFERENCES reaction(id) ON DELETE CASCADE,
+                    FOREIGN KEY (taxon_code) REFERENCES taxon(code),
+                    CHECK (length(trim(entry_code)) > 0),
+                    CHECK (code_index >= 0),
+                    CHECK (is_primary IN (0, 1)),
+                    PRIMARY KEY (reaction_id, entry_code),
+                    UNIQUE (reaction_id, taxon_code),
+                    UNIQUE (reaction_id, code_index)
+                );
+
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_reaction_entry_code_primary
+                ON reaction_entry_code(reaction_id) WHERE is_primary = 1;
+
                 CREATE TABLE IF NOT EXISTS reaction_center (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     wlhash TEXT NOT NULL UNIQUE,
@@ -244,11 +350,13 @@ class ReleaseDatabase:
                 CREATE TABLE IF NOT EXISTS its (
                     reaction_id INTEGER PRIMARY KEY,
                     rc_id INTEGER NOT NULL,
+                    mc_id INTEGER,
                     wlhash TEXT NOT NULL,
                     graph_data BLOB NOT NULL,
                     graph_format TEXT NOT NULL,
                     FOREIGN KEY (reaction_id) REFERENCES reaction(id) ON DELETE CASCADE,
-                    FOREIGN KEY (rc_id) REFERENCES reaction_center(id)
+                    FOREIGN KEY (rc_id) REFERENCES reaction_center(id),
+                    FOREIGN KEY (mc_id) REFERENCES mechanistic_center(id)
                 );
 
                 CREATE TABLE IF NOT EXISTS epd (
@@ -294,15 +402,34 @@ class ReleaseDatabase:
                     FOREIGN KEY (reaction_id) REFERENCES epd(reaction_id) ON DELETE CASCADE
                 );
 
+                CREATE TABLE IF NOT EXISTS mechanistic_center (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    rc_id INTEGER NOT NULL,
+                    wlhash TEXT NOT NULL UNIQUE,
+                    template_graph BLOB NOT NULL,
+                    graph_format TEXT NOT NULL,
+                    transition_edge_count INTEGER NOT NULL DEFAULT 0,
+                    rc_extension_edge_count INTEGER NOT NULL DEFAULT 0,
+                    transient_only_edge_count INTEGER NOT NULL DEFAULT 0,
+                    FOREIGN KEY (rc_id) REFERENCES reaction_center(id),
+                    CHECK (transition_edge_count >= 0),
+                    CHECK (rc_extension_edge_count >= 0),
+                    CHECK (transient_only_edge_count >= 0),
+                    CHECK (rc_extension_edge_count <= transition_edge_count),
+                    CHECK (transient_only_edge_count <= transition_edge_count)
+                );
+
                 CREATE INDEX IF NOT EXISTS idx_reaction_case_id ON reaction(case_id);
                 CREATE INDEX IF NOT EXISTS idx_reaction_aam_key ON reaction(aam_key);
                 CREATE INDEX IF NOT EXISTS idx_reaction_component_reaction ON reaction_component(reaction_id);
                 CREATE INDEX IF NOT EXISTS idx_reaction_component_molecule ON reaction_component(molecule_id);
                 CREATE INDEX IF NOT EXISTS idx_reaction_taxonomy_code ON reaction_taxonomy(taxon_code);
                 CREATE INDEX IF NOT EXISTS idx_its_rc_id ON its(rc_id);
+                CREATE INDEX IF NOT EXISTS idx_its_mc_id ON its(mc_id);
                 CREATE INDEX IF NOT EXISTS idx_epd_number_arrows ON epd(number_arrows);
                 CREATE INDEX IF NOT EXISTS idx_epd_arrow_type ON epd_arrow(arrow_type_code);
                 CREATE INDEX IF NOT EXISTS idx_mechanism_context_hash ON mechanism_context(context_hash);
+                CREATE INDEX IF NOT EXISTS idx_mechanistic_center_rc ON mechanistic_center(rc_id);
                 CREATE INDEX IF NOT EXISTS idx_epd_arrow_index_type ON epd_arrow(arrow_index, arrow_type_code);
                 CREATE INDEX IF NOT EXISTS idx_epd_arrow_reaction ON epd_arrow(reaction_id);
                 CREATE INDEX IF NOT EXISTS idx_molecule_inchikey ON molecule(inchikey);
@@ -347,12 +474,40 @@ class ReleaseDatabase:
                     DEFAULT_RELEASE.license,
                 ),
             )
-            self.connection.execute(
+            applied_migrations = [
+                (
+                    MECHANISM_CONTEXT_SCHEMA_VERSION,
+                    MECHANISM_CONTEXT_SCHEMA_CHECKSUM,
+                ),
+                (TAXON_XREF_SCHEMA_VERSION, TAXON_XREF_SCHEMA_CHECKSUM),
+            ]
+            if fresh_database:
+                applied_migrations.extend(
+                    (
+                        (
+                            REACTION_METADATA_SCHEMA_VERSION,
+                            REACTION_METADATA_SCHEMA_CHECKSUM,
+                        ),
+                        (
+                            MECHANISTIC_CENTER_SCHEMA_VERSION,
+                            MECHANISTIC_CENTER_SCHEMA_CHECKSUM,
+                        ),
+                        (
+                            ITS_MECHANISTIC_CENTER_SCHEMA_VERSION,
+                            ITS_MECHANISTIC_CENTER_SCHEMA_CHECKSUM,
+                        ),
+                        (
+                            CORE_RELEASE_SCHEMA_VERSION,
+                            CORE_RELEASE_SCHEMA_CHECKSUM,
+                        ),
+                    )
+                )
+            self.connection.executemany(
                 """
                 INSERT OR IGNORE INTO schema_migration (version, applied_at, checksum)
                 VALUES (?, datetime('now'), ?)
                 """,
-                (CURRENT_SCHEMA_VERSION, CURRENT_SCHEMA_CHECKSUM),
+                applied_migrations,
             )
 
             # Populate FTS if empty and reaction table has rows

@@ -9,6 +9,7 @@ from synepd.web.server import (
     health_check,
     get_reaction_neighbors,
     list_reaction_centers,
+    list_mechanistic_centers,
     get_arrow_types,
     get_stats,
     check_balance,
@@ -17,6 +18,7 @@ from synepd.web.server import (
     get_taxon_reactions,
     get_rc_reactions,
     get_random_reaction,
+    get_reaction_detail,
     render_rdkit_svg,
     list_submissions,
 )
@@ -31,10 +33,12 @@ def test_db_info_endpoint():
 def test_taxonomy_endpoint():
     data = get_taxonomy()
     assert "taxonomy" in data
+    assert data["ontology_releases"][0]["id"] == "rxno-2021-12-16"
 
     def find_counted_taxon(nodes):
         for node in nodes:
             assert "reaction_count" in node
+            assert "xrefs" in node
             assert "reactions" not in node
             if node["reaction_count"] > 0:
                 return True
@@ -44,10 +48,47 @@ def test_taxonomy_endpoint():
         return False
 
     assert find_counted_taxon(data["taxonomy"])
+    root = next(node for node in data["taxonomy"] if node["code"] == "POLAR")
+    assert root["subtree_reaction_count"] == get_db_info()["counts"]["reactions"]
+
+    def assert_subtree_counts(nodes):
+        for node in nodes:
+            assert node["subtree_reaction_count"] >= node["reaction_count"]
+            assert_subtree_counts(node["children"])
+
+    assert_subtree_counts(data["taxonomy"])
+
+    def find_taxon(nodes, code):
+        for node in nodes:
+            if node["code"] == code:
+                return node
+            found = find_taxon(node["children"], code)
+            if found:
+                return found
+        return None
+
+    mitsunobu = find_taxon(data["taxonomy"], "POLAR.02.01.020")
+    assert mitsunobu is not None
+    assert any(xref["ontology_id"] == "RXNO:0000034" for xref in mitsunobu["xrefs"])
+    assert all("ontology_release_id" in xref for xref in mitsunobu["xrefs"])
 
     lazy_data = get_taxon_reactions("POLAR.04", include_descendants=True, limit=2)
     assert lazy_data["total"] >= len(lazy_data["results"])
     assert "name" in lazy_data["results"][0]
+
+
+def test_reaction_detail_inherits_ontology_links():
+    matches = search_reactions(query="Mitsunobu")
+    full = next(row for row in matches["results"] if "esterification" in row["name"])
+    detail = get_reaction_detail(full["id"])
+    assert detail["ontology_releases"][0]["id"] == "rxno-2021-12-16"
+    assert any(
+        xref["ontology_id"] == "RXNO:0000034"
+        and xref["mapping_taxon_code"] == "POLAR.02.01.020"
+        and not xref["inherited"]
+        for xref in detail["ontology_xrefs"]
+    )
+    assert "reaction_relations" not in detail
 
 
 def test_search_endpoint():
@@ -67,8 +108,18 @@ def test_query_epd_endpoint():
     assert "name" in data
     assert data["name"]
     assert data["arrows"]
-    assert data["mechanism_context"]
+    assert data["mechanistic_center"]
+    assert "mechanism_context" not in data
     assert data["canonical_aam_key"]
+
+
+def test_acid_chloride_alcoholysis_smiles_search():
+    data = query_epd(EPDQueryRequest(rsmi="CC(=O)Cl.OC>>CC(=O)OC"))
+
+    assert data["success"] is True
+    assert data["path"] == 1
+    assert data["reaction_id"] == 1299
+    assert data["name"] == "Acid chloride alcoholysis"
 
 
 def test_health_endpoint():
@@ -116,6 +167,18 @@ def test_reaction_centers_endpoint():
     assert "results" in data
 
 
+def test_mechanistic_centers_endpoint():
+    data = list_mechanistic_centers(limit=5)
+    assert data["total"] >= len(data["results"])
+    assert data["results"]
+    assert "transition_edge_count" in data["results"][0]
+    assert data["comparison"]["epd_enriched_template_count"] == 284
+    assert data["comparison"]["epd_enriched_template_percent"] == 18.44
+    assert data["comparison"]["additional_mc_template_count"] == 19
+    assert data["comparison"]["mc_count_increase_over_rc_percent"] == 1.25
+    assert data["comparison"]["rc_with_multiple_mc_count"] == 13
+
+
 def test_random_reaction_endpoint():
     data = get_random_reaction()
     assert isinstance(data["reaction_id"], int)
@@ -132,6 +195,10 @@ def test_stats_endpoint():
     data = get_stats()
     assert "arrow_type_distribution" in data
     assert "arrows_per_reaction_distribution" in data
+    assert data["totals"]["mechanistic_centers"] == 1540
+    comparison = data["mechanistic_center_comparison"]
+    assert comparison["structurally_extended_template_count"] == 229
+    assert comparison["structurally_extended_template_percent"] == 14.87
 
 
 def test_balance_endpoint():

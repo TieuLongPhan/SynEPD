@@ -121,9 +121,14 @@ def test_reaction_manager(setup_db):
 
     assert reaction is not None
     assert reaction["case_id"] == "polar_000001"
+    assert manager.get_by_id(reaction["id"])["case_id"] == "polar_000001"
     assert "canonical_rsmi" in reaction
     assert manager.get_by_aam_key(reaction["aam_key"])["id"] == reaction["id"]
     assert manager.get_by_rsmi(reaction["canonical_rsmi"]) is not None
+    assert manager.search("methoxide")[0]["case_id"] == "polar_000001"
+    assert manager.search("polar_000001")[0]["case_id"] == "polar_000001"
+    with pytest.raises(ValueError, match="positive"):
+        manager.search("methoxide", limit=0)
     assert (
         manager.get_by_molecule("C[O-]", role="reactant")[0]["case_id"]
         == "polar_000001"
@@ -171,6 +176,30 @@ def test_epd_manager(setup_db):
         == "polar_000001"
     )
 
+    reaction_id = setup_db.connection.execute("SELECT id FROM reaction").fetchone()[0]
+    with setup_db.connection:
+        setup_db.connection.execute(
+            "UPDATE epd SET number_arrows = 3 WHERE reaction_id = ?",
+            (reaction_id,),
+        )
+        setup_db.connection.execute(
+            """
+            INSERT INTO epd_arrow (
+                reaction_id, arrow_index, arrow_type_code,
+                source_atoms, target_atoms
+            ) VALUES (?, ?, ?, ?, ?)
+            """,
+            (reaction_id, 3, "Pi-/LP+", json.dumps([1]), json.dumps([2])),
+        )
+
+    assert manager.get_reactions_by_arrow_sequence(["Sigma-/LP+", "LP-/Sigma+"]) == []
+    assert (
+        manager.get_reactions_by_arrow_sequence(
+            ["Sigma-/LP+", "LP-/Sigma+", "Pi-/LP+"]
+        )[0]["case_id"]
+        == "polar_000001"
+    )
+
 
 def test_molecule_manager(setup_db):
     manager = MoleculeManager(setup_db)
@@ -196,6 +225,11 @@ def test_mechanism_manager(setup_db):
     rc_data = mech_mgr.get_reaction_center(its_data["wlhash"])
     assert rc_data is not None
     assert type(rc_data["template_graph"]).__name__ == "Graph"
+
+    linked_rc = mech_mgr.get_reaction_center_for_reaction(reaction["id"])
+    assert linked_rc is not None
+    assert linked_rc["id"] == its_data["rc_id"]
+    assert type(linked_rc["template_graph"]).__name__ == "Graph"
 
     context = mech_mgr.get_mechanism_context(reaction["id"])
     assert context is not None

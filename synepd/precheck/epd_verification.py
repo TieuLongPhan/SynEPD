@@ -24,36 +24,17 @@ from synkit.Graph.Mech import LWGEditor
 from synkit.Graph.Mech.electron_accounting import atom_map_to_node
 from synkit.Graph.Mech.lwg_ops import normalize_lwg_graph
 
+from synepd.core.representation import representation_verification_rsmi
+
 DEFAULT_DATA_PATH = Path("data/polar.json")
 ISSUE_STATUSES = frozenset({"mismatch", "error"})
 
 
 def _verification_rsmi(record: dict[str, Any]) -> str:
-    """Return the RSMI used for electron-pair verification.
-
-    The canonical ``rsmi`` remains the chemically intended representation.
-    Records with an open-shell endpoint may provide one explicitly documented
-    closed-shell product fragment for the pair-only LWG editor.
-    """
-    rsmi = record["rsmi"]
-    representation = record.get("epd_representation")
-    if not representation or representation.get("mode") == "exact":
-        return rsmi
-
-    chemical_fragment = representation.get("chemical_product_fragment")
-    lwg_fragment = representation.get("lwg_product_fragment")
-    if not chemical_fragment or not lwg_fragment:
-        raise ValueError(
-            "Non-exact EPD representations require chemical_product_fragment "
-            "and lwg_product_fragment."
-        )
-
-    reactants, products = rsmi.split(">>", 1)
-    if products.count(chemical_fragment) != 1:
-        raise ValueError(
-            "chemical_product_fragment must occur exactly once on the product side."
-        )
-    return f"{reactants}>>{products.replace(chemical_fragment, lwg_fragment, 1)}"
+    """Return the exact or formal-charge-surrogate verification endpoint."""
+    return representation_verification_rsmi(
+        record["rsmi"], record.get("epd_representation")
+    )
 
 
 def _step_reports(result: Any) -> list[dict[str, Any]]:
@@ -237,7 +218,6 @@ def _print_summary(results: list[dict[str, Any]], include_passes: bool) -> None:
             )
             print(f"  chemical:    {result.get('chemical_product_smiles')}")
             print(f"  surrogate:   {result['product_smiles']}")
-            print(f"  limitation:  {representation.get('limitation')}")
 
 
 def main() -> int:

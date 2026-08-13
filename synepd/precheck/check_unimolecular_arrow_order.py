@@ -99,10 +99,9 @@ def check_unimolecular_arrow_order(
     tax_code = next(
         (code for code in tax_codes if code in EXPECTED_STAGES_BY_TAX_CODE), None
     )
+    raw_epd = record.get("epd") or []
     actual_arrow_types = tuple(
-        arrow[0]
-        for arrow in record.get("epd", [])
-        if isinstance(arrow, (list, tuple)) and arrow
+        arrow[0] for arrow in raw_epd if isinstance(arrow, (list, tuple)) and arrow
     )
     if tax_code is None:
         return UnimolecularArrowOrderCheck(
@@ -115,7 +114,7 @@ def check_unimolecular_arrow_order(
     expected_stages = EXPECTED_STAGES_BY_TAX_CODE[tax_code]
     expected_arrow_types = tuple(arrow_type for _, arrow_type in expected_stages)
     errors: list[str] = []
-    if len(actual_arrow_types) != len(record.get("epd", [])):
+    if len(actual_arrow_types) != len(raw_epd):
         errors.append("one or more EPD arrows are malformed")
     if actual_arrow_types != expected_arrow_types:
         errors.append(

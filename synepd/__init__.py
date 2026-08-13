@@ -1,6 +1,6 @@
 """SynEPD: hierarchical mechanistic reaction templates."""
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 from synepd.construct import (
     ConstructionValidationError,
@@ -22,7 +22,7 @@ from synepd.database import (
 )
 from synepd.io import load_cases, load_cases_jsonl, load_summary
 from synepd.models import AtomMappingInfo, Case
-from synepd.query import Query, find_cases, search_labels
+from synepd.query import Query, SynEPDQuery, find_cases, search_labels
 
 __all__ = [
     "__version__",
@@ -37,6 +37,7 @@ __all__ = [
     "SynEPDDatabase",
     "SQLiteSynEPDDatabase",
     "Query",
+    "SynEPDQuery",
     "ConstructionValidationError",
     "build_database",
     "build_database_from_cases",

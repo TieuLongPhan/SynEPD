@@ -426,10 +426,9 @@ def reaction_png(rsmi: str, size: tuple[int, int] = (1600, 520)) -> bytes:
 
 
 # ------------------------------------------------------------- CDK Depict ---
-# The SynEPD web explorer depicts reactions with the CDK Depict service (see
-# synepd/web/static/app.js: renderCDKDepict). These options mirror that panel:
-# atom mapping (annotate=mapidx), abbreviations on/off, and a hydrogen-display
-# mode. RDKit remains the offline fallback, exactly as in the web client.
+# CDK Depict is the primary PDF and web renderer. Both surfaces fall back to
+# local RDKit when CDK Depict is unavailable; deployments can point the web
+# client at a self-hosted CDK Depict instance.
 CDK_DEFAULT_BASE_URL = "https://www.simolecule.com/cdkdepict"
 CDK_HDISP_CHOICES = ("bridgehead", "stereo", "implicit", "all")
 CDK_STYLE_CHOICES = ("cow", "cod")  # colour-on-white / colour-on-dark
@@ -532,12 +531,6 @@ def representation_note(rec: Mapping[str, Any]) -> str:
     mode = info.get("mode")
     if mode:
         parts.append(f"mode={mode}")
-    limitation = info.get("limitation")
-    if limitation:
-        parts.append(str(limitation))
-    unrepresented = info.get("unrepresented_electron_step")
-    if isinstance(unrepresented, Mapping) and unrepresented.get("description"):
-        parts.append("Unrepresented step: " + str(unrepresented["description"]))
     return "EPD representation note: " + " | ".join(parts) if parts else ""
 
 

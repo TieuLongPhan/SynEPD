@@ -1,0 +1,4 @@
+retired_taxon_code	replacement_taxon_code	relation	rationale
+POLAR.03.01.023	POLAR.03.03.002	replaced_by	Silyl ketene acetal addition to an aldehyde is a Mukaiyama aldol addition.
+POLAR.03.07.014	POLAR.03.03.006	replaced_by	Ketene silyl acetal addition to an iminium ion is a Mukaiyama-Mannich addition.
+POLAR.06.07.007	POLAR.08.08.013	replaced_by	The Corey-Fuchs terminal dibromoolefination stage is an olefination transformation, not halogen transfer.

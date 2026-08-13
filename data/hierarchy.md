@@ -5,6 +5,7 @@
 This hierarchy is organized by the dominant two-electron electron-flow pattern encoded in `data/polar.json`.
 Named reactions are placed under that encoded polar step; reagent, substrate, and synthetic-sequence names are not treated as independent mechanistic axes.
 Composite transformations remain in `POLAR.08` and are secondary to an elementary mechanistic label when both are present.
+This is the active release hierarchy, and every leaf has at least one validated record.
 
 ## POLAR.01 — Acid–base transfer, ionization, and association
 
@@ -90,21 +91,17 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.01.04.008 — Proton transfer in organocatalytic ion pair
 
-### POLAR.01.05 — Salt and ion-pair formation
-
-#### POLAR.01.05.001 — Phase-transfer ion-pair formation
-
 ### POLAR.01.06 — Lewis acid–base association and dissociation
 
 #### POLAR.01.06.001 — Carbonyl Lewis-acid activation
 
 #### POLAR.01.06.002 — Imine Lewis-acid activation
 
-#### POLAR.01.06.003 — Iminium Lewis-acid activation
+#### POLAR.01.06.003 — Halide–Lewis-acid adduct formation
 
 #### POLAR.01.06.004 — BF3–etherate adduct formation
 
-#### POLAR.01.06.005 — AlCl3 arene-complex formation
+#### POLAR.01.06.005 — Chloroarene–AlCl3 adduct formation
 
 #### POLAR.01.06.006 — TiCl4 carbonyl activation
 
@@ -112,7 +109,7 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.01.06.008 — Borane–amine adduct formation
 
-#### POLAR.01.06.009 — Frustrated-Lewis-pair adduct formation
+#### POLAR.01.06.009 — Phosphine–borane adduct formation
 
 ### POLAR.01.07 — Ylide and zwitterion formation
 
@@ -144,25 +141,9 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.01.08.006 — Diazonium ion formation
 
-#### POLAR.01.08.007 — Sulfonium ion formation
-
 #### POLAR.01.08.008 — Aziridinium ion formation
 
 #### POLAR.01.08.009 — Episulfonium ion formation
-
-### POLAR.01.09 — Counterion and metal-ion exchange
-
-#### POLAR.01.09.001 — Halide counterion exchange
-
-#### POLAR.01.09.002 — Tetrafluoroborate salt exchange
-
-#### POLAR.01.09.003 — Hexafluorophosphate salt exchange
-
-#### POLAR.01.09.004 — Carboxylate salt exchange
-
-#### POLAR.01.09.005 — Enolate metal exchange
-
-#### POLAR.01.09.006 — Phase-transfer counterion swap
 
 ## POLAR.02 — Substitution
 
@@ -206,6 +187,8 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.02.01.019 — Imidazolium alkylation
 
+#### POLAR.02.01.020 — Mitsunobu reaction
+
 ### POLAR.02.02 — Dissociative substitution through a cation (SN1)
 
 #### POLAR.02.02.001 — General SN1 substitution
@@ -238,8 +221,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.02.03.002 — Thionyl chloride internal-return substitution
 
-#### POLAR.02.03.003 — Anchimeric-assistance substitution
-
 #### POLAR.02.03.004 — Episulfonium-assisted substitution
 
 #### POLAR.02.03.005 — Epoxonium-assisted substitution
@@ -251,8 +232,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 #### POLAR.02.03.008 — Aziridinium-assisted substitution
 
 #### POLAR.02.03.009 — Neighboring thioether participation
-
-#### POLAR.02.03.010 — Neighboring ester participation
 
 #### POLAR.02.03.011 — Neighboring amide participation
 
@@ -316,8 +295,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.02.05.016 — Azo coupling
 
-#### POLAR.02.05.017 — Scholl-type electrophilic arylation
-
 #### POLAR.02.05.018 — Nencki reaction
 
 ### POLAR.02.06 — Nucleophilic aromatic addition–elimination (SNAr)
@@ -342,33 +319,15 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 ### POLAR.02.07 — Diazonium-derived aryl substitution
 
-#### POLAR.02.07.001 — Sandmeyer reaction
-
 #### POLAR.02.07.002 — Balz–Schiemann fluorination
-
-#### POLAR.02.07.003 — Gattermann aryl halide synthesis
 
 #### POLAR.02.07.004 — Diazonium hydrolysis to phenol
 
-#### POLAR.02.07.005 — Diazonium iodide substitution
-
-#### POLAR.02.07.006 — Diazonium cyanation
-
-#### POLAR.02.07.007 — Gomberg–Bachmann arylation
-
-#### POLAR.02.07.008 — Meerwein arylation
-
-#### POLAR.02.07.009 — Aryl diazonium thiolation
-
 #### POLAR.02.07.010 — Aryl diazonium azidation
 
-#### POLAR.02.07.011 — Triazene substitution by electrophile
 
-#### POLAR.02.07.012 — Triazene-to-aryl halide conversion
 
 ### POLAR.02.08 — Allylic, benzylic, and propargylic substitution
-
-#### POLAR.02.08.001 — Allylic SN1 substitution
 
 #### POLAR.02.08.002 — Allylic SN2′ substitution
 
@@ -376,15 +335,11 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.02.08.004 — Tsuji–Trost allylic substitution
 
-#### POLAR.02.08.005 — Mitsunobu substitution
-
 #### POLAR.02.08.006 — Allylic halide displacement
 
 #### POLAR.02.08.007 — Allylic acetate displacement
 
 #### POLAR.02.08.008 — Benzylic alcohol substitution
-
-#### POLAR.02.08.009 — Benzylic halide solvolysis
 
 #### POLAR.02.08.010 — Allylic rearrangement substitution
 
@@ -403,10 +358,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 #### POLAR.02.09.004 — Substitution at silicon by fluoride
 
 #### POLAR.02.09.005 — Sulfonyl chloride substitution
-
-#### POLAR.02.09.006 — Silyl chloride alcohol substitution
-
-#### POLAR.02.09.007 — Silyl chloride amine substitution
 
 #### POLAR.02.09.008 — Phosphoryl chloride substitution
 
@@ -430,8 +381,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.02.09.018 — Phosphonate ester formation
 
-#### POLAR.02.09.019 — Sulfonylation
-
 #### POLAR.02.09.020 — Sulfonamide formation
 
 #### POLAR.02.09.021 — Sulfonate ester formation
@@ -450,7 +399,7 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 ### POLAR.02.10 — Ring-opening substitution
 
-#### POLAR.02.10.001 — Epoxide opening by alcohol
+#### POLAR.02.10.001 — Epoxide opening by an alkoxide or alcohol oxygen nucleophile
 
 #### POLAR.02.10.002 — Epoxide opening by amine
 
@@ -486,7 +435,7 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.02.11.006 — Acetal exchange
 
-#### POLAR.02.11.007 — Ketal exchange
+#### POLAR.02.11.007 — Transacetalization (ketal exchange)
 
 #### POLAR.02.11.008 — Thioacetal exchange
 
@@ -502,17 +451,13 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.02.12.001 — Vinylic nucleophilic substitution
 
-#### POLAR.02.12.002 — Activated vinyl halide displacement
-
-#### POLAR.02.12.003 — β-Haloenone substitution
-
 #### POLAR.02.12.004 — Vinyl sulfone substitution
 
-#### POLAR.02.12.005 — Alkynyl halide substitution
+#### POLAR.02.12.005 — Halophilic cleavage of alkynyl halides
 
 #### POLAR.02.12.006 — Alkynyl sulfone substitution
 
-#### POLAR.02.12.007 — Ketene acetal substitution
+#### POLAR.02.12.007 — α-Halo enol ether ionization–capture
 
 ## POLAR.03 — Addition
 
@@ -548,23 +493,16 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.03.01.015 — Keck allylation
 
-#### POLAR.03.01.016 — Marshall allylation
+#### POLAR.03.01.016 — Marshall allenylstannane propargylation
 
 #### POLAR.03.01.017 — General nucleophilic 1,2-addition to a neutral carbonyl
 
 #### POLAR.03.01.018 — Nucleophilic addition to an oxocarbenium C=O+ center
 
-#### POLAR.03.01.019 — Mukaiyama-type carbonyl addition
-
-#### POLAR.03.01.020 — Silyl enol ether addition
 
 #### POLAR.03.01.021 — Hosomi–Sakurai allylation
 
 #### POLAR.03.01.022 — Sakurai crotylation
-
-#### POLAR.03.01.023 — Silyl ketene acetal addition
-
-#### POLAR.03.01.024 — Chiral Lewis-acid carbonyl addition
 
 #### POLAR.03.01.025 — Intramolecular hemiacetal formation
 
@@ -600,6 +538,8 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.03.01.041 — Chloral addition
 
+#### POLAR.03.01.042 — Corey–Chaykovsky epoxidation
+
 ### POLAR.03.02 — Nucleophilic addition to imines and iminium ions
 
 #### POLAR.03.02.001 — Cyanide addition to an iminium ion
@@ -610,7 +550,7 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.03.02.004 — Addition to chiral sulfinimines
 
-#### POLAR.03.02.005 — Mannich-type imine addition
+#### POLAR.03.02.005 — Mannich-type C–C addition to imines or iminium ions
 
 #### POLAR.03.02.006 — Iminium allylation
 
@@ -642,7 +582,7 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.03.02.020 — Isocyanide addition to iminium ions
 
-### POLAR.03.03 — Aldol-type carbonyl addition
+### POLAR.03.03 — Aldol- and aza-aldol-type C–C bond-forming additions
 
 #### POLAR.03.03.001 — Aldol addition
 
@@ -722,8 +662,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.03.05.006 — Oxymercuration
 
-#### POLAR.03.05.007 — Alkoxymercuration
-
 #### POLAR.03.05.008 — Iodolactonization
 
 #### POLAR.03.05.009 — Bromolactonization
@@ -732,7 +670,7 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.03.05.011 — Bromoetherification
 
-#### POLAR.03.05.012 — Hydroboration–protonolysis addition step
+#### POLAR.03.05.012 — Hydroboration addition followed optionally by protonolysis
 
 #### POLAR.03.05.013 — Oxocarbenium alkene addition
 
@@ -760,11 +698,7 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.03.06.008 — Nazarov-type cationic cyclization
 
-#### POLAR.03.06.009 — Sakurai–Prins cyclization
-
 #### POLAR.03.06.010 — Biomimetic terpene cyclization
-
-#### POLAR.03.06.011 — Cyclization onto iminium ion
 
 #### POLAR.03.06.012 — Spiroketal-forming addition
 
@@ -784,8 +718,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.03.07.007 — Addition to ketenes
 
-#### POLAR.03.07.008 — Addition to carbon dioxide
-
 #### POLAR.03.07.009 — Addition to carbon disulfide
 
 #### POLAR.03.07.010 — Addition to sulfonyl isocyanates
@@ -795,8 +727,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 #### POLAR.03.07.012 — Addition to nitrones
 
 #### POLAR.03.07.013 — Cyclization onto nitrile
-
-#### POLAR.03.07.014 — Ketene silyl acetal addition
 
 #### POLAR.03.07.015 — Isocyanate trapping by alcohol
 
@@ -874,9 +804,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.04.01.015 — Yamaguchi esterification
 
-#### POLAR.04.01.016 — Mukaiyama esterification
-
-#### POLAR.04.01.017 — Shiina esterification
 
 #### POLAR.04.01.018 — Mixed anhydride coupling
 
@@ -884,15 +811,8 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.04.01.020 — Carbodiimide-mediated coupling
 
-#### POLAR.04.01.021 — HATU coupling
-
 #### POLAR.04.01.022 — HBTU coupling
 
-#### POLAR.04.01.023 — PyBOP coupling
-
-#### POLAR.04.01.024 — CDI-mediated acylation
-
-#### POLAR.04.01.025 — Ghosez reagent acylation
 
 #### POLAR.04.01.026 — Weinreb amide formation
 
@@ -952,7 +872,7 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.04.02.007 — Ketal formation
 
-#### POLAR.04.02.008 — Thioacetal formation
+#### POLAR.04.02.008 — Monothioacetal (O,S-acetal) formation
 
 #### POLAR.04.02.009 — Dithioacetal formation
 
@@ -984,8 +904,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.04.03.008 — Benzoin condensation dehydration variant
 
-#### POLAR.04.03.009 — Crotonic condensation
-
 #### POLAR.04.03.010 — Meldrum acid alkylidene formation
 
 #### POLAR.04.03.011 — Barbituric acid alkylidene formation
@@ -999,10 +917,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 #### POLAR.04.04.002 — Crossed Claisen condensation
 
 #### POLAR.04.04.003 — Dieckmann condensation
-
-#### POLAR.04.04.004 — Acetoacetic ester synthesis
-
-#### POLAR.04.04.005 — Malonic ester synthesis
 
 #### POLAR.04.04.006 — Blaise reaction
 
@@ -1036,15 +950,11 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.04.05.008 — Addition–elimination on acrylates
 
-#### POLAR.04.05.009 — Conjugated iminium substitution
+#### POLAR.04.05.009 — Addition–elimination on alkenyl ammonium salts
 
 #### POLAR.04.05.010 — Activated alkene amination
 
 ### POLAR.04.06 — Intramolecular addition–elimination and cyclodehydration
-
-#### POLAR.04.06.001 — Intramolecular esterification
-
-#### POLAR.04.06.002 — Intramolecular amidation
 
 #### POLAR.04.06.003 — Isoquinolinium-forming cyclodehydration
 
@@ -1059,10 +969,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 #### POLAR.04.06.008 — Cyclodehydration to thiazole
 
 #### POLAR.04.06.009 — Cyclodehydration to imidazole
-
-#### POLAR.04.06.010 — Lactone-forming cyclodehydration
-
-#### POLAR.04.06.011 — Lactam-forming cyclodehydration
 
 #### POLAR.04.06.012 — Isoquinoline-forming cyclodehydration
 
@@ -1088,19 +994,13 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.04.08.001 — Transimination (imine exchange)
 
-#### POLAR.04.08.002 — Oxime ligation
-
-#### POLAR.04.08.003 — Hydrazone ligation
-
 #### POLAR.04.08.004 — Dynamic hydrazone exchange
-
-#### POLAR.04.08.005 — Semicarbazone exchange
 
 #### POLAR.04.08.006 — Acylhydrazone formation
 
 #### POLAR.04.08.007 — Acylhydrazone exchange
 
-#### POLAR.04.08.008 — Iminium hydrolysis
+#### POLAR.04.08.008 — Iminium or ketiminium hydrolysis
 
 #### POLAR.04.08.009 — Enamine hydrolysis
 
@@ -1204,9 +1104,9 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.05.05.006 — Burgess dehydration
 
-#### POLAR.05.05.007 — Martin sulfurane dehydration
-
 #### POLAR.05.05.008 — Grieco elimination
+
+#### POLAR.05.05.009 — Reagent-unspecified concerted alcohol dehydration
 
 ### POLAR.05.06 — Fragmentation and retro-addition
 
@@ -1233,12 +1133,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 #### POLAR.05.07.002 — Malonic acid decarboxylation
 
 #### POLAR.05.07.003 — Krapcho decarboxylation
-
-#### POLAR.05.07.004 — Decarboxylative alkene formation
-
-#### POLAR.05.07.005 — Hunsdiecker-type decarboxylative bromination
-
-#### POLAR.05.07.006 — Barton-type decarboxylation
 
 #### POLAR.05.07.007 — Decarbonylation of aldehydes under ionic conditions
 
@@ -1294,33 +1188,15 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.06.01.001 — Sodium borohydride reduction
 
-#### POLAR.06.01.002 — Lithium aluminium hydride reduction
-
-#### POLAR.06.01.003 — DIBAL-H reduction
-
-#### POLAR.06.01.004 — Luche reduction
-
 #### POLAR.06.01.005 — Meerwein–Ponndorf–Verley reduction
-
-#### POLAR.06.01.006 — CBS reduction
-
-#### POLAR.06.01.007 — K-selectride reduction
-
-#### POLAR.06.01.008 — L-selectride reduction
-
-#### POLAR.06.01.009 — Superhydride reduction
-
-#### POLAR.06.01.010 — Red-Al reduction
 
 #### POLAR.06.01.011 — Borane reduction
 
 #### POLAR.06.01.012 — Diisobutylaluminium hydride aldehyde synthesis
 
-#### POLAR.06.01.013 — Ionic transfer hydrogenation / hydride delivery
+#### POLAR.06.01.016 — Reagent-unspecified formal hydride addition to a carbonyl
 
-#### POLAR.06.01.014 — Hantzsch ester hydride transfer
-
-#### POLAR.06.01.015 — Reductive amination hydride step
+#### POLAR.06.01.017 — Reagent-unspecified formal hydride delivery to an iminium ion
 
 ### POLAR.06.02 — Hydride abstraction and activated alcohol oxidation
 
@@ -1328,25 +1204,7 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.06.02.002 — Swern oxidation
 
-#### POLAR.06.02.003 — Dess–Martin oxidation
-
-#### POLAR.06.02.004 — PCC oxidation
-
-#### POLAR.06.02.005 — PDC oxidation
-
 #### POLAR.06.02.006 — Jones oxidation
-
-#### POLAR.06.02.007 — Collins oxidation
-
-#### POLAR.06.02.008 — Corey–Kim oxidation
-
-#### POLAR.06.02.009 — Moffatt oxidation
-
-#### POLAR.06.02.010 — Parikh–Doering oxidation
-
-#### POLAR.06.02.011 — Ley–Griffith TPAP oxidation
-
-#### POLAR.06.02.012 — Albright–Goldman oxidation
 
 #### POLAR.06.02.013 — Sommelet oxidation
 
@@ -1377,8 +1235,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 #### POLAR.06.03.012 — Riley oxidation
 
 ### POLAR.06.04 — Reductive functional-group conversion
-
-#### POLAR.06.04.001 — Carbonyl-to-alcohol reduction
 
 #### POLAR.06.04.002 — Imine-to-amine reduction
 
@@ -1418,13 +1274,11 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.06.05.006 — Thiol-to-disulfide oxidation
 
-#### POLAR.06.05.007 — Phenol oxidative dearomatization
-
 #### POLAR.06.05.008 — Benzylic oxidation
 
 #### POLAR.06.05.009 — Allylic oxidation
 
-#### POLAR.06.05.010 — Pinnick oxidation
+#### POLAR.06.05.010 — Pinnick (Lindgren) chlorite oxidation
 
 #### POLAR.06.05.011 — Tamao–Fleming oxidation
 
@@ -1442,9 +1296,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.06.06.006 — Redox-neutral hydride shift
 
-#### POLAR.06.06.007 — Formose-type disproportionation
-
-#### POLAR.06.06.008 — Ionic hydride relay reaction
 
 ### POLAR.06.07 — Halogen and pseudohalogen transfer
 
@@ -1459,8 +1310,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 #### POLAR.06.07.005 — Allylic bromination by NBS
 
 #### POLAR.06.07.006 — Phosphine-mediated alcohol halogenation
-
-#### POLAR.06.07.007 — Corey–Fuchs dibromination step
 
 #### POLAR.06.07.008 — Iodine-mediated oxidation
 
@@ -1506,7 +1355,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 ### POLAR.06.10 — Deoxygenation and desulfurization
 
-#### POLAR.06.10.001 — Reductive C–O cleavage of a thiocarbonyl-activated alcohol
 
 #### POLAR.06.10.002 — Markó–Lam deoxygenation
 
@@ -1515,8 +1363,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 #### POLAR.06.10.004 — Deoxyhalogenation of alcohols
 
 #### POLAR.06.10.005 — Thioacetal desulfurization
-
-#### POLAR.06.10.006 — Raney nickel desulfurization
 
 #### POLAR.06.10.007 — Carbonyl deoxygenation via hydrazone
 
@@ -1532,25 +1378,13 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.06.11.002 — PIDA-mediated oxidation
 
-#### POLAR.06.11.003 — PIFA-mediated oxidation
-
 #### POLAR.06.11.004 — Koser reagent oxidation
 
 #### POLAR.06.11.005 — Hypervalent iodine dearomatization
 
-#### POLAR.06.11.006 — Sulfurane oxidation
-
-#### POLAR.06.11.007 — Martin sulfurane dehydration redox step
-
 #### POLAR.06.11.008 — Alkoxybenziodoxole oxidation
 
-#### POLAR.06.11.009 — Iodoxybenzene oxidation
-
 ### POLAR.06.12 — Organocatalytic hydride and electron-pair transfer
-
-#### POLAR.06.12.001 — NADH-model reduction
-
-#### POLAR.06.12.002 — Iminium-ion transfer hydrogenation
 
 #### POLAR.06.12.003 — Enamine-mediated redox-neutral aldehyde reaction
 
@@ -1584,9 +1418,9 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.07.01.009 — Cyclopropylcarbinyl rearrangement
 
-#### POLAR.07.01.010 — Terpinyl cation rearrangement
+#### POLAR.07.01.010 — α-Terpinyl → terpinen-4-yl cation 6,7-hydride shift
 
-#### POLAR.07.01.011 — Camphene rearrangement
+#### POLAR.07.01.011 — Camphenehydro → isobornyl cation Wagner–Meerwein shift
 
 #### POLAR.07.01.012 — Meinwald epoxide rearrangement
 
@@ -1620,13 +1454,9 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.07.02.004 — Anionic ammonium ylide shift
 
-#### POLAR.07.02.005 — Wittig rearrangement
-
 #### POLAR.07.02.006 — [1,2]-Wittig rearrangement
 
 #### POLAR.07.02.007 — [2,3]-Wittig rearrangement
-
-#### POLAR.07.02.008 — Anionic silyl migration
 
 #### POLAR.07.02.009 — α-Halosulfone ring-contraction rearrangement
 
@@ -1672,7 +1502,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.07.04.006 — Neber rearrangement
 
-#### POLAR.07.04.007 — Stieglitz rearrangement
 
 #### POLAR.07.04.008 — Wolff rearrangement precursor conversion
 
@@ -1704,8 +1533,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.07.06.003 — Haller–Bauer cleavage
 
-#### POLAR.07.06.004 — Cieplak-type fragmentation
-
 #### POLAR.07.06.005 — α-Hydroxy ketone fragmentation
 
 #### POLAR.07.06.006 — β-Amino alcohol fragmentation
@@ -1722,15 +1549,11 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.07.07.003 — Acyloxonium rearrangement
 
-#### POLAR.07.07.004 — Episulfonium rearrangement
-
 #### POLAR.07.07.005 — Epoxonium rearrangement
 
 #### POLAR.07.07.006 — Iodonium-promoted rearrangement
 
 #### POLAR.07.07.007 — Thionium-promoted rearrangement
-
-#### POLAR.07.07.008 — Neighboring acetal rearrangement
 
 ### POLAR.07.08 — Oxonium, iminium, acetal, and carbohydrate rearrangement
 
@@ -1738,33 +1561,22 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.07.08.002 — Allylic imidate C-to-N migration
 
-#### POLAR.07.08.003 — Amadori rearrangement
-
 #### POLAR.07.08.004 — Heyns rearrangement
 
 #### POLAR.07.08.005 — Lobry de Bruyn–Alberda van Ekenstein rearrangement
 
-#### POLAR.07.08.006 — Anomerization through oxocarbenium ion
+#### POLAR.07.08.006 — Glycosyl halide ionization to an oxocarbenium ion
 
 #### POLAR.07.08.007 — Glycal rearrangement
-
-#### POLAR.07.08.008 — Iminium-enamine rearrangement
-
-#### POLAR.07.08.009 — Aza-Cope–Mannich sequence
 
 #### POLAR.07.08.010 — N-Acyliminium rearrangement
 
 #### POLAR.07.08.011 — Glycal oxocarbenium rearrangement
 
-#### POLAR.07.08.012 — Anomeric rearrangement
+#### POLAR.07.08.012 — Protonated anomeric acetal ionization to an oxocarbenium ion
 
 #### POLAR.07.08.013 — Glycosyl orthoester rearrangement
 
-#### POLAR.07.08.014 — Acetal migration
-
-#### POLAR.07.08.015 — Benzylidene acetal rearrangement
-
-#### POLAR.07.08.016 — Acyl migration in carbohydrates
 
 #### POLAR.07.08.017 — Silyl migration in carbohydrates
 
@@ -1777,8 +1589,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 #### POLAR.07.09.002 — Mislow–Evans rearrangement
 
 #### POLAR.07.09.003 — [2,3]-Sigmatropic sulfoxide rearrangement
-
-#### POLAR.07.09.004 — Selenoxide rearrangement
 
 #### POLAR.07.09.005 — Phosphorane rearrangement
 
@@ -1808,8 +1618,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 ### POLAR.07.11 — Acid/base-induced skeletal rearrangement
 
-#### POLAR.07.11.001 — Retropinacol rearrangement
-
 #### POLAR.07.11.002 — Allylic alcohol rearrangement under acid
 
 #### POLAR.07.11.003 — Tertiary alcohol skeletal rearrangement
@@ -1833,8 +1641,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 #### POLAR.08.01.002 — Mannich reaction
 
 #### POLAR.08.01.003 — Benzoin condensation
-
-#### POLAR.08.01.004 — Acyloin-forming reductive coupling sequence
 
 #### POLAR.08.01.005 — Darzens reaction
 
@@ -1904,13 +1710,11 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.08.03.008 — Diazotization
 
-#### POLAR.08.03.009 — Azo-dicarboxylate alcohol activation
+#### POLAR.08.03.009 — Mitsunobu azo-dicarboxylate alcohol-activation stage
 
-#### POLAR.08.03.010 — Phosphine/tetrahalomethane alcohol activation
+#### POLAR.08.03.010 — Appel bromination with tetrabromomethane
 
 #### POLAR.08.03.011 — Carbonyldiimidazole activation
-
-#### POLAR.08.03.012 — Boc anhydride activation
 
 #### POLAR.08.03.013 — Chloroformate activation
 
@@ -1924,7 +1728,7 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.08.04.003 — Biginelli reaction
 
-#### POLAR.08.04.004 — Hantzsch dihydropyridine synthesis
+#### POLAR.08.04.004 — Hantzsch 1,4-dihydropyridine synthesis
 
 #### POLAR.08.04.005 — Gewald reaction
 
@@ -1952,15 +1756,11 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.08.05.002 — Michael–Dieckmann sequence
 
-#### POLAR.08.05.003 — Knoevenagel–Michael sequence
-
 #### POLAR.08.05.004 — Knoevenagel–Michael–cyclization sequence
 
 #### POLAR.08.05.005 — Prins cascade
 
 #### POLAR.08.05.006 — Pictet–Spengler cascade
-
-#### POLAR.08.05.007 — Cationic polycyclization cascade
 
 #### POLAR.08.05.008 — Oxa-Michael–aldol sequence
 
@@ -1969,8 +1769,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 #### POLAR.08.05.010 — Mannich–cyclization sequence
 
 #### POLAR.08.05.011 — Aldol–Michael cascade
-
-#### POLAR.08.05.012 — Enamine–iminium cascade
 
 ### POLAR.08.06 — Polar polymerization and step-growth sequence
 
@@ -1986,13 +1784,9 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.08.06.006 — Lactone ring-opening polymerization
 
-#### POLAR.08.06.007 — Lactam ring-opening polymerization
-
 #### POLAR.08.06.008 — Polyurethane formation
 
 #### POLAR.08.06.009 — Epoxy curing
-
-#### POLAR.08.06.010 — Polycarbonate formation
 
 ### POLAR.08.07 — Net functional-group interconversion
 
@@ -2004,9 +1798,9 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.08.07.004 — Carboxylic-acid-to-amine conversion
 
-#### POLAR.08.07.005 — Carboxylic-acid homologation sequence
+#### POLAR.08.07.005 — Arndt–Eistert homologation
 
-#### POLAR.08.07.006 — Amide-to-amine one-carbon degradation sequence
+#### POLAR.08.07.006 — Hofmann rearrangement/degradation (overall sequence)
 
 #### POLAR.08.07.007 — Acyl azide degradation sequence
 
@@ -2016,13 +1810,11 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.08.07.010 — Ketone-to-alkene conversion
 
-### POLAR.08.08 — Polar olefination and C=C-forming sequence
+### POLAR.08.08 — Polar alkene- and alkyne-forming transformations
 
 #### POLAR.08.08.001 — Wittig reaction
 
 #### POLAR.08.08.002 — Horner–Wadsworth–Emmons reaction
-
-#### POLAR.08.08.003 — Horner–Wittig reaction
 
 #### POLAR.08.08.004 — Still–Gennari olefination
 
@@ -2036,11 +1828,9 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.08.08.009 — Seyferth–Gilbert homologation
 
-#### POLAR.08.08.010 — Ohira–Bestmann homologation
-
-#### POLAR.08.08.011 — Tebbe-type carbonyl olefination
-
 #### POLAR.08.08.012 — Lombardo methylenation
+
+#### POLAR.08.08.013 — Corey–Fuchs terminal dibromoolefination stage
 
 ### POLAR.08.09 — Heterocycle-forming polar sequence
 
@@ -2060,7 +1850,6 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.08.09.008 — Debus–Radziszewski imidazole synthesis
 
-#### POLAR.08.09.009 — Hantzsch pyridine synthesis
 
 #### POLAR.08.09.010 — Pinner synthesis
 
@@ -2076,19 +1865,17 @@ Composite transformations remain in `POLAR.08` and are secondary to an elementar
 
 #### POLAR.08.10.001 — Glycoside formation sequence
 
-#### POLAR.08.10.002 — N-Glycosylation sequence
+#### POLAR.08.10.002 — N-Glycosylation by glycosyl-halide substitution
 
-#### POLAR.08.10.003 — O-Glycosylation sequence
+#### POLAR.08.10.003 — O-Glycosylation by glycosyl-halide substitution
 
-#### POLAR.08.10.004 — S-Glycosylation sequence
+#### POLAR.08.10.004 — S-Glycosylation by glycosyl-halide substitution
 
 #### POLAR.08.10.005 — Nucleotide phosphoramidite coupling
 
 #### POLAR.08.10.006 — Nucleotide deprotection sequence
 
 ### POLAR.08.11 — Peptide and bioconjugation polar sequence
-
-#### POLAR.08.11.001 — Solid-phase peptide coupling cycle
 
 #### POLAR.08.11.002 — Native chemical ligation step
 

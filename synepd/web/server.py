@@ -17,7 +17,8 @@ from fastapi.routing import APIRoute
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from starlette.middleware.gzip import GZipMiddleware
+from pydantic import BaseModel, Field, PositiveInt
 
 from synepd.core.query import (
     _get_connection,
@@ -28,10 +29,12 @@ from synepd.core.query import (
 )
 from synepd.core.graph_codec import decode_graph
 from synepd.core.mechanism import (
-    MECHANISM_CONTEXT_VERSION,
+    MECHANISTIC_CENTER_TEMPLATE_VERSION,
     build_mechanistic_center,
-    serialize_mechanism_context,
+    build_mechanistic_center_template,
+    mechanistic_center_edge_counts,
 )
+from synepd.linkage import load_rxno_linkage, resolve_lineage_xrefs
 from synepd.web.operations import (
     FixedWindowRateLimiter,
     RateLimitMiddleware,
@@ -42,10 +45,24 @@ from synepd.web.operations import (
 from synepd.web.knowledge_graph import router as kg_router
 
 _CACHE_TTL = 300  # 5 minutes
+_BULK_EXPORT_MAX_REACTIONS = 500
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # FastAPI runs synchronous SQLite/RDKit endpoints in AnyIO's bounded
+    # worker pool. A larger, configurable pool lets read-only release queries
+    # make progress during traffic bursts while still bounding resource use.
+    try:
+        import anyio.to_thread
+
+        anyio.to_thread.current_default_thread_limiter().total_tokens = (
+            _positive_env_int("SYNEPD_THREAD_TOKENS", 64)
+        )
+    except Exception:
+        logging.getLogger(__name__).warning(
+            "Could not configure the AnyIO worker-thread limit", exc_info=True
+        )
     if os.environ.get("SYNEPD_BUILD_DOCS") == "1":
         import threading
 
@@ -59,7 +76,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="SynEPD Mechanistic Web Service",
     description="REST backend and interactive explorer for reaction EPD mechanisms",
-    version="0.3.0",
+    version="0.4.0",
     lifespan=lifespan,
 )
 
@@ -78,6 +95,7 @@ _PUBLIC_RATE_LIMITER = FixedWindowRateLimiter(
 _RATE_LIMITED_OPERATIONS = {
     ("POST", "/api/query-epd"),
     ("POST", "/api/check-balance"),
+    ("POST", "/api/reactions/export-bulk"),
     ("POST", "/api/submissions"),
     ("GET", "/api/render/rdkit.svg"),
     ("GET", "/api/kg/path"),
@@ -111,6 +129,7 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+app.add_middleware(GZipMiddleware, minimum_size=1_000, compresslevel=5)
 
 
 app.include_router(kg_router, prefix="/api")
@@ -259,6 +278,85 @@ def serialize_graph(graph: nx.Graph) -> dict:
 
 def _deserialize_graph(raw: bytes, graph_format: str) -> nx.Graph:
     return decode_graph(raw, graph_format)
+
+
+def _mechanistic_center_comparison(conn, is_pg: bool) -> dict[str, object]:
+    """Summarize how reusable MC templates enrich their parent RCs."""
+
+    def summarize(scope_sql: str) -> tuple[int, int, int, int, int]:
+        row = _execute_query(
+            conn,
+            is_pg,
+            f"""SELECT
+                    COUNT(*),
+                    COALESCE(SUM(CASE WHEN mc.transition_edge_count > 0
+                                      THEN 1 ELSE 0 END), 0),
+                    COALESCE(SUM(CASE WHEN mc.rc_extension_edge_count > 0
+                                      THEN 1 ELSE 0 END), 0),
+                    COALESCE(SUM(CASE WHEN mc.transition_edge_count > 0
+                                           AND mc.rc_extension_edge_count = 0
+                                      THEN 1 ELSE 0 END), 0),
+                    COALESCE(SUM(CASE WHEN mc.transient_only_edge_count > 0
+                                      THEN 1 ELSE 0 END), 0)
+                {scope_sql}""",
+        ).fetchone()
+        return tuple(int(value or 0) for value in row)
+
+    template = summarize("FROM mechanistic_center mc")
+    reaction = summarize("FROM its " "JOIN mechanistic_center mc ON mc.id = its.mc_id")
+    rc_total, split_rc_count, extra_mc_count = (
+        int(value or 0)
+        for value in _execute_query(
+            conn,
+            is_pg,
+            """
+            SELECT
+                COUNT(*),
+                COALESCE(SUM(CASE WHEN mc_count > 1 THEN 1 ELSE 0 END), 0),
+                COALESCE(SUM(mc_count - 1), 0)
+            FROM (
+                SELECT rc.id, COUNT(mc.id) AS mc_count
+                FROM reaction_center rc
+                LEFT JOIN mechanistic_center mc ON mc.rc_id = rc.id
+                GROUP BY rc.id
+            ) AS per_rc
+            """,
+        ).fetchone()
+    )
+
+    def percentage(count: int, total: int) -> float:
+        return round(100.0 * count / total, 2) if total else 0.0
+
+    return {
+        "definition": (
+            "EPD-enriched means the MC contains at least one non-net EPD "
+            "transition edge; structural extension means at least one such "
+            "edge lies outside the complete induced RC."
+        ),
+        "template_total": template[0],
+        "epd_enriched_template_count": template[1],
+        "epd_enriched_template_percent": percentage(template[1], template[0]),
+        "structurally_extended_template_count": template[2],
+        "structurally_extended_template_percent": percentage(template[2], template[0]),
+        "annotation_only_template_count": template[3],
+        "annotation_only_template_percent": percentage(template[3], template[0]),
+        "transient_only_template_count": template[4],
+        "transient_only_template_percent": percentage(template[4], template[0]),
+        "reaction_total": reaction[0],
+        "epd_enriched_reaction_count": reaction[1],
+        "epd_enriched_reaction_percent": percentage(reaction[1], reaction[0]),
+        "structurally_extended_reaction_count": reaction[2],
+        "structurally_extended_reaction_percent": percentage(reaction[2], reaction[0]),
+        "annotation_only_reaction_count": reaction[3],
+        "annotation_only_reaction_percent": percentage(reaction[3], reaction[0]),
+        "transient_only_reaction_count": reaction[4],
+        "transient_only_reaction_percent": percentage(reaction[4], reaction[0]),
+        "rc_template_total": rc_total,
+        "rc_with_multiple_mc_count": split_rc_count,
+        "rc_with_multiple_mc_percent": percentage(split_rc_count, rc_total),
+        "additional_mc_template_count": extra_mc_count,
+        "mc_count_increase_over_rc_percent": percentage(extra_mc_count, rc_total),
+    }
 
 
 def _primary_taxon_sql(reaction_alias: str = "r") -> str:
@@ -427,10 +525,27 @@ def _get_db_info_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict:
             rc_count = 0
 
         try:
+            cur.execute("SELECT COUNT(*) FROM mechanistic_center;")
+            mc_count = cur.fetchone()[0]
+        except Exception:
+            mc_count = 0
+
+        try:
             cur.execute("SELECT COUNT(*) FROM epd_arrow;")
             epd_arrow_count = cur.fetchone()[0]
         except Exception:
             epd_arrow_count = 0
+
+        try:
+            mc_comparison = _mechanistic_center_comparison(conn, is_pg)
+        except Exception:
+            mc_comparison = {
+                "template_total": mc_count,
+                "epd_enriched_template_count": 0,
+                "epd_enriched_template_percent": 0.0,
+                "structurally_extended_template_count": 0,
+                "structurally_extended_template_percent": 0.0,
+            }
 
         # Get version metadata
         cur.execute(
@@ -442,7 +557,7 @@ def _get_db_info_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict:
             db_release_date = row[1]
             db_license = row[2]
         else:
-            db_version = "v0.1.0"
+            db_version = "v0.4.0"
             db_release_date = "2026-07-07"
             db_license = "CC BY 4.0"
 
@@ -472,8 +587,10 @@ def _get_db_info_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict:
                 "molecules": molecule_count,
                 "taxons": taxon_count,
                 "reaction_centers": rc_count,
+                "mechanistic_centers": mc_count,
                 "epd_arrows": epd_arrow_count,
             },
+            "mechanistic_center_comparison": mc_comparison,
             "backend": "PostgreSQL" if is_pg else "SQLite",
         }
     finally:
@@ -519,6 +636,33 @@ def _get_taxonomy_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict
         """)
         rxn_counts = {row[0]: row[1] for row in cur.fetchall()}
 
+        # Count each reaction once at every ancestor, even when a reaction has
+        # multiple taxonomy assignments below the same branch.
+        cur.execute("""
+            WITH RECURSIVE lineage(descendant_code, ancestor_code) AS (
+                SELECT code, code
+                FROM taxon
+                WHERE (code = 'POLAR' OR code LIKE 'POLAR.%')
+                  AND code != 'POLAR.99'
+                  AND code NOT LIKE 'POLAR.99.%'
+                UNION ALL
+                SELECT lineage.descendant_code, taxon.parent_code
+                FROM lineage
+                JOIN taxon ON taxon.code = lineage.ancestor_code
+                WHERE taxon.parent_code IS NOT NULL
+            )
+            SELECT lineage.ancestor_code,
+                   COUNT(DISTINCT rt.reaction_id) AS reaction_count
+            FROM lineage
+            JOIN reaction_taxonomy rt
+              ON rt.taxon_code = lineage.descendant_code
+            GROUP BY lineage.ancestor_code
+        """)
+        subtree_rxn_counts = {row[0]: row[1] for row in cur.fetchall()}
+
+        xrefs, ontology_release = load_rxno_linkage(db_path)
+        ontology_releases = [ontology_release] if ontology_release else []
+
         # Build nested tree
         nodes = {}
         root_nodes = []
@@ -531,6 +675,8 @@ def _get_taxonomy_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict
                 "level": t["level"],
                 "children": [],
                 "reaction_count": rxn_counts.get(code, 0),
+                "subtree_reaction_count": subtree_rxn_counts.get(code, 0),
+                "xrefs": xrefs.get(code, []),
             }
             nodes[code] = node
 
@@ -541,7 +687,10 @@ def _get_taxonomy_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict
                 if parent in nodes:
                     nodes[parent]["children"].append(node)
 
-        return {"taxonomy": root_nodes}
+        return {
+            "taxonomy": root_nodes,
+            "ontology_releases": ontology_releases,
+        }
     finally:
         conn.close()
 
@@ -861,8 +1010,15 @@ def get_reactions_by_signature(
 
 
 @app.get("/api/reactions/{reaction_id}")
-def get_reaction_detail(reaction_id: int):
+def get_reaction_detail(reaction_id: int, response: Response = None):
+    if response is not None:
+        response.headers["Cache-Control"] = "public, max-age=300"
     db_path = get_db_path_or_url()
+    return _get_reaction_detail_cached(reaction_id, db_path, db_cache_token(db_path))
+
+
+@lru_cache(maxsize=512)
+def _get_reaction_detail_cached(reaction_id: int, db_path: str, _db_token: str) -> dict:
     try:
         conn, is_pg = _get_connection(db_path)
     except Exception as e:
@@ -935,6 +1091,36 @@ def get_reaction_detail(reaction_id: int):
         rxn_data["taxonomies"] = taxonomies
         rxn_data["taxonomy"] = taxonomies[0] if taxonomies else None
 
+        # Resolve optional RXNO/MOP mappings from the external crosswalk rather
+        # than duplicating third-party linkage inside the release database.
+        cur = _execute_query(
+            conn,
+            is_pg,
+            """
+            WITH RECURSIVE lineage(
+                assigned_taxon_code, mapping_taxon_code, inheritance_depth
+            ) AS (
+                SELECT taxon_code, taxon_code, 0
+                FROM reaction_taxonomy
+                WHERE reaction_id = ?
+                UNION ALL
+                SELECT lineage.assigned_taxon_code, taxon.parent_code,
+                       lineage.inheritance_depth + 1
+                FROM lineage
+                JOIN taxon ON taxon.code = lineage.mapping_taxon_code
+                WHERE taxon.parent_code IS NOT NULL
+            )
+            SELECT DISTINCT assigned_taxon_code, mapping_taxon_code,
+                            inheritance_depth
+            FROM lineage
+            ORDER BY inheritance_depth, assigned_taxon_code, mapping_taxon_code
+            """,
+            (reaction_id,),
+        )
+        rxn_data["ontology_xrefs"] = resolve_lineage_xrefs(cur.fetchall(), db_path)
+        _, ontology_release = load_rxno_linkage(db_path)
+        rxn_data["ontology_releases"] = [ontology_release] if ontology_release else []
+
         # Fetch EPD arrows
         sql_arr = "SELECT arrow_index, arrow_type_code, source_atoms, target_atoms FROM epd_arrow WHERE reaction_id = ? ORDER BY arrow_index;"
         cur = _execute_query(conn, is_pg, sql_arr, (reaction_id,))
@@ -968,44 +1154,44 @@ def get_reaction_detail(reaction_id: int):
                 conn.rollback()
         rxn_data["epd_representation"] = epd_representation
 
-        # New release databases materialize the EPD-aware center. Legacy
-        # databases remain readable and simply report no mechanism context.
-        mechanism_context = None
+        # The reusable MC is deliberately separate from reaction-specific
+        # event order: induced RC + every non-net EPD transition edge.
+        mechanistic_center = None
         try:
             cur = _execute_query(
                 conn,
                 is_pg,
                 """
-                SELECT construction_version, context_hash, anchor_graph,
-                       graph_format, events_json, diagnostics_json
-                FROM mechanism_context
-                WHERE reaction_id = ?
+                SELECT mc.id, mc.rc_id, mc.wlhash, mc.template_graph,
+                       mc.graph_format, mc.transition_edge_count,
+                       mc.rc_extension_edge_count,
+                       mc.transient_only_edge_count
+                FROM its
+                JOIN mechanistic_center mc ON mc.id = its.mc_id
+                WHERE its.reaction_id = ?
                 """,
                 (reaction_id,),
             )
-            context_row = cur.fetchone()
-            if context_row:
-                (
-                    construction_version,
-                    context_hash,
-                    anchor_graph,
-                    graph_format,
-                    events_json,
-                    diagnostics_json,
-                ) = context_row
-                mechanism_context = {
-                    "construction_version": construction_version,
-                    "context_hash": context_hash,
-                    "anchor_graph": serialize_graph(
-                        _deserialize_graph(_read_bytes(anchor_graph), graph_format)
+            mc_row = cur.fetchone()
+            if mc_row:
+                mechanistic_center = {
+                    "id": mc_row[0],
+                    "rc_id": mc_row[1],
+                    "wlhash": mc_row[2],
+                    "construction_version": MECHANISTIC_CENTER_TEMPLATE_VERSION,
+                    "template_graph": serialize_graph(
+                        _deserialize_graph(_read_bytes(mc_row[3]), mc_row[4])
                     ),
-                    "events": json.loads(events_json),
-                    "diagnostics": json.loads(diagnostics_json),
+                    "transition_edge_count": mc_row[5],
+                    "rc_extension_edge_count": mc_row[6],
+                    "transient_only_edge_count": mc_row[7],
+                    "epd_enriched_vs_rc": bool(mc_row[5]),
+                    "structurally_extends_rc": bool(mc_row[6]),
                 }
         except Exception:
             if is_pg:
                 conn.rollback()
-        rxn_data["mechanism_context"] = mechanism_context
+        rxn_data["mechanistic_center"] = mechanistic_center
 
         # Fetch ITS graph
         sql_its = "SELECT graph_data, graph_format FROM its WHERE reaction_id = ?"
@@ -1056,6 +1242,7 @@ def export_reaction_json(reaction_id: int):
         "atom_mapped_smiles": detail["aam_key"],
         "canonical_atom_mapped_smiles": detail.get("canonical_aam_key"),
         "taxonomy_code": taxonomy_code,
+        "ontology_xrefs": detail.get("ontology_xrefs", []),
         "epd_lw": [
             [
                 arr["arrow_type_code"],
@@ -1076,52 +1263,147 @@ def export_reaction_json(reaction_id: int):
 
 
 class ExportBulkRequest(BaseModel):
-    reaction_ids: List[int]
-    template_ids: List[int]
+    reaction_ids: List[PositiveInt] = Field(
+        default_factory=list,
+        max_length=_BULK_EXPORT_MAX_REACTIONS,
+    )
+    template_ids: List[PositiveInt] = Field(
+        default_factory=list,
+        max_length=_BULK_EXPORT_MAX_REACTIONS,
+    )
 
 
 @app.post("/api/reactions/export-bulk")
 def export_reactions_bulk(req: ExportBulkRequest):
     conn, is_pg = _get_connection(get_db_path_or_url())
     try:
-        cur = conn.cursor()
         all_reaction_ids = set(req.reaction_ids)
+        template_ids = set(req.template_ids)
 
-        if req.template_ids:
-            placeholders = ",".join(["?"] * len(req.template_ids))
-            sql = "SELECT reaction_id FROM its " f"WHERE rc_id IN ({placeholders})"
-            cur = _execute_query(conn, is_pg, sql, tuple(req.template_ids))
+        if template_ids:
+            placeholders = ",".join("?" for _ in template_ids)
+            existing_templates = {
+                row[0]
+                for row in _execute_query(
+                    conn,
+                    is_pg,
+                    f"SELECT id FROM reaction_center WHERE id IN ({placeholders})",
+                    tuple(sorted(template_ids)),
+                ).fetchall()
+            }
+            missing_templates = sorted(template_ids - existing_templates)
+            if missing_templates:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Reaction-center templates not found: {missing_templates}",
+                )
+
+            expanded_count = _execute_query(
+                conn,
+                is_pg,
+                (
+                    "SELECT COUNT(DISTINCT reaction_id) FROM its "
+                    f"WHERE rc_id IN ({placeholders})"
+                ),
+                tuple(sorted(template_ids)),
+            ).fetchone()[0]
+            if expanded_count > _BULK_EXPORT_MAX_REACTIONS:
+                raise HTTPException(
+                    status_code=413,
+                    detail=(
+                        f"Selected templates expand to {expanded_count} reactions; "
+                        f"the maximum is {_BULK_EXPORT_MAX_REACTIONS}"
+                    ),
+                )
+
+            cur = _execute_query(
+                conn,
+                is_pg,
+                f"SELECT reaction_id FROM its WHERE rc_id IN ({placeholders})",
+                tuple(sorted(template_ids)),
+            )
             for row in cur.fetchall():
                 all_reaction_ids.add(row[0])
 
-        results = []
-        for rid in sorted(all_reaction_ids):
-            try:
-                detail = get_reaction_detail(rid)
-                taxonomy_code = (
-                    detail["taxonomy"]["code"] if detail.get("taxonomy") else None
-                )
-                results.append(
-                    {
-                        "id": rid,
-                        "case_id": detail["case_id"],
-                        "reaction_name": detail["name"],
-                        "canonical_smiles": detail["canonical_rsmi"],
-                        "atom_mapped_smiles": detail["aam_key"],
-                        "canonical_atom_mapped_smiles": detail.get("canonical_aam_key"),
-                        "taxonomy_code": taxonomy_code,
-                        "epd_lw": [
-                            [
-                                arr["arrow_type_code"],
-                                arr["source_atoms"],
-                                arr["target_atoms"],
-                            ]
-                            for arr in detail["arrows"]
-                        ],
-                    }
-                )
-            except Exception:
-                continue
+        if len(all_reaction_ids) > _BULK_EXPORT_MAX_REACTIONS:
+            raise HTTPException(
+                status_code=413,
+                detail=(
+                    "Bulk export expands to "
+                    f"{len(all_reaction_ids)} reactions; the maximum is "
+                    f"{_BULK_EXPORT_MAX_REACTIONS}"
+                ),
+            )
+
+        sorted_ids = sorted(all_reaction_ids)
+        if not sorted_ids:
+            return JSONResponse(
+                content=[],
+                headers={
+                    "Content-Disposition": (
+                        "attachment; filename=synepd_reactions_export.json"
+                    )
+                },
+            )
+
+        placeholders = ",".join("?" for _ in sorted_ids)
+        primary_taxon = _primary_taxon_sql("r")
+        rows = _execute_query(
+            conn,
+            is_pg,
+            f"""
+            SELECT r.id, r.case_id, r.name, r.canonical_rsmi, r.aam_key,
+                   r.canonical_aam_key, {primary_taxon} AS taxon_code
+            FROM reaction r
+            WHERE r.id IN ({placeholders})
+            ORDER BY r.id
+            """,
+            tuple(sorted_ids),
+        ).fetchall()
+        found_ids = {row[0] for row in rows}
+        missing_reactions = sorted(all_reaction_ids - found_ids)
+        if missing_reactions:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Reactions not found: {missing_reactions}",
+            )
+
+        arrows_by_reaction: dict[int, list[list[Any]]] = {
+            reaction_id: [] for reaction_id in sorted_ids
+        }
+        arrow_rows = _execute_query(
+            conn,
+            is_pg,
+            f"""
+            SELECT reaction_id, arrow_type_code, source_atoms, target_atoms
+            FROM epd_arrow
+            WHERE reaction_id IN ({placeholders})
+            ORDER BY reaction_id, arrow_index
+            """,
+            tuple(sorted_ids),
+        ).fetchall()
+        for reaction_id, arrow_type, source_atoms, target_atoms in arrow_rows:
+            arrows_by_reaction[reaction_id].append(
+                [
+                    arrow_type,
+                    json.loads(source_atoms),
+                    json.loads(target_atoms),
+                ]
+            )
+
+        results = [
+            {
+                "id": row[0],
+                "case_id": row[1],
+                "reaction_name": row[2],
+                "canonical_smiles": row[3],
+                "atom_mapped_smiles": row[4],
+                "canonical_atom_mapped_smiles": row[5],
+                "taxonomy_code": row[6],
+                "epd_lw": arrows_by_reaction[row[0]],
+            }
+            for row in rows
+        ]
 
         return JSONResponse(
             content=results,
@@ -1165,9 +1447,9 @@ def query_epd(req: EPDQueryRequest):
     rxn_id = res.get("reaction_id")
     its_json = {"nodes": [], "links": []}
     if rxn_id:
+        conn = None
         try:
             conn, is_pg = _get_connection(db_path)
-            cur = conn.cursor()
             sql_its = "SELECT graph_data, graph_format FROM its WHERE reaction_id = ?"
             cur = _execute_query(conn, is_pg, sql_its, (rxn_id,))
             its_row = cur.fetchone()
@@ -1192,9 +1474,11 @@ def query_epd(req: EPDQueryRequest):
             if taxonomies:
                 res["taxonomies"] = taxonomies
                 res["taxonomy"] = taxonomies[0]
-            conn.close()
         except Exception:
             pass
+        finally:
+            if conn is not None:
+                conn.close()
     else:
         # Path 2 (projected reaction), extract its graph from the matched/mapped rsmi
         mapped_rsmi = res.get("mapped_rsmi")
@@ -1211,10 +1495,10 @@ def query_epd(req: EPDQueryRequest):
     if rxn_id:
         try:
             detail = get_reaction_detail(rxn_id)
-            res["mechanism_context"] = detail.get("mechanism_context")
+            res["mechanistic_center"] = detail.get("mechanistic_center")
             res["canonical_aam_key"] = detail.get("canonical_aam_key")
         except Exception:
-            res["mechanism_context"] = None
+            res["mechanistic_center"] = None
     elif res.get("mapped_rsmi") and res.get("arrows"):
         try:
             epd = [
@@ -1226,13 +1510,19 @@ def query_epd(req: EPDQueryRequest):
                 for arrow in res["arrows"]
             ]
             center = build_mechanistic_center(res["mapped_rsmi"], epd)
-            payload = serialize_mechanism_context(center)
-            res["mechanism_context"] = {
-                "construction_version": MECHANISM_CONTEXT_VERSION,
-                "context_hash": payload.context_hash,
-                "anchor_graph": serialize_graph(center.anchor_graph),
-                "events": json.loads(payload.events_json),
-                "diagnostics": json.loads(payload.diagnostics_json),
+            mc_graph = build_mechanistic_center_template(center)
+            mc_counts = mechanistic_center_edge_counts(mc_graph)
+            res["mechanistic_center"] = {
+                "id": None,
+                "rc_id": None,
+                "wlhash": None,
+                "construction_version": MECHANISTIC_CENTER_TEMPLATE_VERSION,
+                "template_graph": serialize_graph(mc_graph),
+                "transition_edge_count": mc_counts.transition,
+                "rc_extension_edge_count": mc_counts.rc_extension,
+                "transient_only_edge_count": mc_counts.transient_only,
+                "epd_enriched_vs_rc": bool(mc_counts.transition),
+                "structurally_extends_rc": bool(mc_counts.rc_extension),
             }
             from synkit.Chem.Reaction.canon_rsmi import CanonRSMI
 
@@ -1242,9 +1532,9 @@ def query_epd(req: EPDQueryRequest):
                 .canonical_rsmi
             )
         except Exception:
-            res["mechanism_context"] = None
+            res["mechanistic_center"] = None
     else:
-        res["mechanism_context"] = None
+        res["mechanistic_center"] = None
     res["rdkit_coords"] = compute_rdkit_coords(res.get("mapped_rsmi"))
     return res
 
@@ -1357,7 +1647,7 @@ def get_reaction_neighbors(reaction_id: int, limit: int = 10):
 
 @app.get("/api/reaction-centers")
 def list_reaction_centers(limit: int = 50, offset: int = 0):
-    """Return all unique reaction center templates with reaction counts."""
+    """Return reusable direct centers defined only by net endpoint changes."""
     db_path = get_db_path_or_url()
     conn, is_pg = _get_connection(db_path)
     try:
@@ -1400,6 +1690,61 @@ def list_reaction_centers(limit: int = 50, offset: int = 0):
             conn, is_pg, "SELECT COUNT(*) FROM reaction_center"
         ).fetchone()[0]
         return {"total": total, "results": results}
+    finally:
+        conn.close()
+
+
+@app.get("/api/mechanistic-centers")
+def list_mechanistic_centers(limit: int = 50, offset: int = 0):
+    """Return reusable induced-RC + EPD-transition MC templates."""
+    limit = min(max(limit, 1), 200)
+    offset = max(offset, 0)
+    db_path = get_db_path_or_url()
+    conn, is_pg = _get_connection(db_path)
+    try:
+        rows = _execute_query(
+            conn,
+            is_pg,
+            """SELECT mc.id, mc.rc_id, mc.wlhash,
+                      mc.transition_edge_count,
+                      mc.rc_extension_edge_count,
+                      mc.transient_only_edge_count,
+                      COUNT(its.reaction_id) AS reaction_count
+               FROM mechanistic_center mc
+               LEFT JOIN its ON its.mc_id = mc.id
+               GROUP BY mc.id, mc.rc_id, mc.wlhash,
+                        mc.transition_edge_count,
+                        mc.rc_extension_edge_count,
+                        mc.transient_only_edge_count
+               ORDER BY reaction_count DESC, mc.id
+               LIMIT ? OFFSET ?""",
+            (limit, offset),
+        ).fetchall()
+
+        results = [
+            {
+                "id": row[0],
+                "rc_id": row[1],
+                "wlhash": row[2],
+                "transition_edge_count": row[3],
+                "rc_extension_edge_count": row[4],
+                "transient_only_edge_count": row[5],
+                "reaction_count": row[6],
+                "construction_version": MECHANISTIC_CENTER_TEMPLATE_VERSION,
+                "epd_enriched_vs_rc": bool(row[3]),
+                "structurally_extends_rc": bool(row[4]),
+            }
+            for row in rows
+        ]
+
+        total = _execute_query(
+            conn, is_pg, "SELECT COUNT(*) FROM mechanistic_center"
+        ).fetchone()[0]
+        return {
+            "total": total,
+            "comparison": _mechanistic_center_comparison(conn, is_pg),
+            "results": results,
+        }
     finally:
         conn.close()
 
@@ -1514,6 +1859,7 @@ def _get_stats_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict:
             SELECT
                 (SELECT COUNT(*) FROM reaction) AS reactions,
                 (SELECT COUNT(*) FROM reaction_center) AS reaction_centers,
+                (SELECT COUNT(*) FROM mechanistic_center) AS mechanistic_centers,
                 (SELECT COUNT(DISTINCT t.code)
                  FROM taxon t
                  JOIN reaction_taxonomy rt ON rt.taxon_code = t.code
@@ -1539,16 +1885,20 @@ def _get_stats_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict:
             "totals": {
                 "reactions": totals[0],
                 "reaction_centers": totals[1],
-                "taxons": totals[2],
-                "molecules": totals[3],
-                "epd_arrows": totals[4],
-                "classified_reactions": totals[5],
+                "mechanistic_centers": totals[2],
+                "taxons": totals[3],
+                "molecules": totals[4],
+                "epd_arrows": totals[5],
+                "classified_reactions": totals[6],
             },
             "arrow_type_distribution": arrow_dist,
             "arrows_per_reaction_distribution": arrow_count_dist,
             "taxonomy_level_distribution": taxonomy_level_dist,
             "rc_reuse_distribution": rc_reuse_dist,
             "reaction_center_count": rc_count,
+            "mechanistic_center_comparison": _mechanistic_center_comparison(
+                conn, is_pg
+            ),
             "top_taxonomy_nodes": top_taxa,
         }
     finally:

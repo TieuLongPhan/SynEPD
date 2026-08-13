@@ -23,6 +23,15 @@ MAX_CONTEXT_MAPPINGS = 64
 MAX_VERIFIED_MAPPINGS_PER_REFERENCE = 16
 
 
+def _use_immutable_sqlite(path: Path) -> bool:
+    """Use immutable mode for the checked-in release, not mutable/WAL inputs."""
+    configured = os.environ.get("SYNEPD_SQLITE_IMMUTABLE")
+    if configured is not None:
+        return configured.strip().lower() in {"1", "true", "yes", "on"}
+    release_path = Path(__file__).resolve().parents[2] / "data" / "epdb.sqlite"
+    return path == release_path.resolve()
+
+
 def _resolve_query_db_path(
     db_path: Optional[Union[str, Path]],
     db_source: Optional[str],
@@ -33,7 +42,7 @@ def _resolve_query_db_path(
     if db_source is not None or db_version is not None:
         from synepd.core.data import get_default_db_path
 
-        return get_default_db_path(version=db_version, source=db_source or "zenodo")
+        return get_default_db_path(version=db_version, source=db_source or "auto")
     return "data/epdb.sqlite"
 
 
@@ -59,9 +68,19 @@ def _get_connection(db_path_or_url: Union[str, Path]):
             db_path = get_default_db_path()
         else:
             db_path = Path(db_str)
-        conn = sqlite3.connect(db_path)
-        conn.execute("PRAGMA journal_mode=WAL;")
-        conn.execute("PRAGMA synchronous=NORMAL;")
+        # A normal connection may touch WAL/header state during API reads.
+        # The checked-in release is immutable, while custom databases remain
+        # WAL-aware so recently committed data is never hidden.
+        resolved_path = Path(db_path).resolve()
+        options = (
+            "mode=ro&immutable=1" if _use_immutable_sqlite(resolved_path) else "mode=ro"
+        )
+        conn = sqlite3.connect(
+            f"{resolved_path.as_uri()}?{options}",
+            uri=True,
+            check_same_thread=False,
+        )
+        conn.execute("PRAGMA query_only=ON;")
         return conn, False
 
 
@@ -468,19 +487,33 @@ def query_epd_by_reaction(
     db_source: Optional[str] = None,
     db_version: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """
-    Scenario 2: Query EPD arrows for a given reaction SMILES.
-    Supports both mapped and unmapped reactions.
-    Projects template arrows if the exact reaction is not in the database, but a matching reaction center template is.
-    """
+    """Query or project EPD arrows for a reaction SMILES."""
     db_conn_str = _resolve_query_db_path(db_path, db_source, db_version)
     conn, is_pg = _get_connection(db_conn_str)
+    try:
+        return _query_epd_by_reaction_with_connection(
+            rsmi,
+            db_conn_str=db_conn_str,
+            conn=conn,
+            is_pg=is_pg,
+        )
+    finally:
+        conn.close()
+
+
+def _query_epd_by_reaction_with_connection(
+    rsmi: str,
+    *,
+    db_conn_str: Union[str, Path],
+    conn,
+    is_pg: bool,
+) -> Dict[str, Any]:
+    """Implement the query while the public wrapper owns connection cleanup."""
 
     # Standardize the query rsmi to check for direct matches
     try:
         canonical_rsmi = Standardize().fit(rsmi)
     except Exception as e:
-        conn.close()
         return {"success": False, "error": f"Failed to standardize reaction: {e}"}
 
     # Path 1: Check if reaction exists in reaction table
@@ -509,7 +542,6 @@ def query_epd_by_reaction(
                     "target_atoms": json.loads(tgt_json),
                 }
             )
-        conn.close()
         return {
             "success": True,
             "path": 1,
@@ -524,7 +556,6 @@ def query_epd_by_reaction(
     # Path 2: Reaction does not exist in reaction table. Check templates.
     parts = rsmi.split(">>")
     if len(parts) != 2:
-        conn.close()
         return {"success": False, "error": "Invalid reaction SMILES structure"}
 
     r_query, p_query = parts
@@ -618,10 +649,13 @@ def query_epd_by_reaction(
             from synkit.Synthesis.Reactor.rbl_engine import RBLEngine
 
             engine = RBLEngine(
-                early_stop=True,
-                fast_paths_only=False,
+                mode="early_stop",
                 implicit_temp=False,
                 explicit_h=True,
+                # A balancing template may add missing coproducts, but it must
+                # never replace chemistry already supplied by the caller
+                # (for example Cl with Br or an alcohol with an alkoxide).
+                preserve_original_sides=("reactants", "products"),
                 embed_threshold=5000,
             )
 
@@ -658,7 +692,6 @@ def query_epd_by_reaction(
                     )
                     balanced_unmapped = f"{reactants_flat}>>{products_flat}"
 
-                    conn.close()
                     # Recursively query the balanced reaction
                     recursive_res = query_epd_by_reaction(
                         balanced_unmapped, db_path=db_conn_str
@@ -669,7 +702,6 @@ def query_epd_by_reaction(
                         return recursive_res
 
             # If no template balanced the reaction, fail
-            conn.close()
             return {
                 "success": False,
                 "error": "Could not balance the reaction with any database template",
@@ -682,7 +714,6 @@ def query_epd_by_reaction(
                 matched_rc = None
 
     if matched_rc is None or new_its is None:
-        conn.close()
         return {
             "success": False,
             "error": "No matching reaction center found in database",
@@ -700,7 +731,6 @@ def query_epd_by_reaction(
     )
 
     if not mappings:
-        conn.close()
         return {
             "success": False,
             "error": "Could not map reaction center template to query reaction ITS",
@@ -717,7 +747,6 @@ def query_epd_by_reaction(
     )
 
     if not candidates:
-        conn.close()
         return {
             "success": False,
             "error": (
@@ -731,7 +760,6 @@ def query_epd_by_reaction(
 
     selected = candidates[0] if len(candidates) == 1 else None
 
-    conn.close()
     return {
         "success": True,
         "path": 2,
