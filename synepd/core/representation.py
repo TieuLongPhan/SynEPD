@@ -20,6 +20,7 @@ ATOM_MAP_DICTIONARY_FIELDS = frozenset(
     }
 )
 ATOM_MAP_SCALAR_FIELDS = frozenset({"source_atom", "target_atom"})
+ATOM_MAP_LIST_FIELDS = frozenset({"closed_shell_atom_maps"})
 ATOM_MAPPED_SMILES_FIELDS = frozenset(
     {"chemical_product_fragment", "lwg_product_fragment"}
 )
@@ -141,6 +142,12 @@ def remap_representation(
             str(atom_map.get(int(key), int(key))): item for key, item in value.items()
         }
 
+    for field in ATOM_MAP_LIST_FIELDS:
+        value = result.get(field)
+        if not isinstance(value, list):
+            continue
+        result[field] = [int(atom_map.get(int(item), int(item))) for item in value]
+
     electron_step = result.get("unrepresented_electron_step")
     if isinstance(electron_step, Mapping):
         electron_step = dict(electron_step)
@@ -199,7 +206,13 @@ def representation_verification_rsmi(
     robust to component and SMILES traversal order and therefore also works for
     projected query reactions.
     """
-    if not representation or representation.get("mode") in (None, "exact"):
+    # A closed-shell-pair declaration changes only strict electron-resource
+    # comparison; the chemical endpoint itself must remain untouched.
+    if not representation or representation.get("mode") in (
+        None,
+        "exact",
+        "closed_shell_pair",
+    ):
         return rsmi
     overrides = representation.get("lwg_formal_charge_overrides")
     if not isinstance(overrides, Mapping) or not overrides:

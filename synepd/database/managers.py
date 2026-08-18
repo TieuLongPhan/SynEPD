@@ -355,7 +355,12 @@ class MechanismManager:
         return data
 
     def predict_atom_map(self, unmapped_rsmi: str) -> list:
-        from synkit.Synthesis.Reactor.syn_reactor import SynReactor
+        # Prefer SynKit's public package export; retain the historical import
+        # so the v0.4 environment can still read the release.
+        try:
+            from synkit.Synthesis.Reactor import SynReactor
+        except ImportError:  # SynKit <=1.6.1 compatibility
+            from synkit.Synthesis.Reactor.syn_reactor import SynReactor
         from synkit.Chem.Reaction.standardize import Standardize
 
         try:

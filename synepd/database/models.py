@@ -15,8 +15,8 @@ class DatasetRelease:
 
 
 DEFAULT_RELEASE = DatasetRelease(
-    version="v0.4.0",
-    release_date="2026-08-12",
+    version="v0.4.1",
+    release_date="2026-08-18",
     license="CC BY 4.0",
 )
 MECHANISM_CONTEXT_SCHEMA_VERSION = "002_mechanism_context"

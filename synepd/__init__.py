@@ -1,6 +1,6 @@
 """SynEPD: hierarchical mechanistic reaction templates."""
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 from synepd.construct import (
     ConstructionValidationError,

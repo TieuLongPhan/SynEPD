@@ -60,7 +60,7 @@ class SynEPDQuery:
     def from_release(
         cls,
         *,
-        version: str = "0.4.0",
+        version: str = "0.4.1",
         source: str = "auto",
         force: bool = False,
     ) -> "SynEPDQuery":

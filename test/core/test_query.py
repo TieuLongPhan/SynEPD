@@ -202,7 +202,7 @@ def test_template_projection_preserves_context_with_chemistry_aware_rc(tmp_path)
     assert candidate["arrows"][2]["target_atoms"] == [5, 7]
 
 
-def test_surrogate_projection_reports_real_mechanistic_ambiguity(tmp_path):
+def test_corrected_jones_projection_reports_real_mechanistic_ambiguity(tmp_path):
     db_path = tmp_path / "jones-projection.sqlite"
     shutil.copyfile(REPOSITORY_ROOT / "data" / "epdb.sqlite", db_path)
 
@@ -226,7 +226,7 @@ def test_surrogate_projection_reports_real_mechanistic_ambiguity(tmp_path):
         for candidate in result["mechanism_candidates"]
     )
     assert all(
-        candidate["representation"]["mode"] == "closed_shell_surrogate"
+        candidate["representation"] is None
         for candidate in result["mechanism_candidates"]
     )
 

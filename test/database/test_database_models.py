@@ -39,7 +39,7 @@ def test_create_tables():
             cursor.execute(
                 "SELECT version, release_date, license FROM dataset_release;"
             )
-            assert tuple(cursor.fetchone()) == ("v0.4.0", "2026-08-12", "CC BY 4.0")
+            assert tuple(cursor.fetchone()) == ("v0.4.1", "2026-08-18", "CC BY 4.0")
 
             cursor.execute("SELECT version FROM schema_migration ORDER BY version;")
             assert [row[0] for row in cursor.fetchall()] == [

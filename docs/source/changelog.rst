@@ -3,6 +3,18 @@ Changelog
 
 All notable changes to SynEPD are documented here.
 
+0.4.1 - 2026-08-18
+------------------
+
+* Upgraded the runtime and release validation floor to stable SynKit 1.6.2.
+* Corrected sigma/pi source labels and endpoint resource policies across the
+  full corpus, with 1,926 of 1,926 mechanisms passing strict ordered replay.
+* Expanded the final Skraup and Doebner--Miller mechanisms to preserve their
+  explicit conjugate-addition, enolate, proton-transfer, and oxidation stages.
+  The release now contains 8,129 electron-pushing arrows.
+* Rebuilt the SQLite release and its mechanistic-centre derivatives and
+  regenerated the checksummed release manifest.
+
 0.4.0 - 2026-08-12
 ------------------
 

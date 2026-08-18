@@ -12,10 +12,10 @@
     }
   ],
   "database": {
-    "bytes": 22716416,
+    "bytes": 22847488,
     "counts": {
       "epd": 1926,
-      "epd_arrow": 8123,
+      "epd_arrow": 8129,
       "its": 1926,
       "mechanism_context": 1926,
       "mechanistic_center": 1540,
@@ -47,51 +47,51 @@
       "synepd.mechanistic-center.v1": 1926
     },
     "name": "epdb.sqlite",
-    "sha256": "5f88f5de7d59fdc6f0f0e260c5439234cd8c38da8beb58c30b36c35fd79045d5"
+    "sha256": "78c2b292a413fa3cf8090c3e986eb71868416203d81a9be29ae6994197565f1d"
   },
   "dataset_release": {
     "license": "CC BY 4.0",
-    "release_date": "2026-08-12",
-    "version": "v0.4.0"
+    "release_date": "2026-08-18",
+    "version": "v0.4.1"
   },
   "manifest_version": "synepd.release-manifest.v1",
   "schema_migrations": [
     {
-      "applied_at": "2026-08-13 07:25:48",
+      "applied_at": "2026-08-18 08:38:16",
       "checksum": "sha256:87a9d2414a7c49132c4299077b515609da899a047d795f9eaa05ef3464374d27",
       "version": "002_mechanism_context"
     },
     {
-      "applied_at": "2026-08-13 07:25:48",
+      "applied_at": "2026-08-18 08:38:16",
       "checksum": "sha256:c7e203b8593560864dc193719d2b6ef92afcc7d3ca2c62c30a7731b7d860c569",
       "version": "003_taxon_xref"
     },
     {
-      "applied_at": "2026-08-13 07:25:48",
+      "applied_at": "2026-08-18 08:38:16",
       "checksum": "sha256:34c629b5e38a599b3b2f5675ca3bb8fc0a45e2fe9897bfc5f7e0ea5946d8f9a3",
       "version": "004_reaction_metadata"
     },
     {
-      "applied_at": "2026-08-13 07:25:48",
+      "applied_at": "2026-08-18 08:38:16",
       "checksum": "sha256:2c926958cb5591744bda98a496d679dfe7b131b04c4806d1d33d01587b0c3dd5",
       "version": "005_mechanistic_center"
     },
     {
-      "applied_at": "2026-08-13 07:25:48",
+      "applied_at": "2026-08-18 08:38:16",
       "checksum": "sha256:4913f555c248e21ceba18a8a9a162935b63e6966b40e0b7f1d5d1ab5b4fbbd74",
       "version": "006_its_mechanistic_center"
     },
     {
-      "applied_at": "2026-08-13 07:25:48",
+      "applied_at": "2026-08-18 08:38:16",
       "checksum": "sha256:e0c8aefcd24bc3ecbbd29afe43bcf79b41012ad9fb0ab9d943f072a45f9f8c8b",
       "version": "007_core_release"
     }
   ],
   "sources": [
     {
-      "bytes": 2613937,
+      "bytes": 2615925,
       "name": "polar.json",
-      "sha256": "1db0bf6abf26a14ed1c4e3589a54bb61750ce1a8ed832f72a703aec27e1ab8fa"
+      "sha256": "84b3d907cc1595269e34ba34be0163c4863f4314f646cd768b44967648210a29"
     }
   ]
 }

@@ -371,6 +371,27 @@ def test_clean_v2_rejects_narrative_representation_metadata():
         validate_clean_v2_payload(payload)
 
 
+def test_clean_v2_accepts_closed_shell_pair_representation():
+    payload = _clean_payload()
+    payload["records"][0]["epd_representation"] = {
+        "mode": "closed_shell_pair",
+        "closed_shell_atom_maps": [1],
+    }
+
+    assert validate_clean_v2_payload(payload) == payload["records"]
+
+
+def test_clean_v2_rejects_closed_shell_atom_map_absent_from_product():
+    payload = _clean_payload()
+    payload["records"][0]["epd_representation"] = {
+        "mode": "closed_shell_pair",
+        "closed_shell_atom_maps": [99],
+    }
+
+    with pytest.raises(ValueError, match=r"absent from the product: \[99\]"):
+        validate_clean_v2_payload(payload)
+
+
 def test_clean_v2_rejects_top_level_label_policy_metadata():
     payload = _clean_payload()
     payload["label_policy"] = "Singular label fields are primary."

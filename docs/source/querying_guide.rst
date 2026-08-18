@@ -1,7 +1,7 @@
 Querying Guide
 ==============
 
-``SynEPDQuery`` is the recommended Python interface for SynEPD 0.4.0. It opens
+``SynEPDQuery`` is the recommended Python interface for SynEPD 0.4.1. It opens
 the release read-only and provides scenario-oriented methods, so callers do not
 need to know the SQLite schema or construct manager objects.
 
@@ -21,14 +21,14 @@ Use the database shipped with the repository:
        named = query.search_reactions("Mitsunobu")
        print([reaction["name"] for reaction in named])
 
-To cache and open the tagged v0.4.0 release, use ``auto``. It prefers a
+To cache and open the tagged v0.4.1 release, use ``auto``. It prefers a
 configured Zenodo archive and falls back to the matching GitHub release:
 
 .. code-block:: python
 
    from synepd.query import SynEPDQuery
 
-   with SynEPDQuery.from_release(version="0.4.0", source="auto") as query:
+   with SynEPDQuery.from_release(version="0.4.1", source="auto") as query:
        reaction = query.reaction("polar_001321")
 
 Scenario 1: Query or Project an EPD
