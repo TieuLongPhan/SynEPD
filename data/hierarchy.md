@@ -1080,6 +1080,13 @@ This is the active release hierarchy, and every leaf has at least one validated 
 
 #### POLAR.05.04.003 — Reimer–Tiemann carbene generation
 
+<!-- TODO(curation): POLAR.05.04.003.001 (record 1480) currently encodes
+phenoxide as the base and phenol as its conjugate acid. Revise the source
+reaction to use hydroxide and water (CHCl3 + OH- -> :CCl2 + Cl- + H2O), in
+agreement with the initial events of full Reimer--Tiemann record 1934, then
+rebuild and revalidate the derived SQLite/release artifacts. The
+dcterms:isPartOf mapping to RXNO:0000072 remains appropriate. -->
+
 #### POLAR.05.04.004 — Carbene generation from trihalomethyl anions
 
 #### POLAR.05.04.005 — Simmons–Smith carbenoid formation step

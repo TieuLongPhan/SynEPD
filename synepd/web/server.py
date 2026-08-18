@@ -76,7 +76,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="SynEPD Mechanistic Web Service",
     description="REST backend and interactive explorer for reaction EPD mechanisms",
-    version="0.4.0",
+    version="0.4.1",
     lifespan=lifespan,
 )
 
@@ -557,8 +557,8 @@ def _get_db_info_cached(db_path: str, _db_token: str, _ttl_bucket: int) -> dict:
             db_release_date = row[1]
             db_license = row[2]
         else:
-            db_version = "v0.4.0"
-            db_release_date = "2026-07-07"
+            db_version = "v0.4.1"
+            db_release_date = "2026-08-18"
             db_license = "CC BY 4.0"
 
         # Calculate database file modification time for SQLite

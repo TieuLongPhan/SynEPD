@@ -10,7 +10,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 # Default release and cache paths
-DEFAULT_VERSION = "0.4.0"
+DEFAULT_VERSION = "0.4.1"
 DEFAULT_GITHUB_REPOSITORY = "TieuLongPhan/SynEPD"
 DEFAULT_ZENODO_RECORD_ID = "21235891"
 ZENODO_RECORD_IDS = {
@@ -20,6 +20,8 @@ ZENODO_RECORD_IDS = {
     "v0.2.0": "21381101",
     "0.3.0": "21394239",
     "v0.3.0": "21394239",
+    "0.4.0": "21235891",
+    "v0.4.0": "21235891",
 }
 DEFAULT_DB_FILENAME = "epdb.sqlite"
 DEFAULT_ARCHIVE_DB_MEMBER = f"data/{DEFAULT_DB_FILENAME}"

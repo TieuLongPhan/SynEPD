@@ -35,7 +35,7 @@ def test_get_default_db_path(tmp_path):
             resolved_path = get_default_db_path()
             assert resolved_path == db_path
             mock_download.assert_called_once_with(
-                db_path, source="auto", version="0.4.0"
+                db_path, source="auto", version="0.4.1"
             )
 
 
@@ -66,9 +66,10 @@ def test_get_default_db_path_uses_versioned_cache(tmp_path):
 
 
 def test_release_url_helpers():
-    assert DEFAULT_VERSION == "0.4.0"
+    assert DEFAULT_VERSION == "0.4.1"
     assert DEFAULT_ZENODO_RECORD_ID == "21235891"
-    assert get_zenodo_record_id("0.4.0") == DEFAULT_ZENODO_RECORD_ID
+    assert get_zenodo_record_id("0.4.1") == DEFAULT_ZENODO_RECORD_ID
+    assert get_zenodo_record_id("0.4.0") == "21235891"
     assert get_zenodo_record_id("0.1.0") == "21235892"
     assert get_zenodo_record_id("0.2.0") == "21381101"
     assert get_zenodo_record_id("0.3.0") == "21394239"
@@ -137,8 +138,8 @@ def test_zenodo_download_rejects_a_concept_record_at_the_wrong_version(tmp_path)
 
     record = {"metadata": {"version": "v0.3.0"}, "files": []}
     with mock.patch("synepd.core.data._load_zenodo_record", return_value=record):
-        with pytest.raises(RuntimeError, match="not requested SynEPD 0.4.0"):
-            _download_zenodo_database(tmp_path / "epdb.sqlite", version="0.4.0")
+        with pytest.raises(RuntimeError, match="not requested SynEPD 0.4.1"):
+            _download_zenodo_database(tmp_path / "epdb.sqlite", version="0.4.1")
 
 
 def test_verify_checksum_accepts_valid_digest_and_rejects_mismatch(tmp_path):

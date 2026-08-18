@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath("../../"))
 project = "SynEPD"
 copyright = "2026, SynEco Team"
 author = "SynEco Team"
-release = "0.4.0"
+release = "0.4.1"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

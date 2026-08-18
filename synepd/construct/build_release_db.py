@@ -73,9 +73,18 @@ CLEAN_RECORD_FIELDS = frozenset(
         "epd_representation",
     }
 )
-EPD_REPRESENTATION_FIELDS = frozenset({"mode", "lwg_formal_charge_overrides"})
-EPD_SURROGATE_MODES = frozenset(
-    {"closed_shell_surrogate", "closed_shell_formal_charge_surrogate"}
+EPD_REPRESENTATION_FIELDS = frozenset(
+    {"mode", "lwg_formal_charge_overrides", "closed_shell_atom_maps"}
+)
+# ``closed_shell_pair`` is an exact endpoint with an explicitly declared
+# replay normalization (two radical electrons == one lone pair), unlike the
+# two historical modes that rewrite product formal charges for verification.
+EPD_REPRESENTATION_MODES = frozenset(
+    {
+        "closed_shell_surrogate",
+        "closed_shell_formal_charge_surrogate",
+        "closed_shell_pair",
+    }
 )
 
 
@@ -357,9 +366,9 @@ def validate_clean_v2_payload(payload: Any) -> list[dict[str, Any]]:
     """Validate the production JSON boundary and return its reaction records.
 
     The v2 schema intentionally admits chemistry/catalog data only. Narrative
-    curation notes are maintained outside the release payload, while the two
-    supported non-exact EPD modes retain only their machine-actionable formal
-    charge overrides.
+    curation notes are maintained outside the release payload. Representation
+    policies retain only machine-actionable charge overrides or atom-local
+    closed-shell normalization maps.
     """
     if not isinstance(payload, dict) or payload.get("schema") != CLEAN_SCHEMA:
         raise ValueError(f"clean release payload must use schema {CLEAN_SCHEMA!r}")
@@ -441,26 +450,62 @@ def validate_clean_v2_payload(payload: Any) -> list[dict[str, Any]]:
                     f"record {record_id} epd_representation has unsupported fields: "
                     f"{sorted(unexpected)}"
                 )
-            if representation.get("mode") not in EPD_SURROGATE_MODES:
+            if representation.get("mode") not in EPD_REPRESENTATION_MODES:
                 raise ValueError(
                     f"record {record_id} has an unsupported EPD representation mode"
                 )
-            overrides = representation.get("lwg_formal_charge_overrides")
-            if not isinstance(overrides, dict) or not overrides:
-                raise ValueError(
-                    f"record {record_id} surrogate requires formal-charge overrides"
+            if representation["mode"] == "closed_shell_pair":
+                # Keep normalization opt-in and atom-local. Inferring it for
+                # every carbene-like endpoint would hide real data errors.
+                atom_maps = representation.get("closed_shell_atom_maps")
+                if (
+                    not isinstance(atom_maps, list)
+                    or not atom_maps
+                    or len(atom_maps) != len(set(atom_maps))
+                    or any(
+                        not isinstance(atom_map, int)
+                        or isinstance(atom_map, bool)
+                        or atom_map < 1
+                        for atom_map in atom_maps
+                    )
+                ):
+                    raise ValueError(
+                        f"record {record_id} has invalid closed-shell atom maps"
+                    )
+                if "lwg_formal_charge_overrides" in representation:
+                    raise ValueError(
+                        f"record {record_id} closed-shell-pair mode cannot override charge"
+                    )
+                product = record["rsmi"].split(">>", 1)[-1]
+                molecule = Chem.MolFromSmiles(product, sanitize=False)
+                product_atom_maps = (
+                    {atom.GetAtomMapNum() for atom in molecule.GetAtoms()}
+                    if molecule is not None
+                    else set()
                 )
-            if any(
-                not isinstance(atom_map, str)
-                or not atom_map.isdigit()
-                or int(atom_map) < 1
-                or not isinstance(charge, int)
-                or isinstance(charge, bool)
-                for atom_map, charge in overrides.items()
-            ):
-                raise ValueError(
-                    f"record {record_id} has invalid formal-charge overrides"
-                )
+                missing_maps = sorted(set(atom_maps) - product_atom_maps)
+                if missing_maps:
+                    raise ValueError(
+                        f"record {record_id} closed-shell atom maps are absent from "
+                        f"the product: {missing_maps}"
+                    )
+            else:
+                overrides = representation.get("lwg_formal_charge_overrides")
+                if not isinstance(overrides, dict) or not overrides:
+                    raise ValueError(
+                        f"record {record_id} surrogate requires formal-charge overrides"
+                    )
+                if any(
+                    not isinstance(atom_map, str)
+                    or not atom_map.isdigit()
+                    or int(atom_map) < 1
+                    or not isinstance(charge, int)
+                    or isinstance(charge, bool)
+                    for atom_map, charge in overrides.items()
+                ):
+                    raise ValueError(
+                        f"record {record_id} has invalid formal-charge overrides"
+                    )
 
         relations = record.get("relations", [])
         if not isinstance(relations, list):

@@ -35,6 +35,17 @@ def test_remaps_all_documented_representation_atom_maps():
     assert representation["chemical_oxidation_states"] == {"23": 3, "26": 3}
 
 
+def test_remaps_closed_shell_atom_maps():
+    representation = {
+        "mode": "closed_shell_pair",
+        "closed_shell_atom_maps": [7],
+    }
+
+    remapped = remap_representation(representation, {7: 19})
+
+    assert remapped["closed_shell_atom_maps"] == [19]
+
+
 def test_remap_epd_preserves_endpoint_cardinality():
     epd = [["Pi-/Sigma+", [26, 29], [23, 29]]]
     assert remap_epd(epd, {23: 16, 26: 17, 29: 12}) == [
@@ -53,3 +64,13 @@ def test_surrogate_verification_uses_charge_overrides_by_atom_map():
 
     assert "[Cr-:2]" in verification_rsmi
     assert "[Cr+:4]" in verification_rsmi
+
+
+def test_closed_shell_pair_verification_keeps_endpoint_rsmi():
+    rsmi = "[CH2:1]>>[CH2:1]"
+    representation = {
+        "mode": "closed_shell_pair",
+        "closed_shell_atom_maps": [1],
+    }
+
+    assert representation_verification_rsmi(rsmi, representation) == rsmi

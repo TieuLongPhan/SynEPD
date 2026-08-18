@@ -25,7 +25,7 @@ electron-pushing diagram (EPD) arrows in SQLite and a web explorer.
 | Molecules | 2,277 |
 | RC templates | 1,521 |
 | MC templates | 1,540 |
-| EPD arrows | 8,123 |
+| EPD arrows | 8,129 |
 | Taxonomy classes | 939 |
 | Accepted RXNO/MOP links | 218 |
 
@@ -125,6 +125,11 @@ python -m black --check --workers 1 synepd test
 ./pytest.sh
 python -m synepd.precheck.epd_verification --strict
 ```
+
+The EPD command uses strict ordered electron-resource replay by default. It
+checks every intermediate state, charge propagation, locality, and the mapped
+product endpoint. Pass ``--legacy-editor`` only for compatibility comparisons
+with the historical endpoint-only check.
 
 For a multi-worker deployment, run `./run_server.sh run --no-reload --workers
 4` behind a reverse proxy. The bundled SQLite release is opened read-only;

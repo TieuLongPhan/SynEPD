@@ -6,7 +6,13 @@ from typing import Any, Dict, List, Optional, Union
 import networkx as nx
 from rdkit import Chem
 from synkit.Chem.Reaction.standardize import Standardize
-from synkit.Synthesis.Reactor.syn_reactor import SynReactor
+
+# SynKit >=1.6.2 exposes the reactor through the stable package API; retain the
+# old module import only so the v0.4 environment can still read the release.
+try:
+    from synkit.Synthesis.Reactor import SynReactor
+except ImportError:  # SynKit <=1.6.1 compatibility
+    from synkit.Synthesis.Reactor.syn_reactor import SynReactor
 from synkit.IO import rsmi_to_its
 from synkit.Graph.Matcher.subgraph_matcher import SubgraphSearchEngine
 from synkit.Graph.Mech import LWGEditor
@@ -646,7 +652,11 @@ def _query_epd_by_reaction_with_connection(
                         break
         else:
             # Imbalanced reaction case: use RBLEngine
-            from synkit.Synthesis.Reactor.rbl_engine import RBLEngine
+            try:
+                # Public location after the SynKit 1.6.2 RBL extraction.
+                from synkit.Synthesis.RBL import RBLEngine
+            except ImportError:  # SynKit <=1.6.1 compatibility
+                from synkit.Synthesis.Reactor.rbl_engine import RBLEngine
 
             engine = RBLEngine(
                 mode="early_stop",

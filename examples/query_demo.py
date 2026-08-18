@@ -1,4 +1,4 @@
-"""Run representative SynEPD 0.4.0 Python query scenarios."""
+"""Run representative SynEPD 0.4.1 Python query scenarios."""
 
 from __future__ import annotations
 
@@ -58,7 +58,7 @@ def main() -> None:
         nargs="?",
         type=Path,
         default=Path("data/epdb.sqlite"),
-        help="path to a SynEPD 0.4.0 SQLite release",
+        help="path to a SynEPD 0.4.1 SQLite release",
     )
     args = parser.parse_args()
     run_queries(args.database)

@@ -78,7 +78,7 @@ def test_high_level_release_query_validates_user_choices():
             )
 
 
-def test_high_level_remote_release_defaults_to_v040():
+def test_high_level_remote_release_defaults_to_v041():
     db_path = REPOSITORY_ROOT / "data" / "epdb.sqlite"
     with mock.patch(
         "synepd.query.release.get_default_db_path", return_value=db_path
@@ -86,4 +86,4 @@ def test_high_level_remote_release_defaults_to_v040():
         with SynEPDQuery.from_release() as query:
             assert query.reaction("polar_001321") is not None
 
-    resolve.assert_called_once_with(version="0.4.0", source="auto", force=False)
+    resolve.assert_called_once_with(version="0.4.1", source="auto", force=False)
