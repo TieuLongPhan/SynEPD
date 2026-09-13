@@ -27,7 +27,7 @@ dev = [
     "pytest",
 ]
 scripts = [
-    "tmap2==0.2.2",
+    "tmap2==0.3.0",
 ]
 
 [tool.setuptools.packages.find]
